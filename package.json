@@ -4,7 +4,7 @@
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "license": "mit",
-  "repository": "1-AlenToma/react-native-short-style",
+  "repository": "https://github.com/1-AlenToma/react-native-short-style",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.tsx",
