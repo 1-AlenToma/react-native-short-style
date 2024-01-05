@@ -1,0 +1,27 @@
+{
+  "name": "react-native-short-style",
+  "version": "1.0.0",
+  "description": "#react-native-short-style",
+  "author": "1-AlenToma",
+  "license": "mit",
+  "repository": "1-AlenToma/react-native-short-style",
+  "main": "dist/index.js",
+  "module": "dist/index.modern.js",
+  "source": "src/index.tsx",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.27",
+    "react-scripts": "^3.4.1",
+    "typescript": "^3.7.5"
+  },
+  "files": ["dist"]
+}
