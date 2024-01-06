@@ -3,18 +3,16 @@
   "version": "1.0.0",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/1-AlenToma/react-native-short-style.git"
-  },
+  "license": "mit",
+  "repository": "https://github.com/1-AlenToma/react-native-short-style",
   "main": "dist/index.js",
+  "module": "dist/index.modern.js",
   "source": "src/index.ts",
   "engines": {
     "node": ">=10"
   },
   "scripts": {
-    "build": "tsc"
+        "build": "tsc"
   },
   "peerDependencies": {
     "react": "*",
@@ -23,20 +21,5 @@
   "devDependencies": {
     "typescript": "^3.7.5"
   },
-  "files": ["dist"],
-  "types": "./dist/index.d.ts",
-  "bugs": {
-    "url": "https://github.com/1-AlenToma/react-native-short-style/issues"
-  },
-  "homepage": "https://github.com/1-AlenToma/react-native-short-style#readme",
-  "directories": {
-    "example": "example"
-  },
-  "keywords": [
-    "react-native",
-    "stylesheet",
-    "nestedstyle",
-    "react",
-    "css"
-  ]
+  "files": ["dist"]
 }

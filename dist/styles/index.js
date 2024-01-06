@@ -22,7 +22,6 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 import cssTranslator from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
-import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
 var toArray = function (item) {
     if (!item)
@@ -90,7 +89,6 @@ var StyledWrapper = function (_a) {
         style: undefined,
         pk: undefined
     }).current;
-    var validKeyStyle = View.displayName ? allowedKeys[View.displayName] : undefined;
     React.useEffect(function () {
         parsedData.style = undefined;
         setUpdater(function (x) { return (x > 1000 ? 1 : x) + 1; });
@@ -109,7 +107,7 @@ var StyledWrapper = function (_a) {
             cpyCss.add(ec.parentClassNames(name, cpyCss.toString()));
             css = cpyCss.toString();
         }
-        var tCss = cssTranslator(cpyCss.toString(), styleFile, validKeyStyle);
+        var tCss = cssTranslator(cpyCss.toString(), styleFile);
         if (tCss)
             sArray.push(tCss);
         parsedData.style = sArray;
