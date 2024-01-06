@@ -20,6 +20,7 @@ import {
   NestedStyleSheet
 } from "react-native-short-style";
 // now create your style or import.
+// You can still use Stylesheet if you want
 const styles = NestedStyleSheet.create({
   // this is a default style for View.Text
   "View.Text":{
