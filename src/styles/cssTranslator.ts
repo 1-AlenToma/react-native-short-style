@@ -1,5 +1,7 @@
 const cachedCss = new Map();
-let styleKeys = [
+import reactnativeStyles from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
+let styleKeys = Object.keys(reactnativeStyles);
+/*[
   "alignContent",
   "alignItems",
   "alignSelf",
@@ -128,7 +130,7 @@ let styleKeys = [
   "userSelect",
   "verticalAlign",
   "writingDirection"
-];
+];*/
 
 let shortCss = undefined;
 const buildShortCss = () => {
@@ -188,10 +190,17 @@ const checkObject = (value: string) => {
   return value;
 };
 
-const cleanStyle = (style: any) => {
+const cleanStyle = (
+  style: any,
+  propStyle: any
+) => {
   let item = { ...style };
   for (let k in style) {
-    if (k.trim().startsWith("$") || has(k, "."))
+    if (
+      k.trim().startsWith("$") ||
+      has(k, ".") ||
+      (propStyle && !propStyle[k])
+    )
       delete item[k];
   }
   return item;
@@ -234,7 +243,8 @@ const serilizeCssStyle = (style: any) => {
 
 const css_translator = (
   css?: string,
-  styleFile: any
+  styleFile: any,
+  propStyle: any
 ) => {
   if (!css || css.length <= 0) return {};
   if (cachedCss.has(css))
@@ -264,7 +274,10 @@ const css_translator = (
             k.length === x.key.length) ||
           x.short.toUpperCase() == k.toUpperCase()
       );
-      if (short) cssItem[short.key] = value;
+      if (short) {
+        if (!propStyle || propStyle[short.key])
+          cssItem[short.key] = value;
+      }
       continue;
     }
 
@@ -274,7 +287,7 @@ const css_translator = (
     if (style) {
       cssItem = {
         ...cssItem,
-        ...cleanStyle(style)
+        ...cleanStyle(style, propStyle)
       };
       continue;
     }

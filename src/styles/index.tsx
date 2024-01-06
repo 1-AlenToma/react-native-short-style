@@ -1,6 +1,8 @@
 import cssTranslator from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
+import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
+import * as reactNative from "react-native";
 let toArray = (item: any) => {
   if (!item) return [];
   if (Array.isArray(item)) return item;
@@ -67,6 +69,7 @@ let StyledWrapper = ({
     style: undefined,
     pk: undefined
   }).current;
+  const validKeyStyle = View.displayName ? allowedKeys[View.displayName] : undefined;
 
   React.useEffect(() => {
     parsedData.style = undefined;
@@ -96,7 +99,8 @@ let StyledWrapper = ({
     }
     let tCss = cssTranslator(
       cpyCss.toString(),
-      styleFile
+      styleFile,
+      validKeyStyle
     );
     if (tCss) sArray.push(tCss);
     parsedData.style = sArray;
@@ -109,7 +113,7 @@ let StyledWrapper = ({
       name: string,
       pk: string
     ) => {
-      let ss = new CSS(css).add(pk)
+      let ss = new CSS(css).add(pk);
       if (!css) return "";
       let c = new CSS();
       for (let s of ss.classes) {
@@ -156,4 +160,8 @@ const Styleable = function <T>(
   return fn as any as T & T<Styled>;
 };
 
-export { Styleable, NestedStyleSheet, cssTranslator};
+export {
+  Styleable,
+  NestedStyleSheet,
+  cssTranslator
+};
