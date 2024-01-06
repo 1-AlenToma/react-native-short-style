@@ -175,7 +175,7 @@ const has = (s: string, char: string) => {
 };
 
 const checkNumber = (value: string) => {
-  if (/^(-?)((\d)|(\d\.\d))+$/.test(value))
+  if (/^(-?)((\d)|((\d)?\.\d))+$/.test(value))
     return eval(value);
   return value;
 };
@@ -196,6 +196,10 @@ const cleanStyle = (style: any) => {
   }
   return item;
 };
+
+const cleanKey = (k, string) => {
+  return has(k, "$") ? k.substring(1) : k;
+};
 let serilizedCssStyle = new Map();
 const serilizeCssStyle = (style: any) => {
   if (serilizedCssStyle.has(style))
@@ -211,9 +215,7 @@ const serilizeCssStyle = (style: any) => {
       return s;
     for (let k in s) {
       if (has(k, "$")) {
-        let pKey = `${parentKey}.${k.substring(
-          1
-        )}`;
+        let pKey = `${parentKey}.${cleanKey(k)}`;
         sItem[pKey] = fn(s[k], pKey);
         continue;
       }
@@ -222,7 +224,10 @@ const serilizeCssStyle = (style: any) => {
     return item;
   };
 
-  for (let k in style) sItem[k] = fn(style[k], k);
+  for (let k in style) {
+    let ck = cleanKey(k);
+    sItem[ck] = fn(style[k], ck);
+  }
   serilizedCssStyle.set(style, sItem);
   return sItem;
 };

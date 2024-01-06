@@ -6,17 +6,62 @@ let toArray = (item: any) => {
   if (Array.isArray(item)) return item;
   return [item];
 };
-let context = React.createContext({});
+class CSS {
+  css: string;
+  constructor(css?: string) {
+    this.css = ` ${(css || "").trim()} `;
+  }
+
+  add(...keys: string[]) {
+    for (let k of keys) {
+      if (
+        k.trim().endsWith(".") ||
+        k.trim().length == 0
+      )
+        continue;
+      if (this.css.indexOf(` ${k} `) === -1)
+        this.css += `${k.trim()} `;
+    }
+    return this;
+  }
+
+  get classes() {
+    let items = [];
+    for (let s of this.css
+      .split(" ")
+      .filter(x => x.trim().length > 0)) {
+      if (
+        s.indexOf(":") === -1 &&
+        s.indexOf("$") === -1 &&
+        !items.find(x => x == s)
+      ) {
+        items.push(s);
+      }
+    }
+    return items;
+  }
+
+  distinct() {
+    let items = new CSS("").add(
+      ...this.css.split(" ")
+    );
+    return items.css;
+  }
+
+  toString() {
+    return this.distinct();
+  }
+}
+let CSSContext = React.createContext({});
 let StyledWrapper = ({
   View,
   styleFile,
   name,
-  children,
   style,
   css,
   ...props
 }: any) => {
-  let ec = React.useContext(context);
+  let ec = React.useContext(CSSContext);
   let [_, setUpdater] = React.useState(0);
   let parsedData = React.useRef({
     style: undefined,
@@ -25,7 +70,7 @@ let StyledWrapper = ({
 
   React.useEffect(() => {
     parsedData.style = undefined;
-    setUpdater(x => x + 1);
+    setUpdater(x => (x > 1000 ? 1 : x) + 1);
   }, [style, css]);
 
   if (
@@ -34,20 +79,25 @@ let StyledWrapper = ({
   ) {
     let sArray = toArray(style);
     let pk = "";
-    let cpyCss = css;
+    let cpyCss = new CSS(css);
     pk = ec.parentKey ? ec.parentKey() : "";
     if (pk.length > 0 && !pk.endsWith("."))
       pk += ".";
     pk += name;
-    if (!cpyCss) cpyCss = "";
-    if (pk !== name)
-      cpyCss = "$" + `${pk} ${name} ${cpyCss}`;
-    else cpyCss = `${name} ${cpyCss}`;
+    cpyCss.add(name, pk);
     if (ec.parentClassNames) {
-      cpyCss += ec.parentClassNames(name, cpyCss);
-      css = cpyCss;
+      cpyCss.add(
+        ec.parentClassNames(
+          name,
+          cpyCss.toString()
+        )
+      );
+      css = cpyCss.toString();
     }
-    let tCss = cssTranslator(cpyCss, styleFile);
+    let tCss = cssTranslator(
+      cpyCss.toString(),
+      styleFile
+    );
     if (tCss) sArray.push(tCss);
     parsedData.style = sArray;
     parsedData.pk = pk;
@@ -59,34 +109,25 @@ let StyledWrapper = ({
       name: string,
       pk: string
     ) => {
-      let ss = (css || "") + " " + pk;
+      let ss = new CSS(css).add(pk);
       if (!css) return "";
-      let c = "";
-      for (let s of ss
-        .split(" ")
-        .filter(x => x.trim().length > 0)) {
-        if (
-          s.indexOf(":") === -1 &&
-          s.indexOf("$") === -1
-        ) {
-          let m = ` ${s}.${name}`;
-          c += ` ${m}.${pk}`;
-          c += m;
-        }
+      let c = new CSS();
+      for (let s of ss.classes) {
+        let m = ` ${s}.${name}`;
+        c.add(m);
       }
-      return c;
+      return c.toString();
     }
   };
 
   return (
-    <context.Provider value={cValue}>
+    <CSSContext.Provider value={cValue}>
       <View
         {...props}
         name={parsedData.pk}
-        style={parsedData.style}>
-        {children}
-      </View>
-    </context.Provider>
+        style={parsedData.style}
+      />
+    </CSSContext.Provider>
   );
 };
 
@@ -115,4 +156,4 @@ const Styleable = function <T>(
   return fn as any as T & T<Styled>;
 };
 
-export { Styleable, NestedStyleSheet };
+export { Styleable, NestedStyleSheet, cssTranslator};
