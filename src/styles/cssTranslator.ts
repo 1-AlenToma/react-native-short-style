@@ -175,7 +175,7 @@ const has = (s: string, char: string) => {
 };
 
 const checkNumber = (value: string) => {
-  if (/^(-?)((\d)|(\d\.\d))+$/.test(value))
+  if (/^(-?)((\d)|((\d)?\.\d))+$/.test(value))
     return eval(value);
   return value;
 };
@@ -196,6 +196,10 @@ const cleanStyle = (style: any) => {
   }
   return item;
 };
+
+const cleanKey = (k, string) => {
+  return has(k, "$") ? k.substring(1) : k;
+};
 let serilizedCssStyle = new Map();
 const serilizeCssStyle = (style: any) => {
   if (serilizedCssStyle.has(style))
@@ -205,14 +209,13 @@ const serilizeCssStyle = (style: any) => {
     let item = {};
     if (
       typeof s !== "object" ||
-      typeof s === "string"
+      typeof s === "string" ||
+      Array.isArray(s)
     )
       return s;
     for (let k in s) {
       if (has(k, "$")) {
-        let pKey = `${parentKey}.${k.substring(
-          1
-        )}`;
+        let pKey = `${parentKey}.${cleanKey(k)}`;
         sItem[pKey] = fn(s[k], pKey);
         continue;
       }
@@ -221,12 +224,18 @@ const serilizeCssStyle = (style: any) => {
     return item;
   };
 
-  for (let k in style) sItem[k] = fn(style[k], k);
+  for (let k in style) {
+    let ck = cleanKey(k);
+    sItem[ck] = fn(style[k], ck);
+  }
   serilizedCssStyle.set(style, sItem);
   return sItem;
 };
 
-const css_translator =(css?: string, styleFile: any) => {
+const css_translator = (
+  css?: string,
+  styleFile: any
+) => {
   if (!css || css.length <= 0) return {};
   if (cachedCss.has(css))
     return cachedCss.get(css);
@@ -244,19 +253,24 @@ const css_translator =(css?: string, styleFile: any) => {
       let value = checkObject(
         checkNumber(splitSafe(c, ":", 1))
       );
+      if (
+        has(value, "undefined") ||
+        has(value, "null")
+      )
+        value = undefined;
       let short = shortk.find(
         x =>
           (has(x.key, k) &&
             k.length === x.key.length) ||
-          x.short.toUpperCase()== k.toUpperCase()
+          x.short.toUpperCase() == k.toUpperCase()
       );
       if (short) cssItem[short.key] = value;
       continue;
     }
 
     let style = CSS[c];
-    if(typeof style === "string")
-       style = css_translator(style,styleFile);
+    if (typeof style === "string")
+      style = css_translator(style, styleFile);
     if (style) {
       cssItem = {
         ...cssItem,
