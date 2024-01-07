@@ -69,18 +69,20 @@ let StyledWrapper = ({
     style: undefined,
     pk: undefined
   }).current;
-  const validKeyStyle = View.displayName ? allowedKeys[View.displayName] : undefined;
+  const validKeyStyle = View.displayName
+    ? allowedKeys[View.displayName]
+    : undefined;
 
   React.useEffect(() => {
     parsedData.style = undefined;
     setUpdater(x => (x > 1000 ? 1 : x) + 1);
-  }, [style, css]);
+  }, [css]);
 
   if (
     styleFile &&
     parsedData.style == undefined
   ) {
-    let sArray = toArray(style);
+    let sArray = [];
     let pk = "";
     let cpyCss = new CSS(css);
     pk = ec.parentKey ? ec.parentKey() : "";
@@ -129,7 +131,11 @@ let StyledWrapper = ({
       <View
         {...props}
         name={parsedData.pk}
-        style={parsedData.style}
+        style={[
+                    ...toArray(parsedData.style),
+          ...toArray(style),
+
+        ]}
       />
     </CSSContext.Provider>
   );

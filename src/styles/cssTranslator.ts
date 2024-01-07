@@ -136,22 +136,41 @@ let shortCss = undefined;
 const buildShortCss = () => {
   if (shortCss) return shortCss;
   shortCss = [];
+  let keyExceptions = {
+    marginBlock: "maBl",
+    paddingBlock: "paBl",
+    borderBlockColor: "boBCo",
+    borderCurve: "boCu",
+    direction: "dir",
+    marginHorizontal: "maHo"
+  };
   for (let k of styleKeys) {
     let shortKey = null;
-    for (let s of k) {
-      if (!shortKey) {
-        shortKey = s;
-        continue;
-      }
-      if (shortKey.length == 1) {
-        shortKey += s;
-        continue;
-      }
+    if (keyExceptions[k])
+      shortKey = keyExceptions[k];
+    else
+      for (let s of k) {
+        if (!shortKey) {
+          shortKey = s;
+          continue;
+        }
+        if (shortKey.length == 1) {
+          shortKey += s;
+          continue;
+        }
 
-      if (s === s.toUpperCase()) shortKey += s;
+        if (s === s.toUpperCase()) shortKey += s;
+      }
+    while (shortCss.find(x => x[shortKey])) {
+      shortKey += k[shortKey.length];
     }
-    shortCss.push({ key: k, short: shortKey });
+    let item = { key: k };
+    item[k] = k;
+    item[k.toLowerCase()] = k;
+    item[shortKey.toLowerCase()] = k;
+    shortCss.push(item);
   }
+  // console.error([shortCss].niceJson());
   return shortCss;
 };
 
@@ -263,17 +282,17 @@ const css_translator = (
       let value = checkObject(
         checkNumber(splitSafe(c, ":", 1))
       );
+
       if (
         has(value, "undefined") ||
         has(value, "null")
       )
         value = undefined;
       let short = shortk.find(
-        x =>
-          (has(x.key, k) &&
-            k.length === x.key.length) ||
-          x.short.toUpperCase() == k.toUpperCase()
+        x => x[k.toLowerCase()] !== undefined
       );
+      //if (k == "mab")
+       // console.log(k, value, short);
       if (short) {
         if (!propStyle || propStyle[short.key])
           cssItem[short.key] = value;
@@ -283,7 +302,11 @@ const css_translator = (
 
     let style = CSS[c];
     if (typeof style === "string")
-      style = css_translator(style, styleFile);
+      style = css_translator(
+        style,
+        styleFile,
+        propStyle
+      );
     if (style) {
       cssItem = {
         ...cssItem,
