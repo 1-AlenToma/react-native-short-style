@@ -48,7 +48,7 @@ const styles = NestedStyleSheet.create({
   //the rules for shortcut is to take the first
   // tow chars [1,2] + all uppercase char
   // so `backgroundColor` will have a shortcut `bac` and so on.
-  box: "bor:4 wi:80% pa:5 juc:center ali:center boc:#000 bow:1 hi:40 bac:red minHeight:10",
+  box: "bor:4 wi:80% pa:5 juc:center ali:center boc:#000 bow:1 he:40 bac:red minHeight:10",
   //and here insted of adding a nested class simple add its path and the lib will find it.
   "box.Text": {
     color: "#fff"
@@ -96,7 +96,7 @@ this code is for the above image.
           </StyledText>
         </StyledText>
       </StyledText>
-      <StyledView css="box hi:50">
+      <StyledView css="box he:20">
         <StyledText>
           this box created by css shortcut
         </StyledText>
