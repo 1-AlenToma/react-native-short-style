@@ -1,8 +1,9 @@
-import cssTranslator from "./cssTranslator";
+import cssTranslator, { serilizeCssStyle } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
 import * as reactNative from "react-native";
+import { getClasses } from "../config/Methods"
 let toArray = (item: any) => {
   if (!item) return [];
   if (Array.isArray(item)) return item;
@@ -10,37 +11,26 @@ let toArray = (item: any) => {
 };
 class CSS {
   css: string;
-  constructor(css?: string) {
+  styleFile: any;
+  constructor(styleFile: any, css?: string) {
     this.css = ` ${(css || "").trim()} `;
+    this.styleFile = styleFile;
   }
 
   add(...keys: string[]) {
+    let translatedStyle = serilizeCssStyle(this.styleFile);
     for (let k of keys) {
-      if (
-        k.trim().endsWith(".") ||
-        k.trim().length == 0
-      )
+      if (k.trim().endsWith(".") || k.trim().length == 0)
         continue;
-      if (this.css.indexOf(` ${k} `) === -1)
+
+      if (this.css.indexOf(` ${k} `) === -1 && k in translatedStyle)
         this.css += `${k.trim()} `;
     }
     return this;
   }
 
-  get classes() {
-    let items = [];
-    for (let s of this.css
-      .split(" ")
-      .filter(x => x.trim().length > 0)) {
-      if (
-        s.indexOf(":") === -1 &&
-        s.indexOf("$") === -1 &&
-        !items.find(x => x == s)
-      ) {
-        items.push(s);
-      }
-    }
-    return items;
+  classes() {
+    return getClasses(this.css, this.styleFile);
   }
 
   distinct() {
@@ -64,10 +54,10 @@ let StyledWrapper = React.forwardRef(
       style,
       css,
       ...props
-    },
+    }: any,
     ref
   ) => {
-    let ec = React.useContext(CSSContext);
+    let ec = React.useContext(CSSContext) as any;
     let [_, setUpdater] = React.useState(0);
     let parsedData = React.useRef({
       style: undefined,
@@ -88,7 +78,7 @@ let StyledWrapper = React.forwardRef(
     ) {
       let sArray = [];
       let pk = "";
-      let cpyCss = new CSS(css);
+      let cpyCss = new CSS(styleFile, css);
       pk = ec.parentKey ? ec.parentKey() : "";
       if (pk.length > 0 && !pk.endsWith("."))
         pk += ".";
@@ -121,10 +111,10 @@ let StyledWrapper = React.forwardRef(
       ) => {
         let ss = new CSS(css).add(pk);
         if (!css) return "";
-        let c = new CSS();
-        for (let s of ss.classes) {
+        let c = new CSS(styleFile);
+        for (let s of ss.classes()) {
           let m = ` ${s}.${name}`;
-          c.add(m);
+          c.add(m, styleFile);
         }
         return c.toString();
       }
@@ -147,13 +137,17 @@ let StyledWrapper = React.forwardRef(
 
 export type Styled = {
   css?: string;
+  ifTrue?: (()=> boolean | boolean)
 };
 
 const Styleable = function <T>(
   View: T,
-  identifier: string,
-  styleFile: any
+  styleFile: any,
+  identifier?: string
 ) {
+  identifier = identifier ?? (View as any).displayName;
+  if (!identifier || identifier.trim().length<=1)
+      throw "react-native-short-style needs an identifier"
   let fn = React.forwardRef((props, ref) => {
     let pr = {
       View,
@@ -168,7 +162,7 @@ const Styleable = function <T>(
       />
     );
   });
-  return fn as any as T & T<Styled>;
+  return fn as any as T & Styled;
 };
 
 export {

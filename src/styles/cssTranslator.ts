@@ -1,142 +1,12 @@
 const cachedCss = new Map();
 import reactnativeStyles from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
 let styleKeys = Object.keys(reactnativeStyles);
-/*[
-  "alignContent",
-  "alignItems",
-  "alignSelf",
-  "aspectRatio",
-  "borderBottomWidth",
-  "borderEndWidth",
-  "borderLeftWidth",
-  "borderRightWidth",
-  "borderStartWidth",
-  "borderTopWidth",
-  "borderWidth",
-  "bottom",
-  "columnGap",
-  "direction",
-  "display",
-  "end",
-  "flex",
-  "flexBasis",
-  "flexDirection",
-  "flexGrow",
-  "flexShrink",
-  "flexWrap",
-  "gap",
-  "height",
-  "inset",
-  "insetBlock",
-  "insetBlockEnd",
-  "insetBlockStart",
-  "insetInline",
-  "insetInlineEnd",
-  "insetInlineStart",
-  "justifyContent",
-  "left",
-  "margin",
-  "marginBlock",
-  "marginBlockEnd",
-  "marginBlockStart",
-  "marginBottom",
-  "marginEnd",
-  "marginHorizontal",
-  "marginInline",
-  "marginInlineEnd",
-  "marginInlineStart",
-  "marginLeft",
-  "marginRight",
-  "marginStart",
-  "marginTop",
-  "marginVertical",
-  "maxHeight",
-  "maxWidth",
-  "minHeight",
-  "minWidth",
-  "overflow",
-  "padding",
-  "paddingBlock",
-  "paddingBlockEnd",
-  "paddingBlockStart",
-  "paddingBottom",
-  "paddingEnd",
-  "paddingHorizontal",
-  "paddingInline",
-  "paddingInlineEnd",
-  "paddingInlineStart",
-  "paddingLeft",
-  "paddingRight",
-  "paddingStart",
-  "paddingTop",
-  "paddingVertical",
-  "position",
-  "right",
-  "rowGap",
-  "start",
-  "top",
-  "width",
-  "zIndex",
-  "shadowColor",
-  "shadowOffset",
-  "shadowOpacity",
-  "shadowRadius",
-  "transform",
-  "backfaceVisibility",
-  "backgroundColor",
-  "borderBottomColor",
-  "borderBottomEndRadius",
-  "borderBottomLeftRadius",
-  "borderBottomRightRadius",
-  "borderBottomStartRadius",
-  "borderColor",
-  "borderCurve",
-  "borderEndColor",
-  "borderEndEndRadius",
-  "borderEndStartRadius",
-  "borderLeftColor",
-  "borderRadius",
-  "borderRightColor",
-  "borderStartColor",
-  "borderStartEndRadius",
-  "borderStartStartRadius",
-  "borderStyle",
-  "borderTopColor",
-  "borderTopEndRadius",
-  "borderTopLeftRadius",
-  "borderTopRightRadius",
-  "borderTopStartRadius",
-  "elevation",
-  "opacity",
-  "pointerEvents",
-  "color",
-  "fontFamily",
-  "fontSize",
-  "fontStyle",
-  "fontVariant",
-  "fontWeight",
-  "includeFontPadding",
-  "letterSpacing",
-  "lineHeight",
-  "textAlign",
-  "textAlignVertical",
-  "textDecorationColor",
-  "textDecorationLine",
-  "textDecorationStyle",
-  "textShadowColor",
-  "textShadowOffset",
-  "textShadowRadius",
-  "textTransform",
-  "userSelect",
-  "verticalAlign",
-  "writingDirection"
-];*/
 
-let shortCss = undefined;
+let shortCss : (any[] | undefined) = undefined;
 const buildShortCss = () => {
   if (shortCss) return shortCss;
   shortCss = [];
-  let keyExceptions = {
+  let keyExceptions :any = {
     marginBlock: "maBl",
     paddingBlock: "paBl",
     borderBlockColor: "boBCo",
@@ -145,7 +15,7 @@ const buildShortCss = () => {
     marginHorizontal: "maHo"
   };
   for (let k of styleKeys) {
-    let shortKey = null;
+    let shortKey : string|null = null;
     if (keyExceptions[k])
       shortKey = keyExceptions[k];
     else
@@ -225,11 +95,11 @@ const cleanStyle = (
   return item;
 };
 
-const cleanKey = (k, string) => {
+const cleanKey = (k:string) => {
   return has(k, "$") ? k.substring(1) : k;
 };
 let serilizedCssStyle = new Map();
-const serilizeCssStyle = (style: any) => {
+export const serilizeCssStyle = (style: any) => {
   if (serilizedCssStyle.has(style))
     return serilizedCssStyle.get(style);
   let sItem = {};
@@ -262,8 +132,8 @@ const serilizeCssStyle = (style: any) => {
 
 const css_translator = (
   css?: string,
-  styleFile: any,
-  propStyle: any
+  styleFile?: any,
+  propStyle?: any
 ) => {
   if (!css || css.length <= 0) return {};
   if (cachedCss.has(css))
