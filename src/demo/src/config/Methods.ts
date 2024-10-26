@@ -1,14 +1,19 @@
-import { serilizeCssStyle } from "../styles/cssTranslator";
+import { serilizeCssStyle,  clearAll } from "../styles/cssTranslator";
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
-import { IThemeContext } from "../Typse";
+import { globalData } from "../theme/ThemeContext";
+import { AlertViewAlertProps, AlertViewProps, IThemeContext } from "../Typse";
 
 export const currentTheme = (context: IThemeContext) => {
     let thisTheme = themeStyle();
-    let selectedTheme = serilizeCssStyle(context.themes[context.selectedIndex]);
+    let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
     return {
-        ...thisTheme, ...serilizeCssStyle(context.defaultTheme), ...selectedTheme, ...ComponentsStyles
+        ...thisTheme, ...selectedTheme, ...ComponentsStyles
     }
 
+}
+
+export const clearAllCss=()=> {
+    clearAll();
 }
 
 let serilizeTheme = undefined;
@@ -36,9 +41,18 @@ export const themeStyle = () => {
     serilizeTheme = style;
     return style;
 }
-
-export const newId = () => {
-    let id = Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
+let ids = new Map();
+let lastDate = new Date();
+export const newId = (inc?: string): string => {
+    if (lastDate.getMinutes() - new Date().getMinutes() > 1) {
+        ids = new Map();
+        lastDate = new Date();
+    }
+    let id: string = (inc ?? "") + Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
+    if (ids.has(id)) {
+        return (newId(id) as string);
+    }
+    ids.set(id, id);
     return id;
 }
 
@@ -51,7 +65,8 @@ export const ifSelector = (item?: boolean | Function) => {
 }
 
 export const getClasses = (css: string, globalStyle: any) => {
-    globalStyle = serilizeCssStyle(globalStyle);
+    globalStyle = globalStyle;
+
     let items = css.split(" ").filter(x => x && x.length > 0);
     let props: string[] = [];
     for (let item of items) {
@@ -65,4 +80,14 @@ export const getClasses = (css: string, globalStyle: any) => {
 
 export const proc = (partialValue, totalValue) => {
     return (partialValue / 100) * totalValue;
+}
+
+export class AlertDialog {
+    static alert(props: AlertViewAlertProps) {
+        globalData.alertViewData.alert(props);
+    }
+
+    static async confirm(props: AlertViewProps) {
+        return globalData.alertViewData.confirm(props);
+    }
 }

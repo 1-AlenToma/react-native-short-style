@@ -11,8 +11,6 @@ export const Icon =(props: IConProps) => {
     
 
     return (
-        <Ico
-            {...props}
-        />
+        <Ico {...props} />
     );
 };

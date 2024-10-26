@@ -1,6 +1,6 @@
 const cachedCss = new Map();
 import { StylesAttributes } from "./validStyles";
-import { themeStyle } from "../config/Methods";
+
 
 let styleKeys = [...StylesAttributes]
 
@@ -56,22 +56,22 @@ const splitSafe = (
   return "";
 };
 const has = (s: string, char: string) => {
-  return (
-    s &&
-    char &&
-    s.toString().toUpperCase().indexOf(char.toString().toUpperCase()) !== -1);
+  return (s && char && s.toString().toUpperCase().indexOf(char.toString().toUpperCase()) !== -1);
 };
 
-const checkNumber = (value: string) => {
-  if (/^(-?)((\d)|((\d)?\.\d))+$/.test(value))
-    return eval(value);
+const checkNumber = (value: string): any => {
+  if (/^(-?)((\d)|((\d)?\.\d))+$/.test(value)) {
+    return parseFloat(value);
+
+  }
   return value;
 };
 
 const checkObject = (value: string) => {
   try {
-    if (/\{|\}|\[|\]/g.test(value))
+    if (typeof value == "string" && /\{|\}|\[|\]/g.test(value)) {
       return eval(value);
+    }
   } catch (e) { }
   return value;
 };
@@ -82,34 +82,35 @@ const cleanStyle = (
 ) => {
   let item = { ...style };
   for (let k in style) {
-    if (
-      k.trim().startsWith("$") ||
-      has(k, ".") ||
-      (propStyle && !propStyle[k])
-    )
+    if (k.trim().startsWith("$") || k.indexOf(".") != -1 || (propStyle && !propStyle[k]))
       delete item[k];
   }
   return item;
 };
 
 const cleanKey = (k: string) => {
-  return has(k, "$") ? k.substring(1) : k;
-};
+  return (k ?? "").indexOf("$") != -1 ? k.substring(1) : k;
+}
+
+const newId=()=> Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
+
+
 let serilizedCssStyle = new Map();
 export const serilizeCssStyle = (style: any) => {
-  if (serilizedCssStyle.has(style))
-    return serilizedCssStyle.get(style);
+  let key = "styleId" in style ? style["styleId"] : (style["styleId"] = newId())
+  key += Object.keys(style).length;
+
+  if (serilizedCssStyle.has(key)) {
+    return serilizedCssStyle.get(key);
+  }
+
   let sItem = {};
   let fn = (s: any, parentKey: string) => {
     let item = {};
-    if (
-      typeof s !== "object" ||
-      typeof s === "string" ||
-      Array.isArray(s)
-    )
+    if (typeof s !== "object" || typeof s === "string" || Array.isArray(s))
       return s;
     for (let k in s) {
-      if (has(k, "$")) {
+      if (k && k.indexOf("$") != -1) {
         let pKey = `${parentKey}.${cleanKey(k)}`;
         sItem[pKey] = fn(s[k], pKey);
         continue;
@@ -123,14 +124,16 @@ export const serilizeCssStyle = (style: any) => {
     let ck = cleanKey(k);
     sItem[ck] = fn(style[k], ck);
   }
-  //sItem = { ...sItem, ...themeStyle() }
-  serilizedCssStyle.set(style, sItem);
-  //console.warn("themeStyle", sItem)
+  serilizedCssStyle.set(key, sItem);
   return sItem;
 };
 
 export const clearCss = (id: string) => {
   cachedCss.delete(id)
+}
+
+export const clearAll = () => {
+  cachedCss.clear();
 }
 
 const css_translator = (
@@ -142,6 +145,7 @@ const css_translator = (
   if (!css || css.length <= 0) return {};
   id = id ?? css;
   css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
+  if (!css || css.length <= 0) return {};
 
   if (cachedCss.has(id))
     return cachedCss.get(id);
@@ -151,12 +155,11 @@ const css_translator = (
     CSS = serilizeCssStyle(styleFile);
 
   let cssItem = {};
-  for (let c of css.split(" ").filter(x => x.trim().length > 0)) {
+  let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
+  for (let c of items) {
     if (has(c, ":")) {
       let k = splitSafe(c, ":", 0);
-      let value = checkObject(
-        checkNumber(splitSafe(c, ":", 1))
-      );
+      let value = checkObject(checkNumber(splitSafe(c, ":", 1)));
 
       if (has(value, "undefined") || has(value, "null"))
         value = undefined;

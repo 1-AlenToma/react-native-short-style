@@ -2,8 +2,8 @@ import { ThemeContext, globalData, InternalThemeContext } from "./ThemeContext";
 import * as React from "react";
 import { IThemeContext } from "../Typse";
 import StateBuilder from "react-smart-state";
-import { newId } from "../config/Methods";
-import { View } from "../components";
+import { newId, clearAllCss } from "../config/Methods";
+import { View, AlertView } from "../components";
 
 
 const StaticView = () => {
@@ -56,8 +56,9 @@ const ThemeInternalContainer = ({ children }: any) => {
             <View onLayout={({ nativeEvent }) => {
                 state.containerSize.height = nativeEvent.layout.height;
                 state.containerSize.width = nativeEvent.layout.width;
-            }} style={{ backgroundColor: "transparent", flex: 1 }}>
+            }} style={{ backgroundColor: "transparent", flex: 1, width:"100%", height:"100%" }}>
                 <StaticView />
+                <AlertView />
                 {children}
             </View>
         </InternalThemeContext.Provider>
@@ -65,16 +66,15 @@ const ThemeInternalContainer = ({ children }: any) => {
 }
 
 export const ThemeContainer = (props: IThemeContext & { children: any }) => {
-
     globalData.hook("window");
     React.useEffect(() => {
         let events = globalData.appStart();
-
         return () => events.forEach(x => x.remove());
     }, [])
 
-
-
+    React.useEffect(()=> {
+        clearAllCss();
+    },[props.selectedIndex])
 
     return (
         <ThemeContext.Provider value={props}>

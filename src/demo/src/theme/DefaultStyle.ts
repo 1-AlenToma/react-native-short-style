@@ -226,7 +226,12 @@ export const defaultTheme = {
 export const ComponentsStyles = {
   blur: "topPostion zi:100 fl:1 juc:center ali:center bac:#000 op:.5",
   topPostion: "po:absolute to:0 le:0 wi:100% he:100% bac:transparent",
-  modalDefaultStyle: "pa:10 zi:2 wi:50% he:50% bor:5 bow:1 boc:gray",
+  modalDefaultStyle: "pa:10 zi:2 wi:50% mih:20% bor:5 bow:1 boc:gray",
   abc: "position:absolute",
-  overflow: "overflow:hidden"
+  overflow: "overflow:hidden",
+  checkBox: "fld:row di:flex juc:center ali:center",
+  "checkBox.View": "wi:25 he:25 bor:2 bow:.5 boc:gray juc:center ali:center",
+  checkBox_Right: "mar:5",
+  checkBox_Left: "mal:5",
+  checkBox_checked: "bac:rgb(70 70 70)" 
 }

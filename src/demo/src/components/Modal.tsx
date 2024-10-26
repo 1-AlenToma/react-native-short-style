@@ -60,7 +60,7 @@ export const Modal = (props: ModalProps) => {
                         if (!props.disableBlurClick)
                             toggle(false);
                     }} css="blur zi:1" />
-                    <AnimatedView {...props} css={`modalDefaultStyle ${props.css ?? ""}`} style={[...style,
+                    <AnimatedView {...props} css={`modalDefaultStyle sh-sm overflow ${props.css ?? ""}`} style={[...style,
                     {
                         transform: [
                             {

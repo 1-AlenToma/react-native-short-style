@@ -21,9 +21,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
     let getHeight = () => {
         let h = props.height;
         if ((typeof h === "string")) {
-            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "")),globalData.screen.height);
+            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), globalData.screen.height);
         }
-       // if (typeof h === "number" && h < 400) h = 400;
 
         return Math.min(h, proc(context.containerSize().height, 80));
 
@@ -70,8 +69,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
                 state.refItem.isVisible = props.isVisible;
                 if (state.refItem.isVisible && !show) {
                     props.onHide?.();
-                    renderUpdate();
-                } else renderUpdate();
+                }
+                renderUpdate();
             }
         );
     };
@@ -168,9 +167,9 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         toggle(false);
                 }} css="blur zi:1" />
                 <AnimatedView
-                    
+
                     onTouchEnd={() => {
-                    
+
                         state.refItem.isTouched = false;
 
                     }}
@@ -193,8 +192,9 @@ export const ActionSheet = (props: ActionSheetProps) => {
                     <View
                         css="clearboth pa:10 flex:1">
                         <Handle
-                            onPressIn={()=>  state.refItem.isTouched = true}
-                            onPressOut={()=>  state.refItem.isTouched = false }
+                            activeOpacity={1}
+                            onPressIn={() => state.refItem.isTouched = true}
+                            onPressOut={() => state.refItem.isTouched = false}
                             css="he:10 zi:1 fg:1 overflow"
                             onTouchStart={() => {
                                 state.refItem.isTouched = true;
@@ -214,7 +214,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                                 />
                             </TouchableOpacity>
                         </Handle>
-                        <View ifTrue={() => state.refItem.show} css="flex:1 fg:1 zi:5 maw:99% overflow mat:5">
+                        <View ifTrue={() => state.refItem.show || !props.lazyLoading} css="flex:1 fg:1 zi:5 maw:99% overflow mat:5">
                             {props.children}
                         </View>
                     </View>
@@ -225,7 +225,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
 
     React.useEffect(() => {
         renderUpdate();
-    }, [props.children, props.height, props.css, props.disableBlurClick, props.style]);
+    }, [props.children, props.isVisible, props.height, props.css, props.disableBlurClick, props.style]);
 
     return null;
 };

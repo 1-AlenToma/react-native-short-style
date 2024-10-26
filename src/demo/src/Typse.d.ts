@@ -10,6 +10,7 @@ export type ICSS = {
 export type StyledProps = {
     css?: string;
     ifTrue?: ((() => boolean) | boolean);
+    style?: ViewStyle;
 };
 
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";
@@ -82,10 +83,17 @@ export type EventListener = {
     remove: () => void;
 }
 
+export type CssSize = "xs" | "sm" | "full";
+
 export type GlobalState = {
     screen: Size;
     window: Size;
     appStart: () => EventListener[];
+    alertViewData: {
+        alert: (props: AlertViewProps) => void;
+        confirm: (props: AlertViewProps) => Promise<boolean>;
+        data?: AlertViewFullProps;
+    }
 }
 
 type Percentage = `${number}%` | number
@@ -101,5 +109,47 @@ export type ModalProps = {
 }
 
 export type ActionSheetProps = ModalProps & {
-    height: Percentage
+    height: Percentage;
+    lazyLoading?: boolean;
 }
+
+
+export type AlertViewAlertProps = {
+    message: string;
+    size?: CssSize;
+    title?: string;
+    okText?: string;
+}
+
+export type AlertViewProps = AlertViewAlertProps & {
+
+    yesText?: string;
+    cancelText?: string;
+
+}
+
+
+export type AlertViewFullProps = AlertViewProps & {
+    callBack?: (answer: boolean) => void;
+}
+
+
+export type CheckBoxProps = StyledProps & {
+    onChange?: (isChecked: boolean) => void;
+    label?: string;
+    checked: boolean;
+    disabled?: boolean;
+    selectionType?: "CheckBox" | "Radio" = "CheckBox";
+    checkBoxType?: "CheckBox" | "RadioButton" | "Switch" = "CheckBox";
+    swtichColor?: { false: ColorValue, true: ColorValue }
+    labelPostion?: "Right" | "Left"
+    
+}
+
+export type ICheckBox = <T>(props: T) => React.ReactNode;
+
+export type CheckBoxListProps = {
+    onChange: (checkBoxes: { checked: boolean, checkBoxIndex: number }[]) => void;
+    label?: string;
+    children: ICheckBox<Omit<CheckBoxProps, "selectionType" | "checkBoxType" | "onChange">> | ICheckBox<Omit<CheckBoxProps, "selectionType" | "checkBoxType" | "onChange">>[];
+} & Omit<CheckBoxProps, "checked" | "onChange">

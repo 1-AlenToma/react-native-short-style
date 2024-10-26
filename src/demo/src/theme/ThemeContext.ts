@@ -11,11 +11,23 @@ export const ThemeContext = React.createContext({
 export const InternalThemeContext = React.createContext({
     add: (id: string, element: React.ReactNode) => { },
     remove: (id: string) => { },
-    totalItems:()=> 1
+    totalItems: () => 1
 } as internalThemeContext)
 
 
 export const globalData = StateBuilder<GlobalState>({
+    alertViewData: {
+        data: undefined,
+        alert: (props) => {
+            globalData.alertViewData.data = props;
+        },
+        confirm: (props) => {
+            globalData.alertViewData.data = props;
+            return new Promise<boolean>((r) => {
+                globalData.alertViewData.data.callBack = r;
+            });
+        }
+    },
     screen: Dimensions.get("screen"),
     window: Dimensions.get("window"),
     appStart: () => {
@@ -31,4 +43,4 @@ export const globalData = StateBuilder<GlobalState>({
             windowChangeEvent
         ]
     }
-}).globalBuild();
+}).ignore("alertViewData.data").globalBuild();

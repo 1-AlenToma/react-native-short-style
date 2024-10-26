@@ -5,7 +5,7 @@ import * as React from "react";
 import * as reactNative from "react-native";
 import { getClasses, ifSelector, newId, currentTheme } from "../config/Methods"
 import buildState from 'react-smart-state';
-import { ThemeContext } from "../theme";
+import { ThemeContext } from "../theme/ThemeContext";
 import { ICSSContext, StyledProps } from "../Typse";
 
 let toArray = (item: any) => {
@@ -79,36 +79,30 @@ let StyledWrapper = React.forwardRef(
     let themecontext = React.useContext(ThemeContext);
     const styleFile = currentTheme(themecontext);
     const state = buildState({
-      updater: "",
       id: newId(),
       refItem: {
         style: undefined,
         css: css,
-        newCss: css,
+        newCss: undefined,
         pk: undefined,
         selectedThemeIndex: themecontext.selectedIndex,
         childrenIds: []
       }
     }).ignore("refItem").build();
 
+    if (state.refItem.css != css || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
+      state.refItem.style = undefined;
+      state.refItem.css = css;
+      state.refItem.selectedThemeIndex = themecontext.selectedIndex;
+      // state.updater = newId();
+    }
+
+
 
     const validKeyStyle = View.displayName
       ? allowedKeys[View.displayName]
       : undefined;
     const position = ec.registerChild?.(state.id, View.displayName ?? parentName) ?? undefined;
- 
-    React.useEffect(() => {
-      if (state.refItem.css != css || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
-        state.refItem.style = undefined;
-        state.refItem.selectedThemeIndex = themecontext.selectedIndex;
-        state.updater = newId();
-      }
-
-      return () => {
-        clearCss(state.id);
-
-      }
-    }, [css, themecontext.selectedIndex]);
 
     React.useEffect(() => {
       () => {
@@ -126,7 +120,6 @@ let StyledWrapper = React.forwardRef(
 
       let cpyCss = new CSS(styleFile, css);
       if (position != undefined && pk.length > 0) {
-        // console.warn(`${pk}[${position}]`)
         cpyCss.prepend(`${pk}[${position}]`);
 
       }
@@ -140,17 +133,18 @@ let StyledWrapper = React.forwardRef(
           )
         );
         state.refItem.newCss = cpyCss.toString();
+
       }
       let tCss = cssTranslator(
         cpyCss.toString(),
         styleFile,
-        validKeyStyle,
-        state.id
+        validKeyStyle
       );
       if (tCss) sArray.push(tCss);
       state.refItem.style = sArray;
       state.refItem.pk = pk;
     }
+
 
     const cValue = {
       parentKey: () => {
@@ -161,7 +155,7 @@ let StyledWrapper = React.forwardRef(
           state.refItem.childrenIds.push({ id, name })
         return { index: state.refItem.childrenIds.findIndex(x => x.id == id && x.name == name) + 1, name };
       },
-      deleteChild: (id: string) => delete state.refItem.childrenIds[id],
+      deleteChild: (id: string) => state.refItem.childrenIds = state.refItem.childrenIds.filter(x => x.id != id),
       parentClassNames: (
         name: string,
         pk: string,
@@ -174,13 +168,13 @@ let StyledWrapper = React.forwardRef(
         for (let s of ss.classes()) {
           let m = ` ${s}.${name}`;
           c.add(m);
-         /* if (elementPosition != undefined) {
-            c.add(`${s}.${name}[${elementPosition.index}]`)
-          }*/ // not sure how to implement this yet 
         }
         return c.toString();
       }
     };
+
+    if (ifSelector((props as any).ifTrue) === false)
+      return null;
 
     return (
       <CSSContext.Provider value={cValue}>
@@ -207,8 +201,8 @@ const Styleable = function <T>(
   if (!identifier || identifier.trim().length <= 1)
     throw "react-native-short-style needs an identifier"
   let fn = React.forwardRef((props, ref) => {
-    if (ifSelector((props as any).ifTrue) === false)
-      return null;
+
+
     let pr = {
       View,
       parentName: identifier
