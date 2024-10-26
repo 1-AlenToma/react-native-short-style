@@ -17,8 +17,9 @@
     "test": "tsc  && jest tsx ./dist/test/Methods.test.js"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
-    "react-native": "^0.75.4"
+    "react": "*",
+    "react-native": "*",
+    "@expo/vector-icons": "*"
   },
   "devDependencies": {
     "@types/node": "18.11.9",
@@ -29,5 +30,8 @@
   "files": [
     "dist",
     "./"
-  ]
+  ],
+  "dependencies": {
+    "react-smart-state": "^1.0.2"
+  }
 }

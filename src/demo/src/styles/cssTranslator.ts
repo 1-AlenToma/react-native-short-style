@@ -1,12 +1,14 @@
 const cachedCss = new Map();
-import reactnativeStyles from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
-let styleKeys = Object.keys(reactnativeStyles);
+import { StylesAttributes } from "./validStyles";
+import { themeStyle } from "../config/Methods";
 
-let shortCss : (any[] | undefined) = undefined;
+let styleKeys = [...StylesAttributes]
+
+let shortCss: (any[] | undefined) = undefined;
 const buildShortCss = () => {
   if (shortCss) return shortCss;
   shortCss = [];
-  let keyExceptions :any = {
+  let keyExceptions: any = {
     marginBlock: "maBl",
     paddingBlock: "paBl",
     borderBlockColor: "boBCo",
@@ -15,7 +17,7 @@ const buildShortCss = () => {
     marginHorizontal: "maHo"
   };
   for (let k of styleKeys) {
-    let shortKey : string|null = null;
+    let shortKey: string | null = null;
     if (keyExceptions[k])
       shortKey = keyExceptions[k];
     else
@@ -57,12 +59,7 @@ const has = (s: string, char: string) => {
   return (
     s &&
     char &&
-    s
-      .toString()
-      .toUpperCase()
-      .indexOf(char.toString().toUpperCase()) !==
-      -1
-  );
+    s.toString().toUpperCase().indexOf(char.toString().toUpperCase()) !== -1);
 };
 
 const checkNumber = (value: string) => {
@@ -75,7 +72,7 @@ const checkObject = (value: string) => {
   try {
     if (/\{|\}|\[|\]/g.test(value))
       return eval(value);
-  } catch (e) {}
+  } catch (e) { }
   return value;
 };
 
@@ -95,7 +92,7 @@ const cleanStyle = (
   return item;
 };
 
-const cleanKey = (k:string) => {
+const cleanKey = (k: string) => {
   return has(k, "$") ? k.substring(1) : k;
 };
 let serilizedCssStyle = new Map();
@@ -126,43 +123,44 @@ export const serilizeCssStyle = (style: any) => {
     let ck = cleanKey(k);
     sItem[ck] = fn(style[k], ck);
   }
+  //sItem = { ...sItem, ...themeStyle() }
   serilizedCssStyle.set(style, sItem);
+  //console.warn("themeStyle", sItem)
   return sItem;
 };
+
+export const clearCss = (id: string) => {
+  cachedCss.delete(id)
+}
 
 const css_translator = (
   css?: string,
   styleFile?: any,
-  propStyle?: any
+  propStyle?: any,
+  id?: string
 ) => {
   if (!css || css.length <= 0) return {};
-  if (cachedCss.has(css))
-    return cachedCss.get(css);
+  id = id ?? css;
+  css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
+
+  if (cachedCss.has(id))
+    return cachedCss.get(id);
   let shortk = buildShortCss();
   let CSS = {};
   if (styleFile)
     CSS = serilizeCssStyle(styleFile);
 
   let cssItem = {};
-  for (let c of css
-    .split(" ")
-    .filter(x => x.trim().length > 0)) {
+  for (let c of css.split(" ").filter(x => x.trim().length > 0)) {
     if (has(c, ":")) {
       let k = splitSafe(c, ":", 0);
       let value = checkObject(
         checkNumber(splitSafe(c, ":", 1))
       );
 
-      if (
-        has(value, "undefined") ||
-        has(value, "null")
-      )
+      if (has(value, "undefined") || has(value, "null"))
         value = undefined;
-      let short = shortk.find(
-        x => x[k.toLowerCase()] !== undefined
-      );
-      //if (k == "mab")
-       // console.log(k, value, short);
+      let short = shortk.find(x => x[k.toLowerCase()] !== undefined);
       if (short) {
         if (!propStyle || propStyle[short.key])
           cssItem[short.key] = value;
@@ -172,11 +170,7 @@ const css_translator = (
 
     let style = CSS[c];
     if (typeof style === "string")
-      style = css_translator(
-        style,
-        styleFile,
-        propStyle
-      );
+      style = css_translator(style, styleFile, propStyle);
     if (style) {
       cssItem = {
         ...cssItem,
@@ -185,10 +179,7 @@ const css_translator = (
       continue;
     }
   }
-  cachedCss.set(css, cssItem);
-  /*console.error(
-    JSON.stringify({ css, cssItem, CSS }, null, 4)
-  );*/
+  cachedCss.set(id, cssItem);
   return cssItem;
 };
 

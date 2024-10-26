@@ -23,10 +23,11 @@
   },
   "include": [
     "./**/*",
-    "./test/*"
+    "./test/*",
+    "./demo/src/*"
   ],
   "exclude": [
     "node_modules",
-    "example"
+    "demo"
   ]
 }

@@ -2,7 +2,7 @@ import {
   Styleable,
   NestedStyleSheet,
   cssTranslator
-} from "./styles";
+} from "./example/src/styles";
 
 export  {
   Styleable,
