@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as Icons from "@expo/vector-icons";
 import { IConProps } from "../Typse";
-import { ifSelector } from "../config/Methods";
 import { CreateView } from "./ReactNativeComponents";
 
 let styledItems = {};

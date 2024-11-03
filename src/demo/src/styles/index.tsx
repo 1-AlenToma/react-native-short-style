@@ -5,8 +5,8 @@ import * as React from "react";
 import * as reactNative from "react-native";
 import { getClasses, ifSelector, newId, currentTheme } from "../config/Methods"
 import buildState from 'react-smart-state';
-import { ThemeContext } from "../theme/ThemeContext";
-import { ICSSContext, StyledProps } from "../Typse";
+import { ThemeContext, globalData } from "../theme/ThemeContext";
+import { ICSSContext, InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
 
 let toArray = (item: any) => {
   if (!item) return [];
@@ -23,6 +23,8 @@ class CSS {
 
   add(...keys: string[]) {
     for (let k of keys) {
+      if (!k || k == "undefined")
+        continue;
       if (k.trim().endsWith(".") || k.trim().length == 0)
         continue;
       k = k.trim();
@@ -35,6 +37,8 @@ class CSS {
 
   prepend(...keys: string[]) {
     for (let k of keys) {
+      if (!k || k == "undefined")
+        continue;
       if (k.trim().endsWith(".") || k.trim().length == 0)
         continue;
       k = k.trim();
@@ -62,39 +66,94 @@ class CSS {
 }
 
 
+class InternalStyledContext {
+  props: InternalStyledProps;
+  prevContext: InternalStyledContext;
+  styleFile: any;
+  elementposition: number = 0;
+  generatedStyle: any;
+  prevCSS?: string;
+  cpyCss: string;
+  update(props: InternalStyledProps, styleFile: any, prevContext?: InternalStyledContext) {
+    this.props = props;
+    this.prevContext = prevContext;
+    this.styleFile = styleFile;
+  }
 
-let CSSContext = React.createContext<ICSSContext>({} as any);
+  changed() {
+    return this.props.css !== this.prevCSS || this.prevContext.changed?.();
+  }
+
+  position() {
+    let name = this.viewPath();
+  }
+
+  viewName() {
+    return this.props.viewPath;
+  }
+
+  viewPath() {
+    let pk = this.prevContext?.viewPath ? this.prevContext.viewPath() ?? "" : "";
+    if (pk.length > 0 && !pk.endsWith("."))
+      pk += ".";
+    pk += this.props.viewPath ?? "";
+    return pk;
+  }
+
+  classNames() {
+    let classNames = getClasses(this.props.css, this.styleFile);
+    return classNames;
+  }
+
+  join() {
+    if (!this.changed())
+      return this.cpyCss;
+    let name = this.viewName();
+    let parent = new CSS(this.styleFile, this.prevContext.join?.()).prepend(name, this.viewPath()).add(this.props.css);
+    let cpyCss = new CSS(this.styleFile, this.props.css).prepend(name, this.viewPath());
+    for (let s of parent.classes()) {
+      let m = ` ${s}.${name}`;
+      cpyCss.add(m);
+    }
+
+    this.prevCSS = this.props.css;
+
+    return (this.cpyCss = cpyCss.toString());
+  }
+}
+
+
+let CSSContext = React.createContext<InternalStyledContext>({} as any);
 let StyledWrapper = React.forwardRef(
-  (
-    {
-      View,
-      parentName,
+  (props: InternalStyledProps, ref) => {
+    const { View,
+      viewPath,
+      fullParentPath,
       style,
       css,
-      ...props
-    }: any,
-    ref
-  ) => {
+      classNames
+    } = props;
     let ec = React.useContext(CSSContext);
     let themecontext = React.useContext(ThemeContext);
     const styleFile = currentTheme(themecontext);
     const state = buildState({
       id: newId(),
+      contextValue: new InternalStyledContext(),
       refItem: {
         style: undefined,
-        css: css,
-        newCss: undefined,
-        pk: undefined,
         selectedThemeIndex: themecontext.selectedIndex,
-        childrenIds: []
+        childrenIds: [],
       }
-    }).ignore("refItem").build();
+    }).ignore("refItem", "contextValue").build();
+    state.contextValue.update(props, styleFile, ec)
+    const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
+    if (isText)
+      globalData.hook("activePan")
 
-    if (state.refItem.css != css || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
+    if (state.contextValue.changed() || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
       state.refItem.style = undefined;
-      state.refItem.css = css;
+      state.contextValue.prevCSS = undefined;
       state.refItem.selectedThemeIndex = themecontext.selectedIndex;
-      // state.updater = newId();
     }
 
 
@@ -102,87 +161,37 @@ let StyledWrapper = React.forwardRef(
     const validKeyStyle = View.displayName
       ? allowedKeys[View.displayName]
       : undefined;
-    const position = ec.registerChild?.(state.id, View.displayName ?? parentName) ?? undefined;
+
 
     React.useEffect(() => {
       () => {
-        ec.deleteChild?.(state.id);
+
       }
     });
 
-    let pk = "";
-    pk = ec.parentKey ? ec.parentKey() : "";
-    if (pk.length > 0 && !pk.endsWith("."))
-      pk += ".";
-    pk += parentName;
     if (styleFile && state.refItem.style == undefined) {
       let sArray = [];
+      let cpyCss = state.contextValue.join();
 
-      let cpyCss = new CSS(styleFile, css);
-      if (position != undefined && pk.length > 0) {
-        cpyCss.prepend(`${pk}[${position}]`);
-
-      }
-      cpyCss.prepend(parentName, pk);
-      if (ec.parentClassNames) {
-        cpyCss.add(
-          ec.parentClassNames(
-            parentName,
-            cpyCss.toString(),
-            position
-          )
-        );
-        state.refItem.newCss = cpyCss.toString();
-
-      }
       let tCss = cssTranslator(
-        cpyCss.toString(),
+        cpyCss,
         styleFile,
         validKeyStyle
       );
       if (tCss) sArray.push(tCss);
       state.refItem.style = sArray;
-      state.refItem.pk = pk;
     }
-
-
-    const cValue = {
-      parentKey: () => {
-        return pk;
-      },
-      registerChild: (id: string, name: string) => {
-        if (!state.refItem.childrenIds.find(x => x.id == id && x.name == name))
-          state.refItem.childrenIds.push({ id, name })
-        return { index: state.refItem.childrenIds.findIndex(x => x.id == id && x.name == name) + 1, name };
-      },
-      deleteChild: (id: string) => state.refItem.childrenIds = state.refItem.childrenIds.filter(x => x.id != id),
-      parentClassNames: (
-        name: string,
-        pk: string,
-        elementPosition: { index: number, name: string }
-      ) => {
-        let ss = new CSS(styleFile, state.refItem.newCss).add(pk);
-        if (!css) return "";
-        let c = new CSS(styleFile);
-
-        for (let s of ss.classes()) {
-          let m = ` ${s}.${name}`;
-          c.add(m);
-        }
-        return c.toString();
-      }
-    };
 
     if (ifSelector((props as any).ifTrue) === false)
       return null;
 
     return (
-      <CSSContext.Provider value={cValue}>
+      <CSSContext.Provider value={state.contextValue}>
         <View
           {...props}
           ref={ref}
-          parentName={pk}
           style={[
+            isText && globalData.activePan ? { userSelect: "none" } : {},
             ...toArray(state.refItem.style),
             ...toArray(style)
           ]}
@@ -201,11 +210,9 @@ const Styleable = function <T>(
   if (!identifier || identifier.trim().length <= 1)
     throw "react-native-short-style needs an identifier"
   let fn = React.forwardRef((props, ref) => {
-
-
     let pr = {
       View,
-      parentName: identifier
+      viewPath: identifier
     };
 
     return (

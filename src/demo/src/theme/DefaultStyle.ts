@@ -124,7 +124,13 @@ export const defaultTheme = {
   },
 
   shadow: {
-    none: {},
+    none: {
+      shadowColor: undefined,
+      shadowOffset: undefined,
+      shadowOpacity: undefined,
+      shadowRadius: undefined,
+      elevation: undefined
+    },
     xs: {
       shadowColor: "#000",
       shadowOffset: {
@@ -233,5 +239,21 @@ export const ComponentsStyles = {
   "checkBox.View": "wi:25 he:25 bor:2 bow:.5 boc:gray juc:center ali:center",
   checkBox_Right: "mar:5",
   checkBox_Left: "mal:5",
-  checkBox_checked: "bac:rgb(70 70 70)" 
+  checkBox_checked: "bac:rgb(70 70 70)",
+  actionSheet: "zi:2 to:0 overflow abc le:.5% overflow juc:flex-start",
+  actionSheet_Bottom: "wi:99% mah:80% botlw:.5 botrw:.5 boTLR:15 botrr:15",
+  actionSheet_Top: "mah:80% wi:99% boblw:.5 bobrw:.5 boblr:15 bobrr:15",
+  actionSheet_Left: "mah:99% maw:80% to:.5% le:0 botlw:.5 botrw:.5 bobrR:15 botrr:15",
+  actionSheet_Right: "mah:99% maw:80% to:.5% le:0 ri:0 botrw:.5 botlw:.5 boblR:15 botlr:15",
+  actionSheet_vertical_handle: "he:10 zi:1 fg:1 overflow",
+  actionSheet_horizontal_handle: "he:100% wi:10 overflow",
+  actionSheet_vertical_handle_Button: "juc:center ali:center bor:5 zi:1 to:0 wi:40 he:10 bac:gray overflow juc:center ali:center absolute le:45%",
+  actionSheet_horizontal_handle_Button: "juc:center ali:center abc bor:5 to:50% ri:0 he:40 wi:10 bac:gray",
+  menuItem: "juc:center ali:center fl:1 he:40",
+  menuItemText: "tt:uppercase als:center",
+  tabBarContainer: "wi:100% he:100% fl:1 fld:row di:flex po:relative bac:transparent",
+  tabBarContainerView: "po:relative miw:100% fld:row juc:space-between ali:center mah:40 he:40 fl:0 flg:1 bac:transparent",
+  tabBar: "wi:100% he:100% fl:1 overflow",
+  progressBar: "flex wi:100% he:20 zi:5 juc:center overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
+  progressBarAnimatedView: "zi:2 abc to:0 le:-100% wi:100% he:100% op:0.8"
 }

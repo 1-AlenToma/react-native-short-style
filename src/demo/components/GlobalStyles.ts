@@ -3,9 +3,8 @@ import { NestedStyleSheet } from "../src";
 
 export default NestedStyleSheet.create({
     Text: "wi:100%",
-    container: "fl:1 ali:center juc:center",
+    container: "fl:1",
     "container.Text": "fow:bold tea:center",
-    "container.TouchableOpacity[2]": "fow:normal co:red bac:red",
     default: {
         fontSize: 16,
         lineHeight: 24,

@@ -9,20 +9,37 @@ export const ThemeContext = React.createContext({
 } as IThemeContext);
 
 export const InternalThemeContext = React.createContext({
-    add: (id: string, element: React.ReactNode) => { },
+    add: (id: string, element: React.ReactNode, isStattic?: boolean) => { },
     remove: (id: string) => { },
     totalItems: () => 1
 } as internalThemeContext)
 
 
 export const globalData = StateBuilder<GlobalState>({
+    activePan: false,
     alertViewData: {
         data: undefined,
+        toastData: undefined,
+        toast: (props) => {
+            if (typeof props == "object")
+                globalData.alertViewData.toastData = props;
+            else globalData.alertViewData.toastData = {
+                message: props
+            }
+        },
         alert: (props) => {
-            globalData.alertViewData.data = props;
+            if (typeof props == "object")
+                globalData.alertViewData.data = props;
+            else globalData.alertViewData.data = {
+                message: props
+            }
         },
         confirm: (props) => {
-            globalData.alertViewData.data = props;
+            if (typeof props == "object")
+                globalData.alertViewData.data = props;
+            else globalData.alertViewData.data = {
+                message: props
+            }
             return new Promise<boolean>((r) => {
                 globalData.alertViewData.data.callBack = r;
             });
@@ -43,4 +60,4 @@ export const globalData = StateBuilder<GlobalState>({
             windowChangeEvent
         ]
     }
-}).ignore("alertViewData.data").globalBuild();
+}).ignore("alertViewData.data", "alertViewData.toastData").globalBuild();

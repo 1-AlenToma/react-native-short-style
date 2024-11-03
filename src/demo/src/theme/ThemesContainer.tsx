@@ -3,17 +3,19 @@ import * as React from "react";
 import { IThemeContext } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { newId, clearAllCss } from "../config/Methods";
-import { View, AlertView } from "../components";
+import { View, AlertView, ToastView } from "../components";
 
 
-const StaticView = () => {
+const StaticFullView = () => {
     const context = React.useContext(InternalThemeContext);
     const state = StateBuilder({
         updater: ""
     }).build();
 
-    context.onChange = () => state.updater = newId();
-    const items: any[] = [...context.items().values()];
+    context.onItemsChange = () => {
+        state.updater = newId();
+    }
+    const items: any[] = [...context.items().items.values()];
 
 
     return (
@@ -21,6 +23,22 @@ const StaticView = () => {
             {items}
         </View>
     )
+}
+
+const StaticView = () => {
+    const context = React.useContext(InternalThemeContext);
+    const state = StateBuilder({
+        updater: ""
+    }).build();
+
+    context.onStaticItemsChange = () => {
+        state.updater = newId();
+
+    }
+    const items: any[] = [...context.items().staticItems.values()];
+
+
+    return (items)
 
 
 }
@@ -28,23 +46,42 @@ const StaticView = () => {
 const ThemeInternalContainer = ({ children }: any) => {
     const state = StateBuilder({
         items: new Map(),
-        containerSize: { height: 0, width: 0 }
+        staticItems: new Map(),
+        containerSize: { height: 0, width: 0, y: 0, x: 0 }
     }).ignore("items", "containerSize").build();
 
     const contextValue = {
-        add: (id: string, element: React.ReactNode) => {
-            state.items.set(id, element);
-            contextValue.onChange?.();
+        add: (id: string, element: React.ReactNode, isStattic?: boolean) => {
+            if (!isStattic)
+                state.items.set(id, element);
+            else
+                state.staticItems.set(id, element);
+
+            if (!isStattic)
+                contextValue.onItemsChange?.();
+            else
+                contextValue.onStaticItemsChange?.();
         },
         remove: (id: string) => {
-            let has = state.items.has(id);
-            state.items.delete(id);
-            if (has)
-                contextValue.onChange?.();
+            let hasItems = state.items.has(id);
+            let hasStatic = state.staticItems.has(id);
+            if (hasItems)
+                state.items.delete(id);
+            if (hasStatic)
+                state.staticItems.delete(id);
+
+            if (hasItems)
+                contextValue.onItemsChange?.();
+            if (hasStatic)
+                contextValue.onStaticItemsChange?.();
         },
         totalItems: () => state.items.size,
-        items: () => state.items,
-        onChange: () => { },
+        items: () => {
+            return { items: state.items, staticItems: state.staticItems }
+        },
+        staticItems: () => state.staticItems,
+        onItemsChange: () => { },
+        onStaticItemsChange: () => { },
         containerSize: () => state.containerSize
 
     }
@@ -56,8 +93,12 @@ const ThemeInternalContainer = ({ children }: any) => {
             <View onLayout={({ nativeEvent }) => {
                 state.containerSize.height = nativeEvent.layout.height;
                 state.containerSize.width = nativeEvent.layout.width;
-            }} style={{ backgroundColor: "transparent", flex: 1, width:"100%", height:"100%" }}>
+                state.containerSize.y = nativeEvent.layout.y;
+                state.containerSize.x = nativeEvent.layout.x;
+            }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
+                <StaticFullView />
                 <StaticView />
+                <ToastView />
                 <AlertView />
                 {children}
             </View>
@@ -72,9 +113,9 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         return () => events.forEach(x => x.remove());
     }, [])
 
-    React.useEffect(()=> {
+    React.useEffect(() => {
         clearAllCss();
-    },[props.selectedIndex])
+    }, [props.selectedIndex])
 
     return (
         <ThemeContext.Provider value={props}>

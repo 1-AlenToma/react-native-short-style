@@ -1,7 +1,7 @@
 import { Icon } from "./Icon";
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import { InternalThemeContext, globalData } from "../theme/ThemeContext";
-import { useAnimate } from "../hooks";
+import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
 import { Platform } from "react-native";
 import { newId, proc } from "../config/Methods";
@@ -18,20 +18,25 @@ import {
 } from "react-native";
 import { ActionSheetProps } from "../Typse";
 export const ActionSheet = (props: ActionSheetProps) => {
+    let position = props.position;
+    if (props.position == undefined)
+        position = "Bottom";
+    const isVertical = ["Top", "Bottom"].includes(position);
     let getHeight = () => {
-        let h = props.height;
+        let h = props.size;
         if ((typeof h === "string")) {
-            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), globalData.screen.height);
+            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), isVertical ?
+                globalData.screen.height : globalData.screen.width);
         }
-
-        return Math.min(h, proc(context.containerSize().height, 80));
-
-    };
+        return Math.min(h, proc(isVertical ? context.containerSize().height : context.containerSize().width, 80));
+    }
 
     let context = useContext(InternalThemeContext);
-    globalData.hook("screen")
-    const { animateY, animate } = useAnimate({
-        y: -getHeight(),
+    //globalData.hook("screen");
+    const timer = useTimer(100);
+    const { animateY, animateX, animate } = useAnimate({
+        y: 0,
+        x: 0,
         speed: props.speed
     });
 
@@ -48,11 +53,42 @@ export const ActionSheet = (props: ActionSheetProps) => {
     }).ignore("refItem").build();
 
     const setSize = () => {
-        let containerHeight = Math.min(globalData.screen.height, context.containerSize().height)
-        let sheetHeight = Math.abs(containerHeight - getHeight())
-        state.refItem.interpolate = [containerHeight, sheetHeight].reverse();
+        let size = context.containerSize();
+        let containerHeight = Math.min(globalData.screen.height, size.height)
+        let sheetHeight = Math.abs(containerHeight - getHeight());
+
+        if (position == "Top") {
+            containerHeight = 0
+            sheetHeight = -(getHeight() - size.y);
+        }
+
+        if (position == "Left") {
+            containerHeight = -getHeight();
+            sheetHeight = 0;
+        }
+
+        if (position == "Right") {
+            containerHeight = Math.min(globalData.screen.width, size.width)
+            sheetHeight = Math.abs(containerHeight - getHeight());
+        }
+
+        state.refItem.interpolate = [containerHeight, sheetHeight];
+
     };
     setSize();
+
+    const firstValue = (show?: boolean) => {
+        let index = 1;
+        if (position == "Bottom" || position == "Right")
+            index = 0;
+        if (position == "Top" || position == "Left")
+            index = 1;
+        if (show == false && (position == "Bottom" || position == "Right"))
+            index = 1;
+        if (show == false && (position == "Top" || position == "Left"))
+            index = 0;
+        return state.refItem.interpolate[index]
+    }
 
     let toggle = async (show: boolean) => {
 
@@ -60,9 +96,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
             state.refItem.isVisible = props.isVisible;
             renderUpdate();
         }
-
-        animateY(
-            state.refItem.interpolate[!show ? 1 : 0],
+        setSize();
+        const fn = !isVertical ? animateX : animateY;
+        fn(
+            firstValue(show),
             () => {
                 state.refItem.panResponse = undefined;
                 state.refItem.show = show;
@@ -76,17 +113,15 @@ export const ActionSheet = (props: ActionSheetProps) => {
     };
 
     globalData.useEffect(() => {
-        setSize();
-        if (state.refItem.isVisible) {
-            state.refItem.panResponse = undefined;
-            renderUpdate();
-            //animate.flattenOffset();
-            animateY(
-                state.refItem.interpolate[0],
-                () => { },
-                0
-            );
-        }
+        timer(() => {
+            setSize();
+            if (state.refItem.isVisible) {
+                state.refItem.panResponse = undefined;
+                renderUpdate();
+                //animate.flattenOffset();
+                toggle(true)
+            }
+        })
     }, "screen");
 
 
@@ -100,8 +135,25 @@ export const ActionSheet = (props: ActionSheetProps) => {
         };
     }, []);
 
-    const renderUpdate = () => {
 
+    const renderUpdate = () => {
+        let Handle = Platform.OS == "web" ? TouchableOpacity : View;
+        const handle = (<Handle
+            activeOpacity={1}
+            onPressIn={() => state.refItem.isTouched = true}
+            onPressOut={() => state.refItem.isTouched = false}
+            css={!isVertical ? "actionSheet_horizontal_handle" : "actionSheet_vertical_handle"}
+            onTouchStart={() => {
+                state.refItem.isTouched = true;
+            }}>
+            <TouchableOpacity
+
+                onPress={() => {
+                    toggle(false);
+                }}
+                css={!isVertical ? "actionSheet_horizontal_handle_Button" : "actionSheet_vertical_handle_Button"}>
+            </TouchableOpacity>
+        </Handle>)
 
         if (!state.refItem.panResponse) {
             state.refItem.panResponse =
@@ -123,43 +175,61 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         e,
                         gestureState
                     ) => {
-                        state.refItem.startValue = gestureState.dy;
+                        if (!isVertical)
+                            state.refItem.startValue = gestureState.dx;
+                        else
+                            state.refItem.startValue = gestureState.dy;
                         animate.setValue({
-                            x: 0,
-                            y: state.refItem.interpolate[0]
+                            x: isVertical ? 0 : firstValue(),
+                            y: isVertical ? firstValue() : 0
                         });
                         animate.extractOffset();
                         return true;
                     },
-                    onPanResponderMove: Animated.event(
-                        [
-                            null,
-                            { dx: animate.x, dy: animate.y }
-                        ],
-                        { useNativeDriver: false }
-                    ),
+                    onPanResponderMove: (e, gestureState) => {
+                        if (!isVertical) {
+                            if (position == "Left")
+                                animate.x.setValue(gestureState.dx);
+                            else animate.x.setValue(-gestureState.dx)
+                        }
+                        else
+                            animate.y.setValue(-gestureState.dy);
+                    },
                     onPanResponderRelease: (
                         evt,
                         gestureState
                     ) => {
-                        let old = state.refItem.interpolate[0];
-                        let newValue = gestureState.dy;
+
+                        let old = firstValue();
+                        let newValue = !isVertical ? gestureState.dx : gestureState.dy;
                         let diff = newValue - state.refItem.startValue;
                         if (Math.abs(diff) > getHeight() / 3) {
+                            animate.flattenOffset();
                             toggle(false);
                         } else {
-                            animate.flattenOffset();
+                            //   animate.flattenOffset();
                             animateY(old); // reset to start value
                         }
                         return false;
                     }
                 });
         }
-        let inputRange = [
-            ...state.refItem.interpolate
-        ].sort((a, b) => a - b);
+        let inputRange = [...state.refItem.interpolate].sort((a, b) => a - b);
         let fn = state.refItem.isVisible ? context.add.bind(context) : context.remove.bind(context);
-        let Handle = Platform.OS == "web" ? TouchableOpacity : View;
+        let transform: any = {};
+        if (isVertical) {
+            transform.translateY = animate.y.interpolate({
+                inputRange: inputRange,
+                outputRange: state.refItem.interpolate,
+                extrapolate: "clamp"
+            })
+        } else {
+            transform.translateX = animate.x.interpolate({
+                inputRange: inputRange,
+                outputRange: state.refItem.interpolate,
+                extrapolate: "clamp"
+            })
+        }
         fn(state.id,
             <View key={state.id} css="blur op:1 bac:transparent" style={{ zIndex: context.totalItems() + 300 }}>
                 <TouchableOpacity onPress={() => {
@@ -169,63 +239,33 @@ export const ActionSheet = (props: ActionSheetProps) => {
                 <AnimatedView
 
                     onTouchEnd={() => {
-
                         state.refItem.isTouched = false;
-
                     }}
-                    css="zi:2 overflow abc mah:80% le:.5% overflow wi:99% juc:flex-start botlw:.5 botrw:.5 boTLR:15 botrr:15"
+                    css={`actionSheet actionSheet_${position}`}
                     style={[
                         {
-                            height: getHeight(),
-                            transform: [
-                                {
-                                    translateY:
-                                        animate.y.interpolate({
-                                            inputRange: inputRange,
-                                            outputRange: state.refItem.interpolate,
-                                            extrapolate: "clamp"
-                                        })
-                                }
-                            ]
+                            width: !isVertical ? getHeight() : "99%",
+                            height: isVertical ? getHeight() : "100%",
+                            transform: [transform]
                         },
                     ]}  {...state.refItem.panResponse.panHandlers}>
                     <View
+                        style={{ flexDirection: !isVertical ? "row" : undefined }}
                         css="clearboth pa:10 flex:1">
-                        <Handle
-                            activeOpacity={1}
-                            onPressIn={() => state.refItem.isTouched = true}
-                            onPressOut={() => state.refItem.isTouched = false}
-                            css="he:10 zi:1 fg:1 overflow"
-                            onTouchStart={() => {
-                                state.refItem.isTouched = true;
-                            }}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    toggle(false);
-                                }}
-                                css="juc:center ali:center bor:5 zi:1 to:0 wi:40 he:10 bac:gray overflow juc:center ali:center absolute le:45%">
-
-                                <Icon
-                                    css="bold"
-                                    type="Entypo"
-                                    name="chevron-small-down"
-                                    size={14}
-                                    color={"#fff"}
-                                />
-                            </TouchableOpacity>
-                        </Handle>
+                        {position == "Bottom" || position == "Right" ? handle : null}
                         <View ifTrue={() => state.refItem.show || !props.lazyLoading} css="flex:1 fg:1 zi:5 maw:99% overflow mat:5">
                             {props.children}
                         </View>
+                        {position == "Top" || position == "Left" ? handle : null}
                     </View>
                 </AnimatedView >
             </View>,
         );
-    };
+    }
 
     React.useEffect(() => {
         renderUpdate();
-    }, [props.children, props.isVisible, props.height, props.css, props.disableBlurClick, props.style]);
+    }, [props.children, props.isVisible, props.size, props.position, props.css, props.disableBlurClick, props.style]);
 
     return null;
 };

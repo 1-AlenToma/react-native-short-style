@@ -1,7 +1,33 @@
-import { serilizeCssStyle,  clearAll } from "../styles/cssTranslator";
+import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTranslator";
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
-import { AlertViewAlertProps, AlertViewProps, IThemeContext } from "../Typse";
+import { AlertViewAlertProps, AlertViewProps, IThemeContext, ToastProps } from "../Typse";
+
+export const readAble = function (nr: number | string) {
+    let nrs = nr?.toString().split(".") ?? [];
+    if (nrs.length <= 1) return nr;
+    if (/[1-9]/g.test(nrs[1])) return `${nrs[0]}.${nrs[1].substring(0, 2)}`;
+    return nr;
+};
+
+export const optionalStyle = (style: any) => {
+    if (style && Array.isArray(style) && typeof style == "object")
+        style = style.reduce((a, v) => {
+            if (v)
+                a = { ...a, ...v };
+            return a;
+        }, {});
+    let item = {
+        o: typeof style == "object" ? style ?? null : null,
+        c: typeof style == "string" ? style ?? "" : ""
+    }
+
+    return item;
+}
+
+export const renderCss = (css: string, style: any) => {
+    return css_translator(css, style);
+}
 
 export const currentTheme = (context: IThemeContext) => {
     let thisTheme = themeStyle();
@@ -12,7 +38,7 @@ export const currentTheme = (context: IThemeContext) => {
 
 }
 
-export const clearAllCss=()=> {
+export const clearAllCss = () => {
     clearAll();
 }
 
@@ -64,18 +90,23 @@ export const ifSelector = (item?: boolean | Function) => {
     return item;
 }
 
-export const getClasses = (css: string, globalStyle: any) => {
-    globalStyle = globalStyle;
+export const getCssArray = (css: string) => {
+    css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
+    return css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
+}
 
-    let items = css.split(" ").filter(x => x && x.length > 0);
-    let props: string[] = [];
+export const getClasses = (css: string, globalStyle: any) => {
+
+    globalStyle = globalStyle;
+    let items = getCssArray(css);
+    let props: any = {};
     for (let item of items) {
-        if (item.indexOf(":") == -1 && item.indexOf(":") == -1 && !props.find(x => x == item) && globalStyle[item]) {
-            props.push(item)
+        if (item && item.indexOf(":") == -1 && !(item in props) && item in globalStyle) {
+            props[item] = item;
         }
     }
 
-    return props;
+    return Object.keys(props);
 }
 
 export const proc = (partialValue, totalValue) => {
@@ -83,11 +114,15 @@ export const proc = (partialValue, totalValue) => {
 }
 
 export class AlertDialog {
-    static alert(props: AlertViewAlertProps) {
+    static alert(props: AlertViewAlertProps | string) {
         globalData.alertViewData.alert(props);
     }
 
-    static async confirm(props: AlertViewProps) {
+    static toast(props: ToastProps | string) {
+        globalData.alertViewData.toast(props);
+    }
+
+    static async confirm(props: AlertViewProps | string) {
         return globalData.alertViewData.confirm(props);
     }
 }

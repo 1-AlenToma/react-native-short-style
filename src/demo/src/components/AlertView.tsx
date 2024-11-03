@@ -1,10 +1,9 @@
 import * as React from "react";
-import { View, TouchableOpacity, Text } from "./ReactNativeComponents";
+import { View, Text } from "./ReactNativeComponents";
 import { Button } from "./Button";
 import { AlertViewFullProps, AlertViewProps } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "react-smart-state";
-import { newId } from "../config/Methods";
 import { Modal } from "./Modal";
 
 export const AlertView = () => {
