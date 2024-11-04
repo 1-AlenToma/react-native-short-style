@@ -92,7 +92,7 @@ const cleanKey = (k: string) => {
   return (k ?? "").indexOf("$") != -1 ? k.substring(1) : k;
 }
 
-const newId=()=> Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
+const newId = () => Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
 
 
 let serilizedCssStyle = new Map();
@@ -142,6 +142,7 @@ const css_translator = (
   propStyle?: any,
   id?: string
 ) => {
+
   if (!css || css.length <= 0) return {};
   id = id ?? css;
   css = css.replace(/( )?(\:)( )?/gmi, ":").trim();

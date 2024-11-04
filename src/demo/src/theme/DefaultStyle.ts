@@ -255,5 +255,6 @@ export const ComponentsStyles = {
   tabBarContainerView: "po:relative miw:100% fld:row juc:space-between ali:center mah:40 he:40 fl:0 flg:1 bac:transparent",
   tabBar: "wi:100% he:100% fl:1 overflow",
   progressBar: "flex wi:100% he:20 zi:5 juc:center overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
-  progressBarAnimatedView: "zi:2 abc to:0 le:-100% wi:100% he:100% op:0.8"
+  progressBarAnimatedView: "zi:2 abc to:0 le:-100% wi:100% he:100% op:0.8",
+  selectedValue: "bac:#007fff co:white"
 }

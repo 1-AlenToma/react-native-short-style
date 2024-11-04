@@ -4,7 +4,8 @@ import {
   ThemeContext,
   ScrollView,
   ThemeContainer,
-  Text, View,
+  Text,
+  View,
   Button,
   Icon,
   NestedStyleSheet,
@@ -18,7 +19,10 @@ import {
   TabView,
   ProgressBar,
   Fab,
-  Slider
+  Slider,
+  Collabse,
+  DropdownList,
+  Loader
 } from './src';
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
@@ -35,6 +39,12 @@ const themes = [
     },
     Text: {
       color: "#000"
+    },
+    TextInput: {
+      color: "#000"
+    },
+    Icon: {
+      color: "#000"
     }
   }),
   NestedStyleSheet.create({
@@ -45,6 +55,12 @@ const themes = [
       backgroundColor: "rgb(70 70 70)"
     },
     Text: {
+      color: "#fff"
+    },
+    TextInput: {
+      color: "#fff"
+    },
+    Icon: {
       color: "#fff"
     }
   })
@@ -58,7 +74,8 @@ export default function App() {
     modal2: false,
     actionSheet: false,
     checkBoxes: [true, false],
-    sliderValue: .5
+    sliderValue: .5,
+    selectedValue: "item1"
   }).build();
 
   const update = () => state.id = newId();
@@ -73,7 +90,7 @@ export default function App() {
       title: "Information",
       position: "Top",
       loader: true,
-      icon: (<Icon type="AntDesign" name="check" size={30} />)
+      type: "Warning"
     });
   }
 
@@ -88,20 +105,25 @@ export default function App() {
     alert(answer)
   }
 
+  const items = [...Array(30)].map((_, x) => {
+    return {
+      label: `item ${x}`,
+      value: `item${x}`
+    }
+  });
+
   return (
     <ThemeContainer selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
-
       <TabBar position='Bottom' header={{
         selectedIconStyle: "color:red",
         style: "bac:white"
       }}>
-        <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20 }}>
+        <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css:"co:#000"}}>
           <Fab position="RightBottom" prefixContainerStyle={{ backgroundColor: "red" }} style={{ bottom: 40 }} blureScreen={true} prefix={<Icon type="AntDesign" size={30} color={"white"} name='plus' />}>
             <Button text='btn 1'></Button>
             <Button text='btn 1'></Button>
           </Fab>
           <BlockContainer>
-
             <Block title="Theme Example">
               <Button icon={<Icon type="AntDesign" name="adduser" color="red" />} disabled={false} onPress={() => state.selectedTheme = state.selectedTheme == 0 ? 1 : 0} text="Toggle Theme" />
               <Text css="fos-xs">Text Themed</Text>
@@ -109,6 +131,7 @@ export default function App() {
             <Block title="ProgressBar">
               <ProgressBar value={state.sliderValue} />
               <Slider
+                css="mat:30"
                 animationType="spring"
                 minimumValue={0}
                 value={state.sliderValue}
@@ -116,6 +139,34 @@ export default function App() {
                 maximumValue={1}
                 step={.1}
                 enableButtons={true} />
+            </Block>
+          </BlockContainer>
+          <BlockContainer>
+            <Block title='DropDownlist'>
+              <DropdownList
+                mode="Modal"
+                enableSearch={true}
+                items={items}
+                onSelect={x => state.selectedValue = x.value}
+                placeHolder='Select Value'
+                selectedValue={state.selectedValue} />
+            </Block>
+            <Block style={{ width: 300 }} title='Collabse'>
+              <Collabse icon={<Icon type="AntDesign" name='book' size={20} />} text={"header test"}>
+                <Text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus nobis
+                  corporis ut, ex sed aperiam. Debitis, facere! Animi quis laudantium, odio
+                  nulla recusandae labore pariatur in, vitae corporis delectus repellendus.</Text>
+              </Collabse>
+            </Block>
+
+            <Block style={{ width: 300 }} title='Loader'>
+              <Loader loading={true} text="Loading...">
+                <Collabse defaultActive={true} icon={<Icon type="AntDesign" name='book' size={20} />} text={"header test"}>
+                  <Text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus nobis
+                    corporis ut, ex sed aperiam. Debitis, facere! Animi quis laudantium, odio
+                    nulla recusandae labore pariatur in, vitae corporis delectus repellendus.</Text>
+                </Collabse>
+              </Loader>
             </Block>
           </BlockContainer>
           <BlockContainer>

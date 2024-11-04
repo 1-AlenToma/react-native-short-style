@@ -108,14 +108,18 @@ const ThemeInternalContainer = ({ children }: any) => {
 
 export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
+    const state = StateBuilder({
+        selectedIndex: props.selectedIndex
+    }).build();
     React.useEffect(() => {
         let events = globalData.appStart();
         return () => events.forEach(x => x.remove());
     }, [])
 
-    React.useEffect(() => {
+    if (state.selectedIndex != props.selectedIndex) {
         clearAllCss();
-    }, [props.selectedIndex])
+        state.selectedIndex = props.selectedIndex;
+    }
 
     return (
         <ThemeContext.Provider value={props}>

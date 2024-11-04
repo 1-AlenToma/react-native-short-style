@@ -20,7 +20,7 @@ CreateView.prototype.CssStyleAble = CreateView.CssStyleAble = true;
 
 export const View = CreateView<Native.View, ViewProps & MouseProps>(Native.View);
 export const Text = CreateView<Native.Text, TextProps & MouseProps>(Native.Text);
-export const TxtInput = CreateView<Native.TextInput, Native.TextInputProps>(Native.TextInput);
+export const TextInput = CreateView<Native.TextInput, Native.TextInputProps>(Native.TextInput);
 export const ScrollView = CreateView<Native.ScrollView, ScrollViewProps>(Native.ScrollView);
 export const TouchableOpacity = CreateView<Native.TouchableOpacity, TouchableOpacityProps & MouseProps>(Native.TouchableOpacity);
 export const Image = CreateView<Native.Image, ImageProps>(Native.Image);

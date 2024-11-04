@@ -6,6 +6,8 @@ import StateBuilder from "react-smart-state";
 import { ViewStyle } from "react-native";
 import { newId } from "../config/Methods";
 import { ModalProps } from "../Typse";
+import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 
 export const Modal = (props: ModalProps) => {
@@ -74,6 +76,8 @@ export const Modal = (props: ModalProps) => {
 
                     }
                     ]}>
+                        <Button onPress={() => toggle(false)} css="abc ri:5 to:5 wi:15 he:15 zi:2 bac-transparent pa:0 pal:1 bow:0 sh-none" icon={<Icon type="AntDesign" name="close" color={"red"} size={15} />} />
+                        {props.children}
                     </AnimatedView>
                 </View>
             )

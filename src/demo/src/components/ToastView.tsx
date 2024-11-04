@@ -62,8 +62,39 @@ export const ToastView = () => {
     state.useEffect(() => {
         if (state.size)
             animateTop();
-
     }, "visible", "size")
+
+    let typeInfo = {
+        css: "",
+        icon: undefined
+    }
+
+    switch (data.type) {
+        case "Error":
+            typeInfo = {
+                css: "bac:#a94442 co:white",
+                icon: (<Icon type="MaterialIcons" name="error" size={30} color="white" />)
+            }
+            break;
+        case "Info":
+            typeInfo = {
+                css: "bac:#31708f co:white",
+                icon: (<Icon type="AntDesign" name="infocirlce" size={30} color="white" />)
+            }
+            break;
+        case "Warning":
+            typeInfo = {
+                css: "bac:#8a6d3b co:white",
+                icon: (<Icon type="FontAwesome" name="warning" size={30} color="white" />)
+            }
+            break;
+        case "Success":
+            typeInfo = {
+                css: "bac:#3c763d co:white",
+                icon: (<Icon type="Entypo" name="check" size={30} color="white" />)
+            }
+            break;
+    }
 
     fn(state.id, <AnimatedView key={state.id} onLayout={({ nativeEvent }) => {
         state.size = nativeEvent.layout;
@@ -77,14 +108,14 @@ export const ToastView = () => {
                 extrapolate: "clamp"
             })
         }]
-    }} css="zi:2 miw:50% bor:5 bow:.5 boc:gray overflow pa:5 maw:80% mih:30 abc fld:row juc:center ali:center sh-sm">
+    }} css={`zi:2 miw:50% bor:5 bow:.5 boc:gray overflow pa:5 maw:80% mih:30 abc fld:row juc:center ali:center sh-sm ${typeInfo.css}`}>
         <Button onPress={() => state.visible = false} css="abc ri:5 to:5 wi:15 he:15 zi:2 bac-transparent pa:0 pal:1 bow:0 sh-none" icon={<Icon type="AntDesign" name="close" color={"red"} size={15} />} />
-        <View ifTrue={data.icon != undefined} css="fl:1 maw:40 zi:1">
-            {data.icon}
+        <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac-transparent">
+            {data.icon ?? typeInfo.icon}
         </View>
-        <View css="fl:1 zi:1">
-            <Text ifTrue={() => data.title != undefined} css="fos-lg maw:90% fow:bold">{data.title}</Text>
-            <Text css="fos-sm maw:90% pab:5">{data.message}</Text>
+        <View css="fl:1 zi:1  bac-transparent">
+            <Text ifTrue={() => data.title != undefined} css={`fos-lg maw:90% fow:bold ${typeInfo.css}`}>{data.title}</Text>
+            <Text css={`fos-sm maw:90% pab:5 ${typeInfo.css}`}>{data.message}</Text>
         </View>
         <ProgressBar ifTrue={() => data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="abc bo:0 le:0 he:5 zi:2" />
     </AnimatedView>, true)

@@ -1,6 +1,5 @@
 import cssTranslator, { serilizeCssStyle, clearCss } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
-import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
 import * as reactNative from "react-native";
 import { getClasses, ifSelector, newId, currentTheme } from "../config/Methods"
@@ -107,7 +106,8 @@ class InternalStyledContext {
 
   join() {
     if (!this.changed())
-      return this.cpyCss;
+      if (this.prevCSS != undefined)
+        return this.cpyCss;
     let name = this.viewName();
     let parent = new CSS(this.styleFile, this.prevContext.join?.()).prepend(name, this.viewPath()).add(this.props.css);
     let cpyCss = new CSS(this.styleFile, this.props.css).prepend(name, this.viewPath());
@@ -126,7 +126,10 @@ class InternalStyledContext {
 let CSSContext = React.createContext<InternalStyledContext>({} as any);
 let StyledWrapper = React.forwardRef(
   (props: InternalStyledProps, ref) => {
-    const { View,
+    if (!props.css)
+      props.css = "co:red";
+    const {
+      View,
       viewPath,
       fullParentPath,
       style,
@@ -145,6 +148,7 @@ let StyledWrapper = React.forwardRef(
         childrenIds: [],
       }
     }).ignore("refItem", "contextValue").build();
+
     state.contextValue.update(props, styleFile, ec)
     const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
     if (isText)
@@ -156,19 +160,6 @@ let StyledWrapper = React.forwardRef(
       state.refItem.selectedThemeIndex = themecontext.selectedIndex;
     }
 
-
-
-    const validKeyStyle = View.displayName
-      ? allowedKeys[View.displayName]
-      : undefined;
-
-
-    React.useEffect(() => {
-      () => {
-
-      }
-    });
-
     if (styleFile && state.refItem.style == undefined) {
       let sArray = [];
       let cpyCss = state.contextValue.join();
@@ -176,7 +167,7 @@ let StyledWrapper = React.forwardRef(
       let tCss = cssTranslator(
         cpyCss,
         styleFile,
-        validKeyStyle
+        undefined
       );
       if (tCss) sArray.push(tCss);
       state.refItem.style = sArray;

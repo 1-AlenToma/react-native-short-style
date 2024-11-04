@@ -3,10 +3,10 @@ import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
 import { AlertViewAlertProps, AlertViewProps, IThemeContext, ToastProps } from "../Typse";
 
-export const readAble = function (nr: number | string) {
+export const readAble = function (nr: number | string, total?:number) {
     let nrs = nr?.toString().split(".") ?? [];
     if (nrs.length <= 1) return nr;
-    if (/[1-9]/g.test(nrs[1])) return `${nrs[0]}.${nrs[1].substring(0, 2)}`;
+    if (/[1-9]/g.test(nrs[1])) return `${nrs[0]}.${nrs[1].substring(0, total ?? 2)}`;
     return nr;
 };
 
@@ -125,4 +125,13 @@ export class AlertDialog {
     static async confirm(props: AlertViewProps | string) {
         return globalData.alertViewData.confirm(props);
     }
+}
+
+export const setRef = (ref: any, item: any) => {
+    if (!ref)
+        return;
+    if (typeof ref == "function")
+        ref(item);
+    else if ("current" in ref)
+        ref.current = item;
 }
