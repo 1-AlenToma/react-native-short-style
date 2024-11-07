@@ -19,7 +19,7 @@ const StaticFullView = () => {
 
 
     return (
-        <View css="zi:2 topPostion fl:1" ifTrue={items.length > 0}>
+        <View css="zi:2 _topPostion fl:1" ifTrue={items.length > 0}>
             {items}
         </View>
     )
@@ -36,9 +36,9 @@ const StaticView = () => {
 
     }
     const items: any[] = [...context.items().staticItems.values()];
-
-
-    return (items)
+    return (
+        items
+    )
 
 
 }
@@ -113,8 +113,15 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     }).build();
     React.useEffect(() => {
         let events = globalData.appStart();
+        if (props.storage)
+            globalData.storage = props.storage as any;
         return () => events.forEach(x => x.remove());
     }, [])
+
+    React.useEffect(() => {
+        if (props.storage)
+            globalData.storage = props.storage as any;
+    }, [props.storage])
 
     if (state.selectedIndex != props.selectedIndex) {
         clearAllCss();

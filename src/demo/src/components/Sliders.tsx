@@ -5,8 +5,8 @@ import {
     useAnimate,
     useTimer
 } from "../hooks";
-import { ifSelector, proc, readAble } from "../config/Methods";
-import { Size, StyledProps } from "../Typse";
+import { ifSelector, optionalStyle, proc, readAble } from "../config/Methods";
+import { CSS_String, Size, StyledProps } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from './Icon';
 import StateBuilder from 'react-smart-state';
@@ -14,7 +14,7 @@ import { ViewStyle } from 'react-native';
 
 export const Slider = (props: SliderProps & {
     enableButtons?: boolean,
-    buttonCss?: string,
+    buttonCss?: CSS_String,
     ifTrue?: () => boolean | boolean,
     style?: ViewStyle,
     css?: string
@@ -46,8 +46,8 @@ export const Slider = (props: SliderProps & {
 
 
     return (
-        <View css={`di:flex fld:row juc:space-between ali:center wi:100% mih:20 ${props.css}`} style={props.style}>
-            <Button css={`wi:15% he:25 ${props.buttonCss}`}
+        <View css={`di:flex fld:row juc:space-between ali:center wi:100% mih:20 ${optionalStyle(props.css).c}`} style={props.style}>
+            <Button css={`wi:15% he:25 ${optionalStyle(props.buttonCss).c}`}
                 icon={<Icon type="AntDesign" size={15} color="white" name="minus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}
@@ -68,7 +68,7 @@ export const Slider = (props: SliderProps & {
                 value={state.value}
                 containerStyle={{ ...props.containerStyle, width: props.enableButtons ? "60%" : props.containerStyle?.width ?? "100%" }}
                 onSlidingComplete={onChange} />
-            <Button css={`wi:15% he:25 ${props.buttonCss}`}
+            <Button css={`wi:15% he:25 ${optionalStyle(props.buttonCss).c}`}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}

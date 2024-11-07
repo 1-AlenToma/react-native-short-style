@@ -1,10 +1,25 @@
 import * as ReactNative from "react-native";
 import { serilizeCssStyle } from "./cssTranslator";
-type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.TextStyle | ReactNative.ImageStyle | string };
+import { CSSStyle } from "./validStyles";
+type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.TextStyle | ReactNative.ImageStyle | string | ((x: CSSStyle) => CSSStyle) };
+
 class NestedStyleSheet {
   static create<T extends NamedStyles<T> | NamedStyles<any>>(obj: T & NamedStyles<any>): { [key: string]: number } {
     for (let key in obj) {
-      if (key.indexOf("[") != -1 && key.split(".").length > 1) {
+      let value = obj[key];
+      if (value && typeof value == "function") {
+        (obj as any)[key] = value(new CSSStyle()).toString();
+      }
+
+      if (key.indexOf("$") != -1) {
+        value = obj[key];
+        delete obj[key];
+        key = key.replace(/\$/g, ".");
+        (obj as any)[key] = value;
+      }
+
+
+      if (key.indexOf("[") != -1 || key.split(".").length > 1) {
         let sKey = "";
         for (let k of key.split(".")) {
           sKey += "." + k;
@@ -15,7 +30,7 @@ class NestedStyleSheet {
         }
       }
     }
-    var result = serilizeCssStyle(obj);
+    var result = obj as any;
     return result;
   }
 };

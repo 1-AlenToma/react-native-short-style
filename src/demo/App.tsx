@@ -22,12 +22,20 @@ import {
   Slider,
   Collabse,
   DropdownList,
-  Loader
+  Loader,
+  Portal,
+  ButtonGroup,
+  ToolTip,
+  FormItem,
+  TextInput,
+  Pager
 } from './src';
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer } from './components';
 import { newId } from './src/config/Methods';
+import React from 'react';
+import { Platform } from 'react-native';
 
 const themes = [
   NestedStyleSheet.create({
@@ -75,8 +83,11 @@ export default function App() {
     actionSheet: false,
     checkBoxes: [true, false],
     sliderValue: .5,
-    selectedValue: "item1"
-  }).build();
+    selectedValue: "item1",
+    selectedButtons: [1],
+    items: [],
+    loading: false
+  }).ignore("items").build();
 
   const update = () => state.id = newId();
 
@@ -105,28 +116,46 @@ export default function App() {
     alert(answer)
   }
 
-  const items = [...Array(30)].map((_, x) => {
-    return {
-      label: `item ${x}`,
-      value: `item${x}`
-    }
-  });
+  const loadItems = async () => {
+    state.loading = true;
+    let oldItems = [...state.items];
+    [...Array(30)].map((_, x) => {
+      let value = oldItems.length + 1
+      oldItems.push({
+        label: `item ${value}`,
+        value: `item${value}`
+      })
+    });
+
+    state.items = oldItems;
+    state.loading = false;
+  }
+
+  React.useEffect(() => {
+    loadItems();
+  }, [])
+
 
   return (
     <ThemeContainer selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       <TabBar position='Bottom' header={{
         selectedIconStyle: "color:red",
-        style: "bac:white"
+        style: x=> x.baC("#ffffff"),
+        overlayStyle: {
+          content: x => x.baC("#8a88ee").op(.4)
+        }
       }}>
-        <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css:"co:#000"}}>
+        <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css: "co:#000" }}>
           <Fab position="RightBottom" prefixContainerStyle={{ backgroundColor: "red" }} style={{ bottom: 40 }} blureScreen={true} prefix={<Icon type="AntDesign" size={30} color={"white"} name='plus' />}>
             <Button text='btn 1'></Button>
             <Button text='btn 1'></Button>
           </Fab>
+          <Portal css="_abc le:50% to:20">
+            <Text>this is outside all pages</Text>
+          </Portal>
           <BlockContainer>
             <Block title="Theme Example">
               <Button icon={<Icon type="AntDesign" name="adduser" color="red" />} disabled={false} onPress={() => state.selectedTheme = state.selectedTheme == 0 ? 1 : 0} text="Toggle Theme" />
-              <Text css="fos-xs">Text Themed</Text>
             </Block>
             <Block title="ProgressBar">
               <ProgressBar value={state.sliderValue} />
@@ -144,9 +173,9 @@ export default function App() {
           <BlockContainer>
             <Block title='DropDownlist'>
               <DropdownList
-                mode="Modal"
+                mode="Fold"
                 enableSearch={true}
-                items={items}
+                items={state.items}
                 onSelect={x => state.selectedValue = x.value}
                 placeHolder='Select Value'
                 selectedValue={state.selectedValue} />
@@ -167,6 +196,15 @@ export default function App() {
                     nulla recusandae labore pariatur in, vitae corporis delectus repellendus.</Text>
                 </Collabse>
               </Loader>
+            </Block>
+            <Block style={{ width: 300 }} title='ButtonGroup'>
+              <ButtonGroup onPress={(btns) => state.selectedButtons = btns} buttons={["Simple", "Button", "Group"]} selectedIndex={state.selectedButtons} />
+            </Block>
+            <Block title='ToolTip'>
+              <ToolTip text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus nobis corporis ut, ex sed aperiam. Debitis, facere! Animi quis laudantium, odio nulla recusandae labore pariatur in, vitae corporis delectus repellendus.
+">
+                <Text>Press Here</Text>
+              </ToolTip>
             </Block>
           </BlockContainer>
           <BlockContainer>
@@ -221,8 +259,8 @@ export default function App() {
                 <Text>this is modal 1</Text>
                 <Button onPress={() => state.modal2 = true} text="Show Modal 2" />
               </Modal>
-              <Modal css="wi:30%" isVisible={state.modal2} onHide={() => state.modal2 = false}>
-                <Text>this is modal 2</Text>
+              <Modal css={x => x.wi("30%")} isVisible={state.modal2} onHide={() => state.modal2 = false}>
+                <Text css={x => x.foS(12).co("red")}>this is modal 2</Text>
               </Modal>
             </Block>
 
@@ -251,6 +289,58 @@ export default function App() {
               <Button onPress={Toast} text="Show Toast" />
             </Block>
             <StatusBar style="auto" />
+          </BlockContainer>
+        </TabView>
+        <TabView title="Form">
+          <BlockContainer>
+            <Block title='Form'>
+              <FormItem title="FullName" icon={{ type: "AntDesign", name: "user" }}>
+                <TextInput css="fl:1" />
+              </FormItem>
+              <FormItem title="UserName" icon={{ type: "AntDesign", name: "user" }}>
+                <TextInput css="fl:1" />
+              </FormItem>
+              <FormItem title="Passowrd" info="Passowrd must at least containes one upper char" icon={{ type: "AntDesign", name: "lock" }}>
+                <TextInput css="fl:1" />
+              </FormItem>
+              <FormItem title="Country" info="Select where you are from" icon={{ type: "AntDesign", name: "flag" }}>
+                <DropdownList mode="Fold"
+                  selectedValue={0}
+                  items={[{ label: "Sweden", value: 0 }, { label: "Irak", value: 1 }]} />
+              </FormItem>
+              <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={{ type: "AntDesign", name: "lock" }}>
+                <CheckBox checked checkBoxType="RadioButton"></CheckBox>
+              </FormItem>
+              <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={{ type: "AntDesign", name: "lock" }}>
+                <CheckBox checked checkBoxType="Switch"></CheckBox>
+              </FormItem>
+            </Block>
+            <Block title='Page with Pagination header' style={{ width: 200, height: 150 }}>
+              <Loader loading={state.loading}>
+                <Pager selectedIndex={state.items.findIndex(x => x.value == state.selectedValue)}
+                  showsVerticalScrollIndicator={true} items={state.items} onEndReached={loadItems}
+                  onSelect={(item) => state.selectedValue = item.value}
+                  renderHeader={true} horizontal={false} render={(item, index, css) => (
+                    <View css={`wi:100% he:20 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
+                      <Text css={`fos-sm ${css}`}>{item.label}</Text>
+                    </View>)} />
+              </Loader>
+            </Block>
+
+            <Block title='Page infinit loading' style={{ width: 200, height: 150 }}>
+              <Loader loading={state.loading}>
+                <Pager ifTrue={true}
+                  selectedIndex={state.items.findIndex(x => x.value == state.selectedValue)}
+                  showsVerticalScrollIndicator={true}
+                  items={state.items}
+                  onEndReached={loadItems}
+                  onSelect={(item) => state.selectedValue = item.value}
+                  renderHeader={false} horizontal={false} render={(item, index, css) => (
+                    <View css={`wi:100% he:20 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
+                      <Text css={`fos-sm ${css}`}>{item.label}</Text>
+                    </View>)} />
+              </Loader>
+            </Block>
           </BlockContainer>
         </TabView>
       </TabBar>

@@ -3,7 +3,7 @@ import StateBuilder from "react-smart-state";
 import { CheckBoxListProps, CheckBoxProps } from "../Typse";
 import { Form } from "./Form";
 import { View, Text, TouchableOpacity, AnimatedView } from "./ReactNativeComponents";
-import { ifSelector, newId } from "../config/Methods";
+import { ifSelector, newId, optionalStyle } from "../config/Methods";
 import { Icon } from "./Icon";
 import { useAnimate } from "../hooks";
 type CheckBoxListContext = {
@@ -120,7 +120,8 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
     const selectionType = context.checkBoxListProps.selectionType;
     const { animateX, animate, currentValue } = useAnimate({ speed: 100 });
     const swtichColor: any = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "gray", false: "white" }
-    context.add?.(state.id, props.checked);
+    if (!context.ids || !context.ids.has(state.id))
+        context.add?.(state.id, props.checked);
     const tAnimate = (value: number) => {
 
         let ch = value == 1 ? true : false;
@@ -148,7 +149,8 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
         React.useEffect(() => {
             if (checkBoxType == "Switch")
                 tAnimate(state.checked ? 1 : 0)
-            state.checked = (props.checked)
+            //if (props.checked !== state.checked)
+            state.checked = props.checked
         }, [props.checked])
 
     React.useEffect(() => {
@@ -156,7 +158,8 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
         if (checkBoxType == "Switch")
             tAnimate(state.checked ? 1 : 0)
         if (state.checked != isChecked && state.isInit) {
-            (context.onChange ?? props.onChange)(state.checked, state.id);
+            //context.add?.(state.id, state.checked);
+            (context.onChange ?? props.onChange)?.(state.checked, state.id);
         }
     }, [state.checked])
 
@@ -174,22 +177,22 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
 
     return (
         <>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`checkBox mab:5 ${props.css ?? ""} ${disabledCss}`} ifTrue={checkBoxType == "CheckBox"} onPress={() => {
+            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox juc:end mab:5 ${optionalStyle(props.css).c} ${disabledCss}`} ifTrue={checkBoxType == "CheckBox"} onPress={() => {
                 if (!disabled)
                     state.checked = !state.checked
             }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={{ backgroundColor: color(state.checked) }} css={`checkBox_${labelPostion}`} >
+                <View style={{ backgroundColor: color(state.checked) }} css={`_checkBox_${labelPostion}`} >
                     <Icon ifTrue={() => state.checked} type="AntDesign" style={{ color: color(!state.checked) }} name="check" size={24} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`checkBox mab:5 ${props.css ?? ""} ${disabledCss}`} ifTrue={checkBoxType == "RadioButton"} onPress={() => {
-                if ((!state.checked || selectionType == "CheckBox") && !disabled)
+            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox juc:end mab:5 ${optionalStyle(props.css).c} ${disabledCss}`} ifTrue={checkBoxType == "RadioButton"} onPress={() => {
+                if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                     state.checked = !state.checked
             }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={{ borderRadius: 15, backgroundColor: "transparent" }} css={`checkBox_${labelPostion}`}>
+                <View style={{ borderRadius: 15, backgroundColor: "transparent" }} css={`_checkBox_${labelPostion}`}>
                     <Icon ifTrue={() => state.checked} css="mal:1" size={24} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
@@ -201,7 +204,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
                     if (!disabled)
                         state.checked = (!state.checked);
                 }}
-                style={props.style} css={`row form clearwidth juc:space-between ali:center ${props.css ?? ""} ${disabledCss}`}>
+                style={props.style} css={`fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`}>
                 <Text
                     ifTrue={props.label != undefined}
                     css="fos-sm"

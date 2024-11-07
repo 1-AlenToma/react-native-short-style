@@ -1,6 +1,5 @@
-const cachedCss = new Map();
-import { StylesAttributes } from "./validStyles";
-
+import { Storage } from "../config/Storage";
+import { StylesAttributes, ShortCSS } from "./validStyles";
 
 let styleKeys = [...StylesAttributes]
 
@@ -14,8 +13,12 @@ const buildShortCss = () => {
     borderBlockColor: "boBCo",
     borderCurve: "boCu",
     direction: "dir",
-    marginHorizontal: "maHo"
+    marginHorizontal: "maHo",
+    shadowOffset: "shadowOffset",
+    fontStyle: "fontStyle"
   };
+
+  let className = "";
   for (let k of styleKeys) {
     let shortKey: string | null = null;
     if (keyExceptions[k])
@@ -40,8 +43,16 @@ const buildShortCss = () => {
     item[k] = k;
     item[k.toLowerCase()] = k;
     item[shortKey.toLowerCase()] = k;
+    className += `${k}(value?: ValueType["${k}"] | null) {
+        return this.add(ShortStyles.${k}, value);
+     }\n`
+    className += `${shortKey}(value?: ValueType["${k}"] | null) {
+        return this.add(ShortStyles.${k}, value);
+     }\n`
     shortCss.push(item);
   }
+
+  console.dir(shortCss)
   // console.error([shortCss].niceJson());
   return shortCss;
 };
@@ -82,8 +93,9 @@ const cleanStyle = (
 ) => {
   let item = { ...style };
   for (let k in style) {
-    if (k.trim().startsWith("$") || k.indexOf(".") != -1 || (propStyle && !propStyle[k]))
+    if (k.trim().startsWith("$") || k.indexOf(".") != -1 || (propStyle && !propStyle[k])) {
       delete item[k];
+    }
   }
   return item;
 };
@@ -95,13 +107,13 @@ const cleanKey = (k: string) => {
 const newId = () => Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
 
 
-let serilizedCssStyle = new Map();
+
 export const serilizeCssStyle = (style: any) => {
   let key = "styleId" in style ? style["styleId"] : (style["styleId"] = newId())
   key += Object.keys(style).length;
 
-  if (serilizedCssStyle.has(key)) {
-    return serilizedCssStyle.get(key);
+  if (Storage.has(key)) {
+    return Storage.get(key);
   }
 
   let sItem = {};
@@ -124,16 +136,16 @@ export const serilizeCssStyle = (style: any) => {
     let ck = cleanKey(k);
     sItem[ck] = fn(style[k], ck);
   }
-  serilizedCssStyle.set(key, sItem);
+  Storage.set(key, sItem);
   return sItem;
 };
 
 export const clearCss = (id: string) => {
-  cachedCss.delete(id)
+  Storage.delete(id)
 }
 
 export const clearAll = () => {
-  cachedCss.clear();
+  Storage.clear();
 }
 
 const css_translator = (
@@ -142,35 +154,47 @@ const css_translator = (
   propStyle?: any,
   id?: string
 ) => {
-
   if (!css || css.length <= 0) return {};
   id = id ?? css;
   css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
   if (!css || css.length <= 0) return {};
 
-  if (cachedCss.has(id))
-    return cachedCss.get(id);
-  let shortk = buildShortCss();
-  let CSS = {};
-  if (styleFile)
-    CSS = serilizeCssStyle(styleFile);
+  if (Storage.has(id))
+    return Storage.get(id);
+  let shortk = ShortCSS;
+  let CSS = styleFile;
+  //if (styleFile)
+  //  CSS = serilizeCssStyle(styleFile);
 
   let cssItem = {};
   let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
   for (let c of items) {
-    if (has(c, ":")) {
+    if (c.indexOf(":") !== -1) {
       let k = splitSafe(c, ":", 0);
       let value = checkObject(checkNumber(splitSafe(c, ":", 1)));
 
+
       if (has(value, "undefined") || has(value, "null"))
         value = undefined;
+      else if (typeof value == "string" && value.startsWith("$")) {
+        value = value.substring(1);
+        if (value.toLowerCase() in CSS)
+          value = Object.values(CSS[value.toLowerCase()])[0];
+      }
       let short = shortk.find(x => x[k.toLowerCase()] !== undefined);
       if (short) {
         if (!propStyle || propStyle[short.key])
           cssItem[short.key] = value;
+      } else {
+        cssItem[k] = value;
+       // console.warn(k, "not found in react-native style props, but we will still add it")
       }
       continue;
     }
+
+
+
+
 
     let style = CSS[c];
     if (typeof style === "string")
@@ -183,7 +207,7 @@ const css_translator = (
       continue;
     }
   }
-  cachedCss.set(id, cssItem);
+  Storage.set(id, cssItem);
   return cssItem;
 };
 

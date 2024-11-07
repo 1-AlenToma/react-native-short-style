@@ -4,10 +4,11 @@ import { InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
 import StateBuilder from "react-smart-state";
 import { ViewStyle } from "react-native";
-import { newId } from "../config/Methods";
+import { newId, optionalStyle } from "../config/Methods";
 import { ModalProps } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
+import { Blur } from "./Blur";
 
 
 export const Modal = (props: ModalProps) => {
@@ -57,12 +58,12 @@ export const Modal = (props: ModalProps) => {
         let style = Array.isArray(props.style) ? props.style : [props.style];
         if (state.isVisible) {
             context.add(state.id,
-                <View key={state.id} css="blur op:1 bac:transparent" style={{ zIndex: context.totalItems() + 300 }}>
-                    <TouchableOpacity onPress={() => {
+                <Blur key={state.id} css="op:1 bac:transparent" style={{ zIndex: context.totalItems() + 300 }}>
+                    <Blur onPress={() => {
                         if (!props.disableBlurClick)
                             toggle(false);
-                    }} css="blur zi:1" />
-                    <AnimatedView {...props} css={`modalDefaultStyle sh-sm overflow ${props.css ?? ""}`} style={[...style,
+                    }} css="zi:1" />
+                    <AnimatedView {...props} css={`_modalDefaultStyle sh-sm _overflow ${optionalStyle(props.css).c}`} style={[...style,
                     {
                         transform: [
                             {
@@ -76,10 +77,12 @@ export const Modal = (props: ModalProps) => {
 
                     }
                     ]}>
-                        <Button onPress={() => toggle(false)} css="abc ri:5 to:5 wi:15 he:15 zi:2 bac-transparent pa:0 pal:1 bow:0 sh-none" icon={<Icon type="AntDesign" name="close" color={"red"} size={15} />} />
-                        {props.children}
+                        <Button ifTrue={props.addCloser == true} onPress={() => toggle(false)} css="_abc ri:5 to:5 wi:15 he:15 zi:2 bac-transparent pa:0 pal:1 bow:0 sh-none" icon={<Icon type="AntDesign" name="close" color={"red"} size={15} />} />
+                        <View css={x => x.fillView().if(props.addCloser == true, x => x.maT(5))}>
+                            {props.children}
+                        </View>
                     </AnimatedView>
-                </View>
+                </Blur>
             )
         } else {
             context.remove(state.id);

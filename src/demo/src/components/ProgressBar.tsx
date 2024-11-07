@@ -4,8 +4,9 @@ import * as React from "react";
 import {
     useAnimate
 } from "../hooks";
-import { ifSelector, proc, readAble } from "../config/Methods";
+import { ifSelector, optionalStyle, proc, readAble } from "../config/Methods";
 import { ProgressBarProps, Size } from "../Typse";
+import { Blur } from "./Blur";
 
 
 export const ProgressBar = ({
@@ -56,14 +57,14 @@ export const ProgressBar = ({
                 setSize(e.nativeEvent.layout);
             }}
             style={style}
-            css={`progressBar ${css ?? ""}`}>
-            <View css="blur zi:1" />
+            css={`_progressBar ${optionalStyle(css).c}`}>
+            <Blur css="zi:1" />
             <View
                 css="zi:3 bac:transparent">
                 {children}
             </View>
             <AnimatedView
-                css="progressBarAnimatedView"
+                css="_progressBarAnimatedView"
                 style={{
                     backgroundColor: color ?? "green",
                     transform: [

@@ -1,5 +1,6 @@
 import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, TextStyle, ViewStyle, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps } from "react-native";
 import { NestedStyleSheet } from "./styles";
+import { CSSStyle } from "./styles/validStyles"
 import * as React from "react";
 import * as Icons from "@expo/vector-icons/build/createIconSet";
 
@@ -23,7 +24,7 @@ export type MouseProps = {
     onMouseLeave?: (event: any) => void;
 }
 
-export type CSS_String = string;
+export type CSS_String = string | ((css: CSSStyle) => CSSStyle);
 
 
 export type GenericCSS<A, B = CSS_String, C = {}, D = {}, E = {}> = A | B | C | D | E;
@@ -67,7 +68,7 @@ export type IConProps = StyledProps & {
 export type ButtonProps = {
     text?: string;
     icon?: React.ReactNode;
-    textCss?: string;
+    textCss?: CSS_String;
     disabled?: ((() => boolean) | boolean);
     whilePressed?: () => void;
     whilePressedDelay?: number;
@@ -77,6 +78,11 @@ export type IThemeContext = {
     selectedIndex: number;
     themes: { [key: string]: number }[],
     defaultTheme: { [key: string]: number };
+    /** Save the parsed css to a storage so as to make it faster at parsing.
+     * This is not needed on android and ios so use it only for web as it cant be saved locally
+     * when the web refreshed
+     */
+    storage?: Storage;
 }
 
 export type InternalThemeContext = {
@@ -103,6 +109,8 @@ export type Size = {
     scale?: number;
     y?: number;
     x?: number;
+    px?: number;
+    py?: number;
 }
 
 export type EventListener = {
@@ -115,6 +123,7 @@ export type GlobalState = {
     activePan: boolean;
     screen: Size;
     window: Size;
+    storage: CSSStorage;
     appStart: () => EventListener[];
     alertViewData: {
         alert: (props: AlertViewProps | string) => void;
@@ -131,9 +140,10 @@ export type ModalProps = {
     isVisible: boolean;
     onHide: () => void;
     disableBlurClick?: boolean;
+    addCloser?: boolean;
     children: React.ReactNode | React.ReactNode[];
     style?: ViewStyle;
-    css?: string;
+    css?: CSS_String;
     speed?: number;
 }
 
@@ -154,6 +164,8 @@ export type AlertViewAlertProps = {
 export type ToastProps = Omit<AlertViewAlertProps, "okText"> & {
     icon?: React.ReactNode,
     loader?: boolean;
+    // default is .01
+    loaderCounter?: number;
     loaderBg?: ColorValue;
     type?: "Warning" | "Error" | "Info" | "Success"
     position?: "Top" | "Bottom"
@@ -235,6 +247,10 @@ export type TabBarProps = StyledProps & {
         selectedStyle?: GenericCSS<ViewStyle, CSS_String>;
         selectedTextStyle?: GenericCSS<TextStyle, CSS_String>;
         selectedIconStyle?: GenericCSS<ViewStyle, CSS_String, ImageStyle, TextStyle, ImageStyle>;
+        overlayStyle?: {
+            container?: GenericCSS<ViewStyle, CSS_String>;
+            content?: GenericCSS<ViewStyle, CSS_String>;
+        }
     }
 }
 
@@ -264,7 +280,7 @@ export type DropdownListProps = StyledProps & {
     render?: (item: DropdownItem) => React.ReactNode;
     onSelect?: (item: DropdownItem) => void;
     selectedValue?: any;
-    mode?: "Modal" | "ActionSheet",
+    mode?: "Modal" | "ActionSheet" | "Fold",
     placeHolder?: string;
     selectedItemCss?: string;
     size?: Percentage;
@@ -287,4 +303,75 @@ export type LoaderProps = Omit<ActivityIndicatorProps, "animating" | "hidesWhenS
     loading: boolean;
     text?: string | React.ReactNode;
     children: React.ReactNode | React.ReactNode[];
+}
+
+export type PortalProps = StyledProps & {
+    children: React.ReactNode | React.ReactNode[];
+}
+
+export type ButtonGroupProps = StyledProps & {
+    buttons: string[],
+    render?: (button: string, index: number) => React.ReactNode;
+    selectMultiple?: boolean;
+    selectedIndex: number[];
+    onPress?: (index: number[]) => void;
+    selectedStyle?: string | ViewStyle;
+    isVertical?: boolean;
+    scrollable?: boolean;
+}
+
+export type ToolTipRef = {
+    visible: (value: boolean) => void;
+}
+
+export type ToolTipProps = StyledProps & {
+    text: string | React.ReactNode;
+    children: React.ReactNode;
+    containerStyle?: ViewStyle | string;
+    postion?: "Top" | "Bottom";
+}
+
+export type FormItemProps = StyledProps & {
+    children?: React.ReactNode | React.ReactNode[];
+    title?: string | React.ReactNode;
+    icon?: IConProps | React.ReactNode;
+    info?: string;
+    message?: React.ReactNode;
+}
+
+export type GenericViewProps<T, P> = P & StyledProps & MouseProps & { ref?: React.Ref<T> }
+export type GenericView<T, P> = Omit<T, "props" | "ref"> & {
+    props: GenericViewProps<T, P>
+};
+
+export type PageRef = {
+    readonly selectItem: (itemIndex: number) => void;
+    readonly totalPages: number;
+    readonly refresh: () => void;
+}
+
+export type PagerProps = StyledProps & {
+    render: (item: any, index: number, selectedCss: string) => React.ReactNode;
+    items: any[];
+    selectedIndex?: number;
+    onChange?: (page: number, totalPages: number) => void;
+    onSelect?: (item: any, index: number) => void;
+    onEndReached?: () => void;
+    horizontal?: boolean;
+    renderHeader?: boolean;
+    selectedStyle?: CSS_String;
+    showsHorizontalScrollIndicator?: boolean;
+    showsVerticalScrollIndicator?: boolean;
+    onEndReachedThreshold?: number;
+}
+
+export type BlurProps = StyledProps & TouchableOpacityProps;
+
+export type CSSStorage = {
+    delete: (key: string) => void;
+    get: (key: string) => any;
+    set: (key: string, item: any) => void;
+    has: (key: string) => boolean;
+    /** Clear All keys that start with CSSStyled_ */
+    clear: () => void;
 }

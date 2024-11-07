@@ -2,10 +2,11 @@ import cssTranslator, { serilizeCssStyle, clearCss } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as React from "react";
 import * as reactNative from "react-native";
-import { getClasses, ifSelector, newId, currentTheme } from "../config/Methods"
+import { getClasses, ifSelector, newId, currentTheme, getCssArray } from "../config/Methods"
 import buildState from 'react-smart-state';
 import { ThemeContext, globalData } from "../theme/ThemeContext";
 import { ICSSContext, InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
+import { CSSStyle } from "./validStyles";
 
 let toArray = (item: any) => {
   if (!item) return [];
@@ -54,7 +55,7 @@ class CSS {
 
   distinct() {
     let items = new CSS(this.styleFile, "").add(
-      ...this.css.split(" ")
+      ...getCssArray(this.css)
     );
     return items.css;
   }
@@ -73,6 +74,13 @@ class InternalStyledContext {
   generatedStyle: any;
   prevCSS?: string;
   cpyCss: string;
+
+  getCss() {
+    if (this.props.css && typeof this.props.css == "function")
+      return this.props.css(new CSSStyle()).toString();
+    return (this.props.css ?? "") as string;
+  }
+
   update(props: InternalStyledProps, styleFile: any, prevContext?: InternalStyledContext) {
     this.props = props;
     this.prevContext = prevContext;
@@ -80,7 +88,7 @@ class InternalStyledContext {
   }
 
   changed() {
-    return this.props.css !== this.prevCSS || this.prevContext.changed?.();
+    return this.getCss() !== this.prevCSS || this.prevContext.changed?.();
   }
 
   position() {
@@ -100,7 +108,7 @@ class InternalStyledContext {
   }
 
   classNames() {
-    let classNames = getClasses(this.props.css, this.styleFile);
+    let classNames = getClasses(this.getCss(), this.styleFile);
     return classNames;
   }
 
@@ -109,14 +117,14 @@ class InternalStyledContext {
       if (this.prevCSS != undefined)
         return this.cpyCss;
     let name = this.viewName();
-    let parent = new CSS(this.styleFile, this.prevContext.join?.()).prepend(name, this.viewPath()).add(this.props.css);
-    let cpyCss = new CSS(this.styleFile, this.props.css).prepend(name, this.viewPath());
+    let parent = new CSS(this.styleFile, this.prevContext.join?.());
+    let cpyCss = new CSS(this.styleFile, this.getCss()).prepend(name, this.viewPath());
     for (let s of parent.classes()) {
       let m = ` ${s}.${name}`;
       cpyCss.add(m);
     }
 
-    this.prevCSS = this.props.css;
+    this.prevCSS = this.getCss();
 
     return (this.cpyCss = cpyCss.toString());
   }
@@ -127,7 +135,7 @@ let CSSContext = React.createContext<InternalStyledContext>({} as any);
 let StyledWrapper = React.forwardRef(
   (props: InternalStyledProps, ref) => {
     if (!props.css)
-      props.css = "co:red";
+      props.css = "";
     const {
       View,
       viewPath,

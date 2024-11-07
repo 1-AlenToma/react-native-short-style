@@ -11,6 +11,7 @@ import { Button } from "./Button";
 import { Icon } from './Icon';
 import StateBuilder from 'react-smart-state';
 import { ViewStyle, ActivityIndicator } from 'react-native';
+import { Blur } from './Blur';
 
 export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
     const state = StateBuilder({
@@ -28,8 +29,8 @@ export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
 
 
     return (<View css="wi:100% he:100% bac-transparent">
-        <View css="blur abc bor:5 zi:2" ifTrue={props.loading} />
-        <View ifTrue={props.loading} css="juc:center ali:center abc wi:100% he:100% bac-transparent zi:3">
+        <Blur css="bor:5 zi:2" ifTrue={props.loading} />
+        <View ifTrue={props.loading} css="juc:center ali:center _abc wi:100% he:100% bac-transparent zi:3">
             <ActivityIndicator color="white" size="large" {...props} />
             {
                 typeof props.text == "string" ? (<Text css="fos-lg co:white fow:bold">

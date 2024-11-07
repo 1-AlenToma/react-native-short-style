@@ -2,8 +2,9 @@ import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTransla
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
 import { AlertViewAlertProps, AlertViewProps, IThemeContext, ToastProps } from "../Typse";
+import { CSSStyle } from "../styles/validStyles"
 
-export const readAble = function (nr: number | string, total?:number) {
+export const readAble = function (nr: number | string, total?: number) {
     let nrs = nr?.toString().split(".") ?? [];
     if (nrs.length <= 1) return nr;
     if (/[1-9]/g.test(nrs[1])) return `${nrs[0]}.${nrs[1].substring(0, total ?? 2)}`;
@@ -17,12 +18,16 @@ export const optionalStyle = (style: any) => {
                 a = { ...a, ...v };
             return a;
         }, {});
+
+    if (style && typeof style == "function")
+        style = style(new CSSStyle()).toString();
+
     let item = {
         o: typeof style == "object" ? style ?? null : null,
         c: typeof style == "string" ? style ?? "" : ""
     }
 
-    return item;
+    return item as { c: string, o: any };
 }
 
 export const renderCss = (css: string, style: any) => {
@@ -92,13 +97,11 @@ export const ifSelector = (item?: boolean | Function) => {
 
 export const getCssArray = (css: string) => {
     css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
-    return css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
+    return css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0) ?? [];
 }
 
 export const getClasses = (css: string, globalStyle: any) => {
-
-    globalStyle = globalStyle;
-    let items = getCssArray(css);
+    let items = getCssArray(css) ?? [];
     let props: any = {};
     for (let item of items) {
         if (item && item.indexOf(":") == -1 && !(item in props) && item in globalStyle) {

@@ -4,12 +4,13 @@ import * as React from "react";
 import {
     useAnimate
 } from "../hooks";
-import { ifSelector, newId, proc, readAble } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, proc, readAble } from "../config/Methods";
 import { FabProps, ProgressBarProps, Size } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Button } from "./Button";
 import { InternalThemeContext } from "../theme/ThemeContext";
 import { ViewStyle } from "react-native";
+import { Blur } from "./Blur";
 
 export const Fab = (props: FabProps) => {
     let context = React.useContext(InternalThemeContext);
@@ -88,8 +89,8 @@ export const Fab = (props: FabProps) => {
 
     const view = (
         <React.Fragment key={state.id}>
-            <TouchableOpacity onPress={() => state.visible = false} css="abc to:0, le:0 blur" ifTrue={state.visible} />
-            <View css={`zi:300 overflow:visible abc bac-transparent ${props.css ?? ""}`} style={[style, ...styles]}>
+            <Blur onPress={() => state.visible = false} ifTrue={state.visible} />
+            <View css={`zi:100 overflow:visible _abc bac-transparent ${optionalStyle(props.css).c}`} style={[style, ...styles]}>
                 {!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null}
                 <TouchableOpacity style={props.prefixContainerStyle} onPress={() => state.visible = !state.visible}
                     css="bac-transparent zi:2 fl:1 bac:blue bor:25 he:60 wi:50 pa:10 juc:center ali:center">
@@ -97,7 +98,6 @@ export const Fab = (props: FabProps) => {
                 </TouchableOpacity>
                 {!["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null}
             </View>
-
         </React.Fragment>
     )
     //context.add(state.id, view, true);

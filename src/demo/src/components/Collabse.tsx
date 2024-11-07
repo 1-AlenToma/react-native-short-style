@@ -4,7 +4,7 @@ import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
 import StateBuilder from "react-smart-state";
 import { ViewStyle } from "react-native";
-import { ifSelector, newId, setRef } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, setRef } from "../config/Methods";
 import { CollabseProps, DropdownItem, DropdownListProps, DropdownRefItem, ModalProps } from "../Typse";
 import { Modal } from "./Modal";
 import { ActionSheet } from "./ActionSheet";
@@ -40,11 +40,11 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
 
 
     return (
-        <View style={props.style} css={`bor:5 wi:100% mih:30 bow:.5 boc:#CCC overflow pa:5 ${props.css ?? ""}`}>
+        <View style={props.style} css={`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5 ${optionalStyle(props.css).c}`}>
             <TouchableOpacity onPress={() => state.visible = !state.visible} css="wi:100% he:30 ali:center fld:row">
                 {props.icon}
                 <Text css="fos-lg fow:bold">{props.text}</Text>
-                <Icon type="AntDesign" css="abc ri:2" size={20} name={state.prefix} />
+                <Icon type="AntDesign" css="_abc ri:2" size={20} name={state.prefix} />
             </TouchableOpacity>
             <AnimatedView css="wi:100% pal:10" style={{
                 overflow: "hidden",

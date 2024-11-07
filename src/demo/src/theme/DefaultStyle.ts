@@ -1,3 +1,5 @@
+import NestedStyleSheet from "../styles/NestedStyleSheet";
+
 const colors = {
   gray100: '#f7fafc',
   gray200: '#edf2f7',
@@ -106,7 +108,6 @@ const colors = {
 
 export const defaultTheme = {
   name: 'default',
-
   color: colors,
   backgroundColor: colors,
 
@@ -229,32 +230,34 @@ export const defaultTheme = {
   },
 };
 
-export const ComponentsStyles = {
-  blur: "topPostion zi:100 fl:1 juc:center ali:center bac:#000 op:.5",
-  topPostion: "po:absolute to:0 le:0 wi:100% he:100% bac:transparent",
-  modalDefaultStyle: "pa:10 zi:2 wi:50% mih:20% bor:5 bow:1 boc:gray",
-  abc: "position:absolute",
-  overflow: "overflow:hidden",
-  checkBox: "fld:row di:flex juc:center ali:center",
-  "checkBox.View": "wi:25 he:25 bor:2 bow:.5 boc:gray juc:center ali:center",
-  checkBox_Right: "mar:5",
-  checkBox_Left: "mal:5",
-  checkBox_checked: "bac:rgb(70 70 70)",
-  actionSheet: "zi:2 to:0 overflow abc le:.5% overflow juc:flex-start",
-  actionSheet_Bottom: "wi:99% mah:80% botlw:.5 botrw:.5 boTLR:15 botrr:15",
-  actionSheet_Top: "mah:80% wi:99% boblw:.5 bobrw:.5 boblr:15 bobrr:15",
-  actionSheet_Left: "mah:99% maw:80% to:.5% le:0 botlw:.5 botrw:.5 bobrR:15 botrr:15",
-  actionSheet_Right: "mah:99% maw:80% to:.5% le:0 ri:0 botrw:.5 botlw:.5 boblR:15 botlr:15",
-  actionSheet_vertical_handle: "he:10 zi:1 fg:1 overflow",
-  actionSheet_horizontal_handle: "he:100% wi:10 overflow",
-  actionSheet_vertical_handle_Button: "juc:center ali:center bor:5 zi:1 to:0 wi:40 he:10 bac:gray overflow juc:center ali:center absolute le:45%",
-  actionSheet_horizontal_handle_Button: "juc:center ali:center abc bor:5 to:50% ri:0 he:40 wi:10 bac:gray",
-  menuItem: "juc:center ali:center fl:1 he:40",
-  menuItemText: "tt:uppercase als:center",
-  tabBarContainer: "wi:100% he:100% fl:1 fld:row di:flex po:relative bac:transparent",
-  tabBarContainerView: "po:relative miw:100% fld:row juc:space-between ali:center mah:40 he:40 fl:0 flg:1 bac:transparent",
-  tabBar: "wi:100% he:100% fl:1 overflow",
-  progressBar: "flex wi:100% he:20 zi:5 juc:center overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
-  progressBarAnimatedView: "zi:2 abc to:0 le:-100% wi:100% he:100% op:0.8",
-  selectedValue: "bac:#007fff co:white"
-}
+export const ComponentsStyles = NestedStyleSheet.create({
+  _blur: x => x.cls("_topPostion").zI(100).fl(1).cls("_center").baC("$baC-black").op(.5),
+  _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("transparent"),
+  _modalDefaultStyle: x => x.pa(10).zI(2).wi("50%").miH("20%").boR(5).boW(1).boC("gray"),
+  _abc: x => x.po("absolute"),
+  _overflow: x => x.ov("hidden"),
+  _checkBox: x => x.flD("row").di("flex").classNames("_center"),
+  _center: x => x.juC("center").alI("center"),
+  _checkBox$View: x => x.size(25, 25).di("flex").boR(2).boW(.5).boC("gray").cls("_center"),
+  _checkBox_Right: "mar:5",
+  _checkBox_Left: "mal:5",
+  _checkBox_checked: "bac:rgb(70 70 70)",
+  _actionSheet: x => x.zI(2).to(0).classNames("_abc").le(".5%").juC("flex-start").ov("hidden").boC("#CCCCCC"),
+  _actionSheet_Bottom: x => x.wi("99%").maH("80%").boTW(.5).boTLR(15).boTRR(15),
+  _actionSheet_Top: x => x.maH("80%").wi("99%").boBW(.5).boBLR(15).boBRR(15),
+  _actionSheet_Left: x => x.maH("99%").maW("80%").to(".5%").le(0).boTW(.5).boBW(.5).boTRR(15).boBRR(15),
+  _actionSheet_Right: "mah:99% maw:80% to:.5% le:0 ri:0 botrw:.5 botlw:.5 boblR:15 botlr:15",
+  _actionSheet_vertical_handle: "mah:10 zi:1 flg:1 _overflow",
+  _actionSheet_horizontal_handle: "he:100% wi:10 _overflow",
+  _actionSheet_vertical_handle_Button: "_center bor:5 zi:1 to:0 wi:40 he:10 bac:gray _overflow _abc le:45%",
+  _actionSheet_horizontal_handle_Button: "_center _abc bor:5 to:50% ri:0 he:40 wi:10 bac:gray",
+  _menuItem: x => x.classNames("_center").fl(1).he(40),
+  _menuItemText: x => x.tt("uppercase").alS("center"),
+  _tabBarContainer: "wi:100% he:100% fl:1 fld:row po:relative bac:transparent",
+  _tabBarContainerView: "po:relative miw:100% fld:row juc:space-between ali:center mah:40 he:40 fl:0 flg:1 bac:transparent",
+  _tabBar: "wi:100% he:100% fl:1 _overflow",
+  _progressBar: "flex wi:100% he:20 zi:5 juc:center _overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
+  _progressBarAnimatedView: x => x.zI(2).cls("_abc").to(0).le("-100%").fillView().op(.8),
+  _selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
+  _formItemChildren$TextInput: x => x.fl(1).boW(0).pa(5).add("outlineStyle", "none")
+})

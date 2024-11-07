@@ -16,6 +16,7 @@ export const InternalThemeContext = React.createContext({
 
 
 export const globalData = StateBuilder<GlobalState>({
+    storage: new Map() as any,
     activePan: false,
     alertViewData: {
         data: undefined,
@@ -60,4 +61,4 @@ export const globalData = StateBuilder<GlobalState>({
             windowChangeEvent
         ]
     }
-}).ignore("alertViewData.data", "alertViewData.toastData").globalBuild();
+}).ignore("alertViewData.data", "alertViewData.toastData", "storage").globalBuild();

@@ -88,6 +88,10 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         selectedStyle: optionalStyle(context.props.header?.selectedStyle),
         selectedIconStyle: optionalStyle(context.props.header?.selectedIconStyle),
         selectedTextStyle: optionalStyle(context.props.header?.selectedTextStyle),
+        overlayStyle: {
+            container: optionalStyle(context.props.header?.overlayStyle?.container),
+            content: optionalStyle(context.props.header?.overlayStyle?.content)
+        }
     }
 
     const getIcon = (icon: IConProps & MenuIcon | undefined, style: any, index: number) => {
@@ -97,7 +101,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         let iconProps = icon.type ? icon : {}
         let propStyle = icon.props && icon.props.style ? (Array.isArray(icon.props.style) ? icon.props.style : [icon.props.style]) : [];
         const iconStyle = icon.style ? (Array.isArray(icon.style) ? icon.style : [icon.style]) : [];
-        let css = icon.css ?? icon.props?.css ?? ""
+        let css = optionalStyle(icon.css ?? icon.props?.css ?? "").c
         propStyle = [style, ...propStyle, ...iconStyle];
 
         if (state.selectedIndex == index) {
@@ -118,32 +122,37 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
 
     let border = (
         <AnimatedView
-            style={{
-                zIndex: 100,
-                overflow: "visible",
-                borderRadius: 2,
-                height: 3,
-                backgroundColor: "#e5313a",
-                width: state.manuItemSize?.width ?? 0,
-                transform: [
-                    {
-                        translateX: context.animated.x.interpolate({
-                            inputRange: interpolate.sort(
-                                (a, b) => a - b
-                            ),
-                            outputRange: interpolate,
-                            extrapolateLeft: "extend",
-                            extrapolate: "clamp"
-                        })
-                    }
-                ]
-            }}>
+            css={header.overlayStyle.container.c}
+            style={[
+                {
+                    backgroundColor: "#e5313a",
+                },
+                header.overlayStyle.container.o,
+                {
+                    zIndex: 100,
+                    overflow: "visible",
+                    borderRadius: 2,
+                    height: 3,
+                    width: state.manuItemSize?.width ?? 0,
+                    transform: [
+                        {
+                            translateX: context.animated.x.interpolate({
+                                inputRange: interpolate.sort(
+                                    (a, b) => a - b
+                                ),
+                                outputRange: interpolate,
+                                extrapolate: "clamp"
+                            })
+                        }
+                    ]
+                }]}>
             <View
                 onStartShouldSetResponder={event => false}
                 onTouchStart={e => {
                     context.onMenuChange(state.selectedIndex);
                 }}
                 style={[
+                    header.overlayStyle.content.o,
                     {
                         width: state.manuItemSize?.width,
                         height: state.manuItemSize?.height
@@ -152,7 +161,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                         ? { bottom: -(state.manuItemSize?.height ?? 0) }
                         : { top: -(state.manuItemSize?.height ?? 0) }
                 ]}
-                css="bac:yellow bow:1 boc:red bor:1 overflow op:0.1 abc"
+                css={`bac:yellow bow:1 boc:red bor:1 _overflow op:0.1 _abc ${header.overlayStyle.content.c}`}
             />
         </AnimatedView>
     );
@@ -174,9 +183,9 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     }
 
     return (
-        <View css={`wi:100% fl:1 he:40 mah:40 overflow ${header.style.c}`} style={[header.style.o]}>
+        <View css={`wi:100% fl:1 he:40 mah:40 _overflow ${header.style.c}`} style={[header.style.o]}>
             {position != "Top" ? border : null}
-            <View css="tabBarContainerView">
+            <View css="_tabBarContainerView">
                 {menuItems.map((x, i) => (
                     <TouchableOpacity
                         onLayout={event => {
@@ -187,7 +196,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                             state.manuItemSize = item;
 
                         }}
-                        css={`menuItem ${state.selectedIndex == i ? header.selectedStyle.c : ""}`}
+                        css={`_menuItem ${state.selectedIndex == i ? header.selectedStyle.c : ""}`}
                         style={[
                             i == state.selectedIndex
                                 ? selectedStyle
@@ -226,7 +235,7 @@ export const TabBar = (props: TabBarProps) => {
     const children = Array.isArray(props.children) ? props.children : [props.children];
     const position = props.position ?? "Bottom";
     const visibleChildren = children.filter(
-        x => ifSelector(x.props.ifTrue) !== false
+        x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon)
     );
     const { animate, animateX } = useAnimate();
     const menuAnimation = useAnimate();
@@ -453,14 +462,14 @@ export const TabBar = (props: TabBarProps) => {
     return (
         <View onLayout={({ nativeEvent }) => {
             state.size = nativeEvent.layout;
-        }} css={`tabBar ${props.css}`} style={props.style}>
+        }} css={`_tabBar ${optionalStyle(props.css).c}`} style={props.style}>
             <TabBarContext.Provider value={contextValue}>
 
-                {position === "Top" ? (
+                {position === "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />
                 ) : null}
                 <AnimatedView
-                    css={`tabBarContainer`}
+                    css={`_tabBarContainer`}
                     style={[
                         {
                             flex: position === "Top" ? 0 : 1,
@@ -482,7 +491,7 @@ export const TabBar = (props: TabBarProps) => {
                     {...state.refItem.panResponse.panHandlers}>
                     {children.map((x, i) => (
                         <View
-                            css="flex fg:1 bac:transparent"
+                            css="flg:1 bac:transparent"
                             key={i}>
                             {x.props.head}
                             {!props.disableScrolling && !x.props.disableScrolling ? (
@@ -501,12 +510,12 @@ export const TabBar = (props: TabBarProps) => {
                                     {x}
                                 </ScrollView>
                             ) : (
-                                { x }
+                                x
                             )}
                         </View>
                     ))}
                 </AnimatedView>
-                {position !== "Top" ? (
+                {position !== "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />
                 ) : null}
             </TabBarContext.Provider>
