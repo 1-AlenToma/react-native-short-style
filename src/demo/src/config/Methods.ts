@@ -2,7 +2,7 @@ import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTransla
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
 import { AlertViewAlertProps, AlertViewProps, IThemeContext, ToastProps } from "../Typse";
-import { CSSStyle } from "../styles/validStyles"
+import { CSSStyle } from "../styles/CSSStyle"
 
 export const readAble = function (nr: number | string, total?: number) {
     let nrs = nr?.toString().split(".") ?? [];

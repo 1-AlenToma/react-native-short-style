@@ -1,14 +1,13 @@
 import * as ReactNative from "react-native";
-import { serilizeCssStyle } from "./cssTranslator";
-import { CSSStyle } from "./validStyles";
-type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.TextStyle | ReactNative.ImageStyle | string | ((x: CSSStyle) => CSSStyle) };
+import { CSSStyle, CSSStyleSheetStyle } from "./CSSStyle";
+type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.TextStyle | ReactNative.ImageStyle | string | ((x: CSSStyleSheetStyle) => CSSStyle) };
 
 class NestedStyleSheet {
   static create<T extends NamedStyles<T> | NamedStyles<any>>(obj: T & NamedStyles<any>): { [key: string]: number } {
     for (let key in obj) {
       let value = obj[key];
       if (value && typeof value == "function") {
-        (obj as any)[key] = value(new CSSStyle()).toString();
+        (obj as any)[key] = value(new CSSStyleSheetStyle()).toString();
       }
 
       if (key.indexOf("$") != -1) {

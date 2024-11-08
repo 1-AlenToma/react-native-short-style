@@ -1,5 +1,5 @@
 import { Icon } from "./Icon";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, FlatList } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, FlatList, SafeAreaView } from "./ReactNativeComponents";
 import { InternalThemeContext, globalData } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
@@ -24,7 +24,7 @@ const RenderItem = ({ item, index, props, state, onload }: { onload: (size: Size
             height: state.itemSize?.height,
             maxHeight: "100%",
             maxWidth: "100%"
-        }} css={`fld:column ali:center juc:space-between`} onMouseEnter={() => itemState.selected = true}
+        }} css={`fld:row ali:center juc:space-between`} onMouseEnter={() => itemState.selected = true}
             onMouseLeave={() => itemState.selected = false}
             onPress={() => {
                 state.selectedIndex = index;
@@ -160,30 +160,35 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
 
 
     return (
-        <View style={props.style} ifTrue={props.ifTrue} css={`fl:1 wi:100% he:100% ${optionalStyle(props.css).c}`} onLayout={({ nativeEvent }) => {
+        <View style={props.style} ifTrue={props.ifTrue} css={`wi:100% fl:1 ${optionalStyle(props.css).c}`} onLayout={({ nativeEvent }) => {
             if (!state.size)
                 state.size = nativeEvent.layout;
         }}>
-
+        
+                
             <ButtonGroup
                 scrollable={true}
-                ifTrue={props.renderHeader == true}
+                ifTrue={props.renderHeader}
                 buttons={state.buttons}
                 selectedIndex={[state.page]}
+                isVertical={false}
                 onPress={page => {
                     state.flatList = undefined;
                     state.page = page[0]
                 }} />
+            
             <FlatList
+                scrollEnabled={props.scrollEnabled}
                 ref={f => {
                     state.flatList = f
                 }}
                 horizontal={props.horizontal}
                 style={{
+                    flex:1,
                     maxHeight: state.size?.height,
-                    maxWidth: "100%"
+                    maxWidth: "100%",
                 }}
-                ifTrue={state.size != undefined}
+                ifTrue={state.size != undefined == true}
                 data={state.items}
                 showsHorizontalScrollIndicator={props.showsHorizontalScrollIndicator}
                 showsVerticalScrollIndicator={props.showsVerticalScrollIndicator}

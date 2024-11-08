@@ -12,7 +12,7 @@ export const useAnimate = ({
     y,
     x,
     speed,
-    useNativeDriver = true
+    useNativeDriver = false
 }: any = {}) => {
     const currentValue = React.useRef({
         x: undefined,

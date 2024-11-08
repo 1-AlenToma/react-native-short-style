@@ -16,7 +16,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         selectedIndex: props.selectedIndex,
         scrollView: undefined as typeof ScrollView | undefined,
         sizes: new Map<number, Size>()
-    }).ignore("scrollView", "selectedIndex").build();
+    }).ignore("scrollView", "selectedIndex", "sizes").build();
     const timer = useTimer(200);
 
 
@@ -36,8 +36,8 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         timer(() => {
             if (state.scrollView && state.sizes.size > 0 && state.selectedIndex.length == 1) {
                 if (props.isVertical)
-                    state.scrollView.scrollTo({ y: state.sizes.values().reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.height : 0), 0), animated: false });
-                else state.scrollView.scrollTo({ x: state.sizes.values().reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.width : 0), 0), animated: false });
+                    state.scrollView.scrollTo({ y: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.height : 0), 0), animated: false });
+                else state.scrollView.scrollTo({ x:  [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.width : 0), 0), animated: false });
             }
         });
     }
@@ -58,7 +58,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                 onLayout={({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout)}
                 onPress={() => select(index)}
                 style={[selectedStyle.o, props.scrollable ? undefined : { flex: 1 }]} key={index}
-                css={`borw:.5 juc:center ali:center boc:#CCC pa:5 ${props.isVertical ? "wi:100%" : ""} ${state.selectedIndex.includes(index) ? "bac:rgb(32, 137, 220)" : ""} ${selectedStyle.c}`}>
+                css={`borw:.5 _center boc:#CCC pa:5 ${props.isVertical ? "wi:100%" : ""} ${state.selectedIndex.includes(index) ? "bac:rgb(32, 137, 220)" : ""} ${selectedStyle.c}`}>
                 {
                     props.render ? props.render(item, index) : <Text style={selectedStyle.o} css={`fos-sm co:gray fow:bold ${state.selectedIndex.includes(index) ? "co:#FFF" : ""} ${selectedStyle.c}`}>{item}</Text>
                 }
@@ -69,9 +69,9 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
     const Component = props.scrollable ? ScrollView : View;
     const cProps = props.scrollable ? { contentContainerStyle: { flex: 1 }, ref: c => state.scrollView = c } : { style: { flex: 1 } }
     return (
-        <View css="wi:100% mih:20">
+        <View css={x=> x.wi("100%").miH(40).flD("row").joinRight(props.css)} style={props.style}>
             <Component horizontal={!props.isVertical} {...cProps} >
-                <View style={props.style} css={`wi:100% mih:20 bow:.5 borw:0 boc:#CCC ${props.isVertical ? "fld:column" : "fld:row"} ali:center ${optionalStyle(props.css).c}`}>
+                <View style={props.style} css={`wi:100% mih:40 bow:.5 borw:0 boc:#CCC ${props.isVertical ? "fld:column" : "fld:row"} ali:center ${optionalStyle(props.css).c}`}>
                     {
                         props.buttons.map((x, index) => getItem(x, index))
                     }

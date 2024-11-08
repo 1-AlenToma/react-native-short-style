@@ -18,7 +18,7 @@ import {
 } from "../config/Methods";
 import { useAnimate, useTimer } from "../hooks";
 
-import { MenuChildren, MenuIcon, MouseProps, Size, TabBarProps, TabItemProps, IConProps } from "../Typse";
+import { MenuChildren, MenuIcon, MouseProps, Size, TabBarProps, TabItemProps, IConProps, CSS_String } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Icon } from "./Icon";
 import { globalData } from "../theme/ThemeContext";
@@ -45,7 +45,7 @@ export class TabView extends React.Component<TabItemProps, {}> {
             return null;
 
         return (
-            <View style={{ width: context.size.width }} css="fl:1 wi:100% he:100%">
+            <View css="fl:1 wi:100% he:100%">
                 {props.children}
             </View>
         )
@@ -101,15 +101,14 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         let iconProps = icon.type ? icon : {}
         let propStyle = icon.props && icon.props.style ? (Array.isArray(icon.props.style) ? icon.props.style : [icon.props.style]) : [];
         const iconStyle = icon.style ? (Array.isArray(icon.style) ? icon.style : [icon.style]) : [];
-        let css = optionalStyle(icon.css ?? icon.props?.css ?? "").c
+        let css: CSS_String = x => x.joinLeft(icon.css ?? icon.props?.css).joinRight(state.selectedIndex == index ? header.selectedIconStyle.c : undefined);
         propStyle = [style, ...propStyle, ...iconStyle];
 
         if (state.selectedIndex == index) {
-            css = `${css} ${header.selectedIconStyle.c}`;
             propStyle.push(header.selectedIconStyle.o);
         }
 
-        propStyle = optionalStyle(propStyle);
+        propStyle = optionalStyle(propStyle).o;
         if (state.selectedIndex == index) {
             if (propStyle.color && /(co|color)( )?(\:)/gim.test(header.selectedIconStyle.c))
                 delete propStyle.color;
@@ -367,7 +366,7 @@ export const TabBar = (props: TabBarProps) => {
         state.refItem.panResponse =
             PanResponder.create({
                 onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-                    return (Platform.OS === 'web' ? gestureState.numberActiveTouches > 0 : true) && gestureState.dx != 0;
+                    return (Platform.OS === 'web' ? gestureState.numberActiveTouches > 0 : false) && gestureState.dx != 0;
                 },
                 onMoveShouldSetPanResponder: (
                     evt,
@@ -485,24 +484,23 @@ export const TabBar = (props: TabBarProps) => {
                                     )
                                 }
                             ],
-                            width: 100 * children.length + "%"
+                            width: (100 * children.length) + "%"
                         }
                     ]}
                     {...state.refItem.panResponse.panHandlers}>
                     {children.map((x, i) => (
                         <View
-                            css="flg:1 bac:transparent"
+                            css={x => x.flG(1).baC("$baC-transparent").maW(state.size.width)}
                             key={i}>
                             {x.props.head}
                             {!props.disableScrolling && !x.props.disableScrolling ? (
                                 <ScrollView
                                     style={{
-                                        width: "100%"
+                                        width: "100%",
                                     }}
                                     contentContainerStyle={[
                                         {
                                             flexGrow: 1,
-                                            padding: 5,
                                             width: "100%",
                                             maxWidth: "100%"
                                         }

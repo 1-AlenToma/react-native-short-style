@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text } from "./ReactNativeComponents";
+import { TouchableOpacity, Text, View } from "./ReactNativeComponents";
 import * as React from "react";
 import { ButtonProps } from "../Typse";
 import { ifSelector, optionalStyle } from "../config/Methods";
@@ -38,24 +38,25 @@ export const Button = (props: ButtonProps) => {
 
 
     return (
-        <TouchableOpacity {...pressableProps} onMouseLeave={(event) => {
-            setShadow("sh-sm");
-            props.onMouseLeave?.(event);
-        }} onMouseEnter={(event) => {
-            setShadow("sh-md")
-            props.onMouseEnter?.(event)
-        }} css={x => x.flD("row")
-            .pa(5)
-            .maB(5)
-            .if(props.icon != undefined, x => x.paL(5).juC("space-between"), x => x.paL(8))
-            .paR(8)
-            .boR(5)
-            .baC("#4b48f5")
-            .classNames(shadow)
-            .joinRight(props.css)
-            .if(disabled, x => x.op(.8))}>
+        <TouchableOpacity {...pressableProps}
+            onMouseLeave={(event) => {
+                setShadow("sh-sm");
+                props.onMouseLeave?.(event);
+            }} onMouseEnter={(event) => {
+                setShadow("sh-md")
+                props.onMouseEnter?.(event)
+            }} css={x => x.flD("row")
+                .pa(5)
+                .maB(5)
+                .if(props.icon != undefined && props.text != undefined, x => x.paL(5).juC("space-between"), x => x.paL(8))
+                .paR(8)
+                .boR(5)
+                .baC("$baC-primary")
+                .classNames(shadow)
+                .joinRight(props.css)
+                .if(disabled, x => x.op(.8))}>
             {props.icon}
-            <Text ifTrue={() => props.text != undefined} css={x => x.classNames("fos-xs").joinRight(props.textCss)}>{props.text}</Text>
+            <Text ifTrue={() => props.text != undefined} css={x => x.cls("fos-xs").joinRight(props.textCss)}>{props.text}</Text>
         </TouchableOpacity>
     )
 

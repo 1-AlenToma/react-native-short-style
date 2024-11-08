@@ -230,7 +230,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
             })
         }
         fn(state.id,
-            <Blur key={state.id} css="op:1 bac:transparent" style={{ zIndex: context.totalItems() + 300 }}>
+            <View key={state.id} css={x => x.baC("$baC-transparent").cls("_topPostion")} style={{ zIndex: context.totalItems() + 300 }}>
                 <Blur onPress={() => {
                     if (!props.disableBlurClick)
                         toggle(false);
@@ -258,7 +258,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         {position == "Top" || position == "Left" ? handle : null}
                     </View>
                 </AnimatedView >
-            </Blur>,
+            </View>,
         );
     }
 

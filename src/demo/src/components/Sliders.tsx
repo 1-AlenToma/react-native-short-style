@@ -1,4 +1,4 @@
-import { Slider as SliderView, SliderProps } from '@miblanchard/react-native-slider';
+import * as NativeSlider from '@miblanchard/react-native-slider';
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import * as React from "react";
 import {
@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 import StateBuilder from 'react-smart-state';
 import { ViewStyle } from 'react-native';
 
-export const Slider = (props: SliderProps & {
+export const Slider = (props: NativeSlider.SliderProps & {
     enableButtons?: boolean,
     buttonCss?: CSS_String,
     ifTrue?: () => boolean | boolean,
@@ -58,7 +58,7 @@ export const Slider = (props: SliderProps & {
                         onChange(props.minimumValue)
                 }}></Button>
 
-            <SliderView
+            <NativeSlider.Slider
                 renderAboveThumbComponent={!state.sliding ? undefined : () => <Text css="fos-sm mal:-37% bor:5 fow:bold mat:-35px bow:1 boc:#CCC miw:50 pat:2 pab:2 tea:center zi:100">{`${readAble(state.value as number, 1)}/${props.maximumValue}`}</Text>}
                 {...props}
                 onSlidingStart={(event, index: number) => {
@@ -68,7 +68,7 @@ export const Slider = (props: SliderProps & {
                 value={state.value}
                 containerStyle={{ ...props.containerStyle, width: props.enableButtons ? "60%" : props.containerStyle?.width ?? "100%" }}
                 onSlidingComplete={onChange} />
-            <Button css={`wi:15% he:25 ${optionalStyle(props.buttonCss).c}`}
+            <Button css={x => x.size("15%", 25).joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}

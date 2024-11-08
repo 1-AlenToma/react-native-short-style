@@ -30,11 +30,11 @@ export const AlertView = () => {
                     <Text css={`fos-md fow:bold`} ifTrue={() => data.title != undefined}>{data.title}</Text>
                     <Text css={`fos-${data.size ?? "sm"} co:gray pal:2`}>{data.message}</Text>
                 </View>
-                <View ifTrue={() => data.callBack != undefined} css="he:10% fld:row juc:flex-end ali:center">
+                <View ifTrue={() => data.callBack != undefined} css="fld:row juc:flex-end ali:center">
                     <Button css="mar:5" text={data.yesText ?? "Yes"} onPress={()=> answer(true)} />
                     <Button text={data.cancelText ?? "No"} onPress={()=> answer(false)} />
                 </View>
-                <View ifTrue={() => data.callBack == undefined} css="he:10% fld:row juc:flex-end ali:center">
+                <View ifTrue={() => data.callBack == undefined} css="fld:row juc:flex-end ali:center">
                     <Button css="mar:5" text={data.okText ?? "Ok"} onPress={()=> answer(false)} />
                 </View>
             </View>

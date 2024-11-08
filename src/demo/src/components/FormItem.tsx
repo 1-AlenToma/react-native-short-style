@@ -17,15 +17,15 @@ export const FormItem = (props: FormItemProps) => {
     const css = "mar:5";
 
     return (
-        <View style={props.style} css={`wi:100% mih:20 bobw:.5 bobc:#CCC ${optionalStyle(props.css).c}`}>
-            <View css={`fl:1 fld:row paddingHorizontal:5 juc:space-between di:flex ali:center pa:5`}>
+        <View style={props.style} css={x=> x.joinLeft(x=> x.cls("_overflow").maH(200).boBC("$bobc-gray300").boBW(.8)).joinRight(props.css)}>
+            <View css={`wi:100% mah:95% _overflow fld:row juc:space-between ali:center pa:5`}>
                 <View ifTrue={() => icon != undefined} css={css}>
                     {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                 </View>
                 <View ifTrue={() => props.title != undefined} css={css}>
                     {props.title && typeof props.title == "string" ? <Text css="fos-sm fow:bold">{props.title}</Text> : props.title}
                 </View>
-                <View css="fl:1 _formItemChildren">
+                <View css="mih:40 _formItemChildren flg:1 _center ali:flex-end">
                     {props.children}
                 </View>
                 <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={() => props.info != undefined} text={props.info}>

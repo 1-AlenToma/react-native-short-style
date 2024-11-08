@@ -54,22 +54,30 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
          })*/
     }, "ref")
 
-    let left = state.pos?.px ?? 0;
-    let top = ((state.pos?.py ?? 0) + (state.pos?.height ?? 0))
+    let left = state.pos?.px;
+    let top = state.pos?.py;
     if (state.toolTipSize) {
+        left = left - (state.toolTipSize.width / 2)
+        top = top + state.pos.height
         if (left + state.toolTipSize.width > globalData.window.width)
-            left = globalData.window.width - state.toolTipSize.width;
-        if (!props.postion || props.postion == "Top")
+            left = globalData.window.width - (state.toolTipSize.width)
+        if (!props.postion || props.postion == "Top") {
             top -= state.toolTipSize.height + state.pos.height;
+            if (top < 0)
+                top = 5
+        }
+
     }
 
     fn(state.id, (
-        <View key={state.id} css={`_abc wi:100% he:100% le:0 to:0 bac-transparent ${optionalStyle(props.css).c}`}>
+        <View key={state.id} css={x => x.fillView().cls("_abc").pos(0, 0).baC("$baC-transparent")}>
             <Blur css="zi:1 bac-transparent" onPress={() => state.visible = false} />
-            <View onLayout={({ nativeEvent }) => state.toolTipSize = nativeEvent.layout} style={[optionalStyle(props.style).o, {
+            <View onLayout={({ nativeEvent }) => {
+                state.toolTipSize = nativeEvent.layout
+            }} style={[optionalStyle(props.style).o, {
                 left: left,
                 top: top
-            }]} css={`zi:2 bow:.5 pa:5 bor:5 boc:#CCC ${optionalStyle(props.css).c} _abc`}>
+            }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).joinRight(props.css).cls("_abc")}>
                 {
                     typeof props.text == "string" ? <Text css="fos-sm">{props.text}</Text> : props.text
                 }

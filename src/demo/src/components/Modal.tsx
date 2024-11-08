@@ -3,7 +3,7 @@ import { AnimatedView, TouchableOpacity, View } from "./ReactNativeComponents";
 import { InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
 import StateBuilder from "react-smart-state";
-import { ViewStyle } from "react-native";
+import { Platform, ViewStyle } from "react-native";
 import { newId, optionalStyle } from "../config/Methods";
 import { ModalProps } from "../Typse";
 import { Button } from "./Button";
@@ -58,7 +58,7 @@ export const Modal = (props: ModalProps) => {
         let style = Array.isArray(props.style) ? props.style : [props.style];
         if (state.isVisible) {
             context.add(state.id,
-                <Blur key={state.id} css="op:1 bac:transparent" style={{ zIndex: context.totalItems() + 300 }}>
+                <Blur key={state.id} css="op:1 bac:transparent fl:1" style={{ zIndex: context.totalItems() + 300 }}>
                     <Blur onPress={() => {
                         if (!props.disableBlurClick)
                             toggle(false);
@@ -77,8 +77,12 @@ export const Modal = (props: ModalProps) => {
 
                     }
                     ]}>
-                        <Button ifTrue={props.addCloser == true} onPress={() => toggle(false)} css="_abc ri:5 to:5 wi:15 he:15 zi:2 bac-transparent pa:0 pal:1 bow:0 sh-none" icon={<Icon type="AntDesign" name="close" color={"red"} size={15} />} />
-                        <View css={x => x.fillView().if(props.addCloser == true, x => x.maT(5))}>
+                        <View css={x => x.cls("_abc").he(30).wi(30).ri(0).zI(3).alI("flex-end").baC("$baC-transparent")}>
+                            <Button onPress={() => toggle(false)} css={
+                                x => x.cls("sh-none", "_center").size(30, 30).baC("$baC-transparent").paL(1).boW(0)
+                            } icon={<Icon type="AntDesign" name="close" size={15} />} />
+                        </View>
+                        <View css={x => x.fillView().zI(1).if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>
                             {props.children}
                         </View>
                     </AnimatedView>

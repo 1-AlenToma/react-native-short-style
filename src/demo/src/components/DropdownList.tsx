@@ -80,19 +80,19 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
 
 
     return (
-        <Container disableScrolling={true} onTabChange={(index) => state.index = index} style={{ flex: null, flexBasis: state.index == 1 ? undefined : 38 }} css={`maw:200`} selectedTabIndex={state.visible ? 1 : 0}>
+        <Container disableScrolling={true} onTabChange={(index) => state.index = index} style={{ flex: null, flexBasis: state.index == 1 ? undefined : 38 }} selectedTabIndex={state.visible ? 1 : 0}>
             <Selector>
                 <TouchableOpacity onLayout={({ nativeEvent }) => {
                     state.propsSize = nativeEvent.layout;
                 }} onMouseEnter={() => state.shadow = "sh-sm"} onMouseLeave={() => state.shadow = ""}
                     onPress={() => state.visible = !state.visible}
                     css={`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC ${state.shadow} ${optionalStyle(props.css).c}`}>
-                    <View css="wi:80% he:100% borw:.5 juc:center pal:5 boc:#CCC">
+                    <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC">
                         <Text style={{
                             color: selectedText ? undefined : "#CCC"
                         }} css="fos-sm">{selectedText ?? props.placeHolder}</Text>
                     </View>
-                    <View css="juc:center ali:center wi:20% he:100%">
+                    <View css="fl:1 _center wi:30 maw:30 he:100%">
                         <Icon style={{
                             transform: [{
                                 rotateX: mode == "Fold" ? undefined : state.visible ? "180deg" : "0deg"

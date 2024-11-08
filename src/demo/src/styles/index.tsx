@@ -6,7 +6,8 @@ import { getClasses, ifSelector, newId, currentTheme, getCssArray } from "../con
 import buildState from 'react-smart-state';
 import { ThemeContext, globalData } from "../theme/ThemeContext";
 import { ICSSContext, InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
-import { CSSStyle } from "./validStyles";
+import { CSSStyle } from "./CSSStyle";
+import { extractProps } from "../config/CSSMethods";
 
 let toArray = (item: any) => {
   if (!item) return [];
@@ -74,11 +75,23 @@ class InternalStyledContext {
   generatedStyle: any;
   prevCSS?: string;
   cpyCss: string;
+  cssProps: any = {};
 
   getCss() {
     if (this.props.css && typeof this.props.css == "function")
       return this.props.css(new CSSStyle()).toString();
     return (this.props.css ?? "") as string;
+  }
+
+  cleanCss() {
+    return this.getCss();
+    let item = extractProps(this.getCss());
+    if (item._hasValue) {
+      this.cssProps = { ...item }
+      delete this.cssProps.css;
+    }
+
+    return item.css;
   }
 
   update(props: InternalStyledProps, styleFile: any, prevContext?: InternalStyledContext) {
@@ -108,7 +121,7 @@ class InternalStyledContext {
   }
 
   classNames() {
-    let classNames = getClasses(this.getCss(), this.styleFile);
+    let classNames = getClasses(this.cleanCss(), this.styleFile);
     return classNames;
   }
 
@@ -118,7 +131,7 @@ class InternalStyledContext {
         return this.cpyCss;
     let name = this.viewName();
     let parent = new CSS(this.styleFile, this.prevContext.join?.());
-    let cpyCss = new CSS(this.styleFile, this.getCss()).prepend(name, this.viewPath());
+    let cpyCss = new CSS(this.styleFile, this.cleanCss()).prepend(name, this.viewPath());
     for (let s of parent.classes()) {
       let m = ` ${s}.${name}`;
       cpyCss.add(m);
@@ -138,11 +151,7 @@ let StyledWrapper = React.forwardRef(
       props.css = "";
     const {
       View,
-      viewPath,
-      fullParentPath,
-      style,
-      css,
-      classNames
+      style
     } = props;
     let ec = React.useContext(CSSContext);
     let themecontext = React.useContext(ThemeContext);
@@ -168,7 +177,12 @@ let StyledWrapper = React.forwardRef(
       state.refItem.selectedThemeIndex = themecontext.selectedIndex;
     }
 
-    if (styleFile && state.refItem.style == undefined) {
+    React.useEffect(() => {
+      state.refItem.style = undefined;
+      state.contextValue.prevCSS = undefined;
+    }, [props.css])
+
+    if ((styleFile && state.refItem.style == undefined)) {
       let sArray = [];
       let cpyCss = state.contextValue.join();
 
@@ -177,6 +191,10 @@ let StyledWrapper = React.forwardRef(
         styleFile,
         undefined
       );
+      if (tCss._props)
+        state.contextValue.cssProps = { ...tCss._props }
+      else state.contextValue.cssProps = {};
+      delete tCss._props;
       if (tCss) sArray.push(tCss);
       state.refItem.style = sArray;
     }
@@ -184,16 +202,24 @@ let StyledWrapper = React.forwardRef(
     if (ifSelector((props as any).ifTrue) === false)
       return null;
 
+    let styles = [
+      isText && globalData.activePan ? { userSelect: "none" } : {},
+      ...toArray(state.refItem.style),
+      ...toArray(style),
+      ...toArray(state.contextValue.cssProps?.style)
+    ];
+
+    if (state.contextValue.cssProps?.style) {
+      delete state.contextValue.cssProps.style;
+    }
+
     return (
       <CSSContext.Provider value={state.contextValue}>
         <View
           {...props}
+          {...state.contextValue.cssProps}
           ref={ref}
-          style={[
-            isText && globalData.activePan ? { userSelect: "none" } : {},
-            ...toArray(state.refItem.style),
-            ...toArray(style)
-          ]}
+          style={styles}
         />
       </CSSContext.Provider>
     );
@@ -230,3 +256,5 @@ export {
   NestedStyleSheet,
   cssTranslator
 };
+
+export * from "./CSSStyle";

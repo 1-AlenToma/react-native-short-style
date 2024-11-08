@@ -1,13 +1,14 @@
 import * as React from "react";
 import { View, Text, AnimatedView } from "./ReactNativeComponents";
 import { Button } from "./Button";
-import { AlertViewFullProps, AlertViewProps, Size, ToastProps } from "../Typse";
+import { AlertViewFullProps, AlertViewProps, CSS_String, Size, ToastProps } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "react-smart-state";
 import { newId } from "../config/Methods";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
+import {StatusBar} from 'react-native';
 
 export const ToastView = () => {
     globalData.hook("screen");
@@ -36,7 +37,7 @@ export const ToastView = () => {
 
     if (state.size) {
         if (data.position == "Top") {
-            interpolate = [-state.size.height, 5];
+            interpolate = [-state.size.height, StatusBar.currentHeight];
         } else {
             interpolate = [globalData.window.height + state.size.height, (globalData.window.height - state.size.height) - 30];
         }
@@ -44,9 +45,10 @@ export const ToastView = () => {
 
     const animateTop = () => {
         animateY(state.visible ? 1 : 0, () => {
+            state.counter = 0;
             if (state.visible)
                 startCounter();
-            else state.counter = 0;
+
 
             if (!state.visible && state.size) {
                 state.size = undefined;
@@ -57,6 +59,7 @@ export const ToastView = () => {
     }
 
     globalData.useEffect(() => {
+
         state.visible = globalData.alertViewData.toastData != undefined;
     }, "alertViewData.toastData")
 
@@ -66,32 +69,32 @@ export const ToastView = () => {
     }, "visible", "size")
 
     let typeInfo = {
-        css: "",
+        css: undefined as CSS_String | undefined,
         icon: undefined
     }
 
     switch (data.type) {
         case "Error":
             typeInfo = {
-                css: "bac:#a94442 co:white",
+                css: x => x.co("$co-light").baC("$baC-error"),
                 icon: (<Icon type="MaterialIcons" name="error" size={30} css="co:white" />)
             }
             break;
         case "Info":
             typeInfo = {
-                css: "bac:#31708f co:white",
+                css: x => x.co("$co-light").baC("$baC-info"),
                 icon: (<Icon type="AntDesign" name="infocirlce" size={30} css="co:white" />)
             }
             break;
         case "Warning":
             typeInfo = {
-                css: "bac:#8a6d3b co:white",
+                css: x => x.co("$co-dark").baC("$baC-warning"),
                 icon: (<Icon type="FontAwesome" name="warning" size={30} css="co:white" />)
             }
             break;
         case "Success":
             typeInfo = {
-                css: "bac:#3c763d co:white",
+                css: x => x.co("$co-light").baC("$baC-success"),
                 icon: (<Icon type="Entypo" name="check" size={30} css="co:white" />)
             }
             break;
@@ -109,14 +112,20 @@ export const ToastView = () => {
                 extrapolate: "clamp"
             })
         }]
-    }} css={`zi:2 miw:50% bor:5 bow:.5 boc:gray _overflow pa:5 maw:80% mih:30 _abc fld:row juc:center ali:center sh-sm ${typeInfo.css}`}>
-        <Button onPress={() => state.visible = false} css="_abc ri:5 to:5 wi:15 he:15 zi:2 bac-transparent pa:0 pal:1 bow:0 sh-none" icon={<Icon type="AntDesign" name="close" color={"red"} size={15} />} />
-        <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac-transparent">
-            {data.icon ?? typeInfo.icon}
-        </View>
-        <View css="fl:1 zi:1 bac-transparent">
-            <Text ifTrue={() => data.title != undefined} css={`fos-lg maw:90% fow:bold ${typeInfo.css}`}>{data.title}</Text>
-            <Text css={`fos-sm maw:90% pab:5 ${typeInfo.css}`}>{data.message}</Text>
+    }} css={x => x.joinLeft("zi:2 miw:80% bor:5 bow:.5 boc:gray _overflow pa:5 maw:80% mih:30 _abc sh-sm").joinRight(typeInfo.css)}>
+        <View css={x => x.fl(1).fillView().flD("row").cls("_center").baC("$baC-transparent")}>
+            <View css={x => x.cls("_abc").fl(1).fillView().pos(0,0).zI(3).alI("flex-end").baC("$baC-transparent")}>
+                <Button onPress={() => state.visible = false} css={
+                    x => x.cls("sh-none","_center").size(30,30).baC("$baC-transparent").paL(1).boW(0)
+                } icon={<Icon type="AntDesign" name="close" size={15} />} />
+            </View>
+            <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac-transparent">
+                {data.icon ?? typeInfo.icon}
+            </View>
+            <View css="fl:1 zi:1 bac-transparent">
+                <Text ifTrue={() => data.title != undefined} css={x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css)}>{data.title}</Text>
+                <Text css={x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css)}>{data.message}</Text>
+            </View>
         </View>
         <ProgressBar ifTrue={() => data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_abc bo:0 le:0 he:5 zi:2" />
     </AnimatedView>, true)

@@ -1,3 +1,4 @@
+import { extractProps } from "../config/CSSMethods";
 import { Storage } from "../config/Storage";
 import { StylesAttributes, ShortCSS } from "./validStyles";
 
@@ -153,20 +154,27 @@ const css_translator = (
   styleFile?: any,
   propStyle?: any,
   id?: string
-) => {
-  if (!css || css.length <= 0) return {};
+): object & { _props: any } => {
+  let cssItem = { _props: {} };
+  if (!css || css.trim().length <= 0) return cssItem;
   id = id ?? css;
-  css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
-  if (!css || css.length <= 0) return {};
 
   if (Storage.has(id))
-    return Storage.get(id);
+    return {...Storage.get(id)};
   let shortk = ShortCSS;
   let CSS = styleFile;
+  let translatedItem = extractProps(css);
+  if (translatedItem._hasValue) {
+    css = translatedItem.css;
+    delete translatedItem.css;
+    delete translatedItem._hasValue;
+    cssItem._props = { ...translatedItem }
+    // console.error(translatedItem)
+  }
   //if (styleFile)
   //  CSS = serilizeCssStyle(styleFile);
 
-  let cssItem = {};
+  css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
   let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
   for (let c of items) {
     if (c.indexOf(":") !== -1) {
@@ -187,19 +195,20 @@ const css_translator = (
           cssItem[short.key] = value;
       } else {
         cssItem[k] = value;
-       // console.warn(k, "not found in react-native style props, but we will still add it")
+        // console.warn(k, "not found in react-native style props, but we will still add it")
       }
       continue;
     }
-
-
-
-
 
     let style = CSS[c];
     if (typeof style === "string")
       style = css_translator(style, styleFile, propStyle);
     if (style) {
+      if (style._props) {
+        cssItem._props = { ...cssItem._props, ...style._props };
+        delete style._props;
+      }
+
       cssItem = {
         ...cssItem,
         ...cleanStyle(style, propStyle)
@@ -208,7 +217,7 @@ const css_translator = (
     }
   }
   Storage.set(id, cssItem);
-  return cssItem;
+  return {...cssItem};
 };
 
 export default css_translator;

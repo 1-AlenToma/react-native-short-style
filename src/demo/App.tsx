@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import 'react-native-get-random-values';
 
 import {
   ThemeContext,
@@ -69,7 +70,7 @@ const themes = [
       color: "#fff"
     },
     Icon: {
-      color: "#fff"
+      color: "white"
     }
   })
 ]
@@ -95,13 +96,13 @@ export default function App() {
     AlertDialog.alert({ message: "This a test Text for alert dialog", title: "Success" });
   }
 
-  const Toast = () => {
+  const Toast = (type: any) => {
     AlertDialog.toast({
       message: "Loaders are enabled by default. Use `loader`, `loaderBg` to change the default behavior",
-      title: "Information",
+      title: type,
       position: "Top",
       loader: true,
-      type: "Warning"
+      type: type
     });
   }
 
@@ -119,7 +120,7 @@ export default function App() {
   const loadItems = async () => {
     state.loading = true;
     let oldItems = [...state.items];
-    [...Array(30)].map((_, x) => {
+    [...Array(5)].map((_, x) => {
       let value = oldItems.length + 1
       oldItems.push({
         label: `item ${value}`,
@@ -140,7 +141,7 @@ export default function App() {
     <ThemeContainer selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       <TabBar position='Bottom' header={{
         selectedIconStyle: "color:red",
-        style: x=> x.baC("#ffffff"),
+        style: x => x.baC("#ffffff"),
         overlayStyle: {
           content: x => x.baC("#8a88ee").op(.4)
         }
@@ -255,7 +256,7 @@ export default function App() {
           <BlockContainer>
             <Block title="Modal Example">
               <Button onPress={() => state.modal1 = true} text="Show Modal" />
-              <Modal isVisible={state.modal1} onHide={() => state.modal1 = false}>
+              <Modal isVisible={state.modal1} addCloser={true} onHide={() => state.modal1 = false}>
                 <Text>this is modal 1</Text>
                 <Button onPress={() => state.modal2 = true} text="Show Modal 2" />
               </Modal>
@@ -286,12 +287,15 @@ export default function App() {
               <Button onPress={Confirm} text="Show confirm" />
             </Block>
             <Block title="ToastDialog">
-              <Button onPress={Toast} text="Show Toast" />
+              <Button onPress={() => Toast("Error")} text="Show Toast Error" />
+              <Button onPress={() => Toast("Warning")} text="Show Toast Warning" />
+              <Button onPress={() => Toast("Success")} text="Show Toast Success" />
+              <Button onPress={() => Toast("Info")} text="Show Toast Info" />
             </Block>
             <StatusBar style="auto" />
           </BlockContainer>
         </TabView>
-        <TabView title="Form">
+        <TabView title="Form" disableScrolling={true}>
           <BlockContainer>
             <Block title='Form'>
               <FormItem title="FullName" icon={{ type: "AntDesign", name: "user" }}>
@@ -315,32 +319,34 @@ export default function App() {
                 <CheckBox checked checkBoxType="Switch"></CheckBox>
               </FormItem>
             </Block>
-            <Block title='Page with Pagination header' style={{ width: 200, height: 150 }}>
+            <Block title='Page infinit loading' style={{ display:"none", minWidth: 300, height: 150 }}>
               <Loader loading={state.loading}>
-                <Pager selectedIndex={state.items.findIndex(x => x.value == state.selectedValue)}
-                  showsVerticalScrollIndicator={true} items={state.items} onEndReached={loadItems}
-                  onSelect={(item) => state.selectedValue = item.value}
-                  renderHeader={true} horizontal={false} render={(item, index, css) => (
-                    <View css={`wi:100% he:20 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
-                      <Text css={`fos-sm ${css}`}>{item.label}</Text>
-                    </View>)} />
-              </Loader>
-            </Block>
-
-            <Block title='Page infinit loading' style={{ width: 200, height: 150 }}>
-              <Loader loading={state.loading}>
-                <Pager ifTrue={true}
+                <Pager ifTrue={false}
                   selectedIndex={state.items.findIndex(x => x.value == state.selectedValue)}
                   showsVerticalScrollIndicator={true}
                   items={state.items}
                   onEndReached={loadItems}
                   onSelect={(item) => state.selectedValue = item.value}
                   renderHeader={false} horizontal={false} render={(item, index, css) => (
-                    <View css={`wi:100% he:20 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
+                    <View css={`wi:100% he:40 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
                       <Text css={`fos-sm ${css}`}>{item.label}</Text>
                     </View>)} />
               </Loader>
             </Block>
+            <Block title='Page with Pagination header' style={{ minWidth: 300, height: 300 }}>
+              <Loader loading={state.loading}>
+                <Pager
+                  selectedIndex={state.items.findIndex(x => x.value == state.selectedValue)}
+                  showsVerticalScrollIndicator={true} items={state.items} onEndReached={loadItems}
+                  onSelect={(item) => state.selectedValue = item.value}
+                  renderHeader={true} horizontal={false} render={(item, index, css) => (
+                    <View css={`wi:100% he:40 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
+                      <Text css={`fos-sm ${css}`}>{item.label}</Text>
+                    </View>)} />
+              </Loader>
+            </Block>
+
+
           </BlockContainer>
         </TabView>
       </TabBar>

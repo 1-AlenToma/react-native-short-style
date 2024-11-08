@@ -57,7 +57,7 @@ export const ProgressBar = ({
                 setSize(e.nativeEvent.layout);
             }}
             style={style}
-            css={`_progressBar ${optionalStyle(css).c}`}>
+            css={x => x.cls("_progressBar").joinRight(css)}>
             <Blur css="zi:1" />
             <View
                 css="zi:3 bac:transparent">

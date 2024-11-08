@@ -1,6 +1,15 @@
 import NestedStyleSheet from "../styles/NestedStyleSheet";
 
 const colors = {
+  primary: '#007bff',
+  secondary: '#6c757d',
+  success: '#28a745',
+  info: '#17a2b8',
+  warning: '#ffc107',
+  error: '#dc3545',
+  light: '#f8f9fa',
+  dark: '#343a40',
+
   gray100: '#f7fafc',
   gray200: '#edf2f7',
   gray300: '#e2e8f0',
@@ -231,9 +240,9 @@ export const defaultTheme = {
 };
 
 export const ComponentsStyles = NestedStyleSheet.create({
-  _blur: x => x.cls("_topPostion").zI(100).fl(1).cls("_center").baC("$baC-black").op(.5),
+  _blur: x => x.cls("_topPostion").fl(1).cls("_center").baC("$baC-black").op(.5),
   _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("transparent"),
-  _modalDefaultStyle: x => x.pa(10).zI(2).wi("50%").miH("20%").boR(5).boW(1).boC("gray"),
+  _modalDefaultStyle: x => x.pa(10).zI(2).wi("80%").he("20%").boR(5).boW(1).boC("gray"),
   _abc: x => x.po("absolute"),
   _overflow: x => x.ov("hidden"),
   _checkBox: x => x.flD("row").di("flex").classNames("_center"),
@@ -259,5 +268,5 @@ export const ComponentsStyles = NestedStyleSheet.create({
   _progressBar: "flex wi:100% he:20 zi:5 juc:center _overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
   _progressBarAnimatedView: x => x.zI(2).cls("_abc").to(0).le("-100%").fillView().op(.8),
   _selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
-  _formItemChildren$TextInput: x => x.fl(1).boW(0).pa(5).add("outlineStyle", "none")
+  _formItemChildren$TextInput: x => x.fl(1).wi("100%").boW(0).boC("$boc-light").paL(5).boR("$bor-xs").add("outlineStyle", "none")
 })

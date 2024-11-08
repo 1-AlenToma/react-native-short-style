@@ -1,6 +1,6 @@
 import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, TextStyle, ViewStyle, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps } from "react-native";
 import { NestedStyleSheet } from "./styles";
-import { CSSStyle } from "./styles/validStyles"
+import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
 import * as Icons from "@expo/vector-icons/build/createIconSet";
 
@@ -354,6 +354,7 @@ export type PagerProps = StyledProps & {
     render: (item: any, index: number, selectedCss: string) => React.ReactNode;
     items: any[];
     selectedIndex?: number;
+    scrollEnabled?:boolean;
     onChange?: (page: number, totalPages: number) => void;
     onSelect?: (item: any, index: number) => void;
     onEndReached?: () => void;

@@ -33,6 +33,7 @@
   ],
   "dependencies": {
     "react-smart-state": "^1.0.2",
-    "react-native-slider": "^0.11.0"
+    "react-native-slider": "^0.11.0",
+    "react-native-get-random-values": "^1.11.0"
   }
 }
