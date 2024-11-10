@@ -15,7 +15,7 @@ import * as Icons from "@expo/vector-icons";
 import {
     ifSelector,
     optionalStyle
-} from "../config/Methods";
+} from "../config";
 import { useAnimate, useTimer } from "../hooks";
 
 import { MenuChildren, MenuIcon, MouseProps, Size, TabBarProps, TabItemProps, IConProps, CSS_String } from "../Typse";
@@ -182,7 +182,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     }
 
     return (
-        <View css={`wi:100% fl:1 he:40 mah:40 _overflow ${header.style.c}`} style={[header.style.o]}>
+        <View css={x => x.cls("_tabBarMenu").if(position == "Bottom", x => x.boTC("$co-gray300").boTW(.5), x => x.boBC("$co-gray300").boBW(.5)).joinRight(header.style.c)} style={[header.style.o]}>
             {position != "Top" ? border : null}
             <View css="_tabBarContainerView">
                 {menuItems.map((x, i) => (
@@ -463,7 +463,6 @@ export const TabBar = (props: TabBarProps) => {
             state.size = nativeEvent.layout;
         }} css={`_tabBar ${optionalStyle(props.css).c}`} style={props.style}>
             <TabBarContext.Provider value={contextValue}>
-
                 {position === "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />
                 ) : null}
@@ -490,7 +489,7 @@ export const TabBar = (props: TabBarProps) => {
                     {...state.refItem.panResponse.panHandlers}>
                     {children.map((x, i) => (
                         <View
-                            css={x => x.flG(1).baC("$baC-transparent").maW(state.size.width)}
+                            css={x => x.flG(1).baC("$baC-transparent").maW(state.size.width + 1)}
                             key={i}>
                             {x.props.head}
                             {!props.disableScrolling && !x.props.disableScrolling ? (

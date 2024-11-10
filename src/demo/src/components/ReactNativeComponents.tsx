@@ -6,6 +6,7 @@ import { GenericViewProps, GenericView } from "../Typse";
 
 
 const styledItems: any = {}
+const AnimatedTouchable = Native.Animated.createAnimatedComponent(Native.TouchableOpacity);
 export const CreateView = function <T extends object, P>(view: any, name?: string) {
     name = name ?? view.displayName ?? view;
     let cacheName = view.displayName ?? name;
@@ -29,4 +30,5 @@ export const TouchableNativeFeedback = CreateView<Native.TouchableNativeFeedback
 export const Image = CreateView<Native.Image, ImageProps>(Native.Image);
 export const AnimatedView = CreateView<Native.View, ViewProps>(Native.Animated.View, "AnimatedView");
 export const AnimatedText = CreateView<Native.Text, TextProps>(Native.Animated.Text, "AnimatedText");
+export const AnimatedTouchableOpacity = CreateView<Native.TouchableOpacity, TouchableOpacityProps>(AnimatedTouchable, "AnimatedTouchableOpacity");
 export const AnimatedScrollView = CreateView<Native.ScrollView, ScrollViewProps>(Native.Animated.ScrollView, "AnimatedScrollView");

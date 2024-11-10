@@ -1,20 +1,56 @@
 import * as ReactNative from "react-native";
 import { CSSStyle, CSSStyleSheetStyle } from "./CSSStyle";
+import { parseKeys, newId } from "../config/CSSMethods";
+
 type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.TextStyle | ReactNative.ImageStyle | string | ((x: CSSStyleSheetStyle) => CSSStyle) };
 
 class NestedStyleSheet {
   static create<T extends NamedStyles<T> | NamedStyles<any>>(obj: T & NamedStyles<any>): { [key: string]: number } {
-    for (let key in obj) {
+    let keysItems = Object.keys(obj);
+    let oItem: any = obj;
+    while (keysItems.length > 0) {
+      let key = keysItems.shift();
       let value = obj[key];
       if (value && typeof value == "function") {
-        (obj as any)[key] = value(new CSSStyleSheetStyle()).toString();
+        value = value(new CSSStyleSheetStyle()) as any;
+      }
+      if (value && value instanceof CSSStyleSheetStyle) {
+        let eqs = value.getEqs(key);
+        oItem[key] = value = value.toString();
+        if (eqs.length > 0)
+          console.log(eqs, value)
+
+        for (let v of eqs) {
+
+          if (!oItem[v.key]) {
+            oItem[v.key] = v.css;
+            keysItems.push(v.key);
+          }
+        }
+
       }
 
-      if (key.indexOf("$") != -1) {
+
+
+      if (value && typeof value == "function") {
+        oItem[key] = value = value(new CSSStyleSheetStyle()).toString();
+      }
+
+      if (key.indexOf("$$") != -1) {
+        let keys = parseKeys(key);
+        let randomKey = newId();
+        delete obj[key];
+        key = randomKey;
+        oItem[randomKey] = value;
+        keys.forEach(x => {
+          if (!oItem[x])
+            oItem[x] = randomKey;
+        });
+      } else if (key.indexOf("$") != -1) {
         value = obj[key];
         delete obj[key];
         key = key.replace(/\$/g, ".");
-        (obj as any)[key] = value;
+        oItem[key] = value;
       }
 
 
@@ -25,12 +61,11 @@ class NestedStyleSheet {
           if (sKey.startsWith("."))
             sKey = sKey.substring(1);
           if (!(sKey in obj))
-            (obj as any)[sKey] = "";
+            oItem[sKey] = "";
         }
       }
     }
-    var result = obj as any;
-    return result;
+    return oItem;
   }
 };
 

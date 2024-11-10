@@ -5,7 +5,7 @@ import {
     useAnimate,
     useTimer
 } from "../hooks";
-import { ifSelector, optionalStyle, proc, readAble } from "../config/Methods";
+import { ifSelector, optionalStyle, proc, readAble } from "../config";
 import { CSS_String, Size, StyledProps } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from './Icon';
@@ -46,8 +46,8 @@ export const Slider = (props: NativeSlider.SliderProps & {
 
 
     return (
-        <View css={`di:flex fld:row juc:space-between ali:center wi:100% mih:20 ${optionalStyle(props.css).c}`} style={props.style}>
-            <Button css={`wi:15% he:25 ${optionalStyle(props.buttonCss).c}`}
+        <View css={x=> x.cls("_slider").joinRight(props.css)} style={props.style}>
+            <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="minus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}
@@ -68,7 +68,7 @@ export const Slider = (props: NativeSlider.SliderProps & {
                 value={state.value}
                 containerStyle={{ ...props.containerStyle, width: props.enableButtons ? "60%" : props.containerStyle?.width ?? "100%" }}
                 onSlidingComplete={onChange} />
-            <Button css={x => x.size("15%", 25).joinRight(props.buttonCss)}
+            <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}

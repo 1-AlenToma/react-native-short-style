@@ -5,7 +5,7 @@ import {
     useAnimate,
     useTimer
 } from "../hooks";
-import { ifSelector, proc, readAble, setRef } from "../config/Methods";
+import { ifSelector, proc, readAble, setRef } from "../config";
 import { LoaderProps, LoaderRef, Size, StyledProps } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from './Icon';

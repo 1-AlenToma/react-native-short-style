@@ -4,7 +4,7 @@ import { InternalThemeContext, globalData } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
 import * as Native from "react-native";
-import { ifSelector, newId, optionalStyle, proc, setRef } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, proc, setRef } from "../config";
 import * as React from "react";
 import { PagerProps, PageRef, Size } from "../Typse";
 import { ButtonGroup } from "./ButtonGroup";
@@ -80,7 +80,7 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
     const loadButtons = () => {
         state.buttons = props.renderHeader && state.itemPerPage > 0 && state.page >= 0 ? [...Array(totalPages())].reduce((c, v, index) => {
             let end = (index + 1) * state.itemPerPage;
-            end = end > props.items.length - 1 ? props.items.length - 1 : end;
+            end = end > props.items.length - 1 ? props.items.length  : end;
             let start = (index * state.itemPerPage) + 1;
             c.push(`${start}-${end}`)
             return c;
@@ -94,9 +94,10 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
                 const items = props.items.slice(0, total)
                 state.items = items;
             }
+            loadButtons();
         } else if (props.items.length > 0)
             state.items = [props.items[0]]
-        loadButtons();
+       
     }
 
     const scroll = (offset: number) => {
@@ -164,11 +165,9 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
             if (!state.size)
                 state.size = nativeEvent.layout;
         }}>
-        
-                
             <ButtonGroup
                 scrollable={true}
-                ifTrue={props.renderHeader}
+                ifTrue={props.renderHeader && state.page >= 0}
                 buttons={state.buttons}
                 selectedIndex={[state.page]}
                 isVertical={false}
@@ -176,7 +175,7 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
                     state.flatList = undefined;
                     state.page = page[0]
                 }} />
-            
+
             <FlatList
                 scrollEnabled={props.scrollEnabled}
                 ref={f => {
@@ -184,7 +183,8 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
                 }}
                 horizontal={props.horizontal}
                 style={{
-                    flex:1,
+                    flex: 1,
+                    flexGrow:1,
                     maxHeight: state.size?.height,
                     maxWidth: "100%",
                 }}

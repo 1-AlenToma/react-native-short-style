@@ -34,7 +34,7 @@ import {
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer } from './components';
-import { newId } from './src/config/Methods';
+import { newId } from './src/config';
 import React from 'react';
 import { Platform } from 'react-native';
 
@@ -69,9 +69,7 @@ const themes = [
     TextInput: {
       color: "#fff"
     },
-    Icon: {
-      color: "white"
-    }
+    Icon: x => x.props({ refererId: "iconHandler" }).co("$co-light")
   })
 ]
 
@@ -81,13 +79,17 @@ export default function App() {
     selectedTheme: 0,
     modal1: false,
     modal2: false,
-    actionSheet: false,
+    actionSheet: {
+      position: undefined,
+      visible: false
+    },
     checkBoxes: [true, false],
     sliderValue: .5,
     selectedValue: "item1",
     selectedButtons: [1],
     items: [],
-    loading: false
+    loading: false,
+
   }).ignore("items").build();
 
   const update = () => state.id = newId();
@@ -138,7 +140,14 @@ export default function App() {
 
 
   return (
-    <ThemeContainer selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+    <ThemeContainer referers={[{
+      id: "iconHandler",
+      func: (props: any) => {
+        return props;
+        props.ifTrue = true;
+        return props;
+      }
+    }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       <TabBar position='Bottom' header={{
         selectedIconStyle: "color:red",
         style: x => x.baC("#ffffff"),
@@ -151,9 +160,6 @@ export default function App() {
             <Button text='btn 1'></Button>
             <Button text='btn 1'></Button>
           </Fab>
-          <Portal css="_abc le:50% to:20">
-            <Text>this is outside all pages</Text>
-          </Portal>
           <BlockContainer>
             <Block title="Theme Example">
               <Button icon={<Icon type="AntDesign" name="adduser" color="red" />} disabled={false} onPress={() => state.selectedTheme = state.selectedTheme == 0 ? 1 : 0} text="Toggle Theme" />
@@ -198,15 +204,17 @@ export default function App() {
                 </Collabse>
               </Loader>
             </Block>
-            <Block style={{ width: 300 }} title='ButtonGroup'>
-              <ButtonGroup onPress={(btns) => state.selectedButtons = btns} buttons={["Simple", "Button", "Group"]} selectedIndex={state.selectedButtons} />
-            </Block>
-            <Block title='ToolTip'>
-              <ToolTip text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus nobis corporis ut, ex sed aperiam. Debitis, facere! Animi quis laudantium, odio nulla recusandae labore pariatur in, vitae corporis delectus repellendus.
-">
+            <Block style={{ width: 300 }} title='ToolTip'>
+              <ToolTip text={`Lorem ipsum'
+               dolor sit amet consectetur adipisicing elit. Minus nobis corporis ut, ex sed aperiam. Debitis, facere! Animi quis 
+                laudantium, odio nulla recusandae labore pariatur in, vitae corporis delectus repellendus.`}>
                 <Text>Press Here</Text>
               </ToolTip>
             </Block>
+            <Block style={{ width: 300 }} title='ButtonGroup'>
+              <ButtonGroup onPress={(btns) => state.selectedButtons = btns} buttons={["Simple", "Button", "Group"]} selectedIndex={state.selectedButtons} />
+            </Block>
+
           </BlockContainer>
           <BlockContainer>
             <Block title="CheckBox Example">
@@ -256,7 +264,7 @@ export default function App() {
           <BlockContainer>
             <Block title="Modal Example">
               <Button onPress={() => state.modal1 = true} text="Show Modal" />
-              <Modal isVisible={state.modal1} addCloser={true} onHide={() => state.modal1 = false}>
+              <Modal animationStyle="Opacity" isVisible={state.modal1} addCloser={true} onHide={() => state.modal1 = false}>
                 <Text>this is modal 1</Text>
                 <Button onPress={() => state.modal2 = true} text="Show Modal 2" />
               </Modal>
@@ -266,13 +274,32 @@ export default function App() {
             </Block>
 
             <Block title="ActionSheet">
-              <Button onPress={() => state.actionSheet = true} text="ActionSheet" />
-              <ActionSheet size={"30%"} isVisible={state.actionSheet} onHide={() => state.actionSheet = false}>
+              <Button onPress={() => {
+                state.actionSheet.position = "Bottom";
+                state.actionSheet.visible = true
+              }} text="ActionSheet Bottom" />
+
+              <Button onPress={() => {
+                state.actionSheet.position = "Top";
+                state.actionSheet.visible = true
+              }} text="ActionSheet Top" />
+
+              <Button onPress={() => {
+                state.actionSheet.position = "Left";
+                state.actionSheet.visible = true
+              }} text="ActionSheet Left" />
+
+              <Button onPress={() => {
+                state.actionSheet.position = "Right";
+                state.actionSheet.visible = true
+              }} text="ActionSheet Right" />
+
+              <ActionSheet position={state.actionSheet.position} size={"30%"} isVisible={state.actionSheet.visible} onHide={() => state.actionSheet.visible = false}>
                 <ScrollView style={{ maxHeight: "95%" }}>
                   {
 
                     ["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
-                      <TouchableOpacity onPress={() => state.actionSheet = false} css="actionButton" key={x} >
+                      <TouchableOpacity onPress={() => state.actionSheet.visible = false} css="actionButton" key={x} >
                         <Text>{x}</Text>
                       </TouchableOpacity>
                     ))
@@ -295,7 +322,7 @@ export default function App() {
             <StatusBar style="auto" />
           </BlockContainer>
         </TabView>
-        <TabView title="Form" disableScrolling={true}>
+        <TabView title="Form" disableScrolling={false}>
           <BlockContainer>
             <Block title='Form'>
               <FormItem title="FullName" icon={{ type: "AntDesign", name: "user" }}>
@@ -319,7 +346,7 @@ export default function App() {
                 <CheckBox checked checkBoxType="Switch"></CheckBox>
               </FormItem>
             </Block>
-            <Block title='Page infinit loading' style={{ display:"none", minWidth: 300, height: 150 }}>
+            <Block title='Page infinit loading' style={{ display: "none", minWidth: 300, height: 150 }}>
               <Loader loading={state.loading}>
                 <Pager ifTrue={false}
                   selectedIndex={state.items.findIndex(x => x.value == state.selectedValue)}

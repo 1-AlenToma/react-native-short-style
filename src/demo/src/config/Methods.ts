@@ -3,6 +3,8 @@ import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
 import { AlertViewAlertProps, AlertViewProps, IThemeContext, ToastProps } from "../Typse";
 import { CSSStyle } from "../styles/CSSStyle"
+import { PlatformStyleSheet } from "../theme/PlatformStyles";
+import React from "react";
 
 export const readAble = function (nr: number | string, total?: number) {
     let nrs = nr?.toString().split(".") ?? [];
@@ -52,7 +54,7 @@ let serilizeTheme = undefined;
 export const themeStyle = () => {
     if (serilizeTheme)
         return serilizeTheme;
-    let style = {};
+    let style: any = PlatformStyleSheet();
     for (let key in defaultTheme) {
         let value = defaultTheme[key];
         let key0 = key;
@@ -72,20 +74,7 @@ export const themeStyle = () => {
     serilizeTheme = style;
     return style;
 }
-let ids = new Map();
-let lastDate = new Date();
-export const newId = (inc?: string): string => {
-    if (lastDate.getMinutes() - new Date().getMinutes() > 1) {
-        ids = new Map();
-        lastDate = new Date();
-    }
-    let id: string = (inc ?? "") + Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
-    if (ids.has(id)) {
-        return (newId(id) as string);
-    }
-    ids.set(id, id);
-    return id;
-}
+
 
 export const ifSelector = (item?: boolean | Function) => {
     if (item === undefined || item === null)
@@ -100,12 +89,17 @@ export const getCssArray = (css: string) => {
     return css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0) ?? [];
 }
 
-export const getClasses = (css: string, globalStyle: any) => {
+export const getClasses = (css: string, globalStyle: any, itemIndex?: number) => {
     let items = getCssArray(css) ?? [];
     let props: any = {};
     for (let item of items) {
         if (item && item.indexOf(":") == -1 && !(item in props) && item in globalStyle) {
             props[item] = item;
+        }
+        if (item && itemIndex != undefined) {
+            item = `${item}_${itemIndex}`;
+            if (item in globalStyle)
+                props[item] = item;
         }
     }
 
@@ -137,4 +131,11 @@ export const setRef = (ref: any, item: any) => {
         ref(item);
     else if ("current" in ref)
         ref.current = item;
+}
+
+export const refCreator = function <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any) {
+    name = view.displayName || name;
+    (forwardRef as any).displayName = `StyledItem(${name})`;
+    (forwardRef as any).name = `StyledItem(${name})`;
+    return React.forwardRef(forwardRef) as T;
 }

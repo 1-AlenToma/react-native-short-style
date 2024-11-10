@@ -4,15 +4,15 @@ import { Button } from "./Button";
 import { AlertViewFullProps, AlertViewProps, CSS_String, Size, ToastProps } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "react-smart-state";
-import { newId } from "../config/Methods";
+import { newId } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
-import {StatusBar} from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 
 export const ToastView = () => {
-    globalData.hook("screen");
-    const { animate, animateY } = useAnimate();
+    globalData.hook("screen", "alertViewData.toastData");
+    const { animate, animateY, currentValue } = useAnimate();
     const data = globalData.alertViewData.toastData ?? {} as ToastProps;
     data.position = data.position ?? "Top";
     const context = React.useContext(InternalThemeContext);
@@ -37,20 +37,27 @@ export const ToastView = () => {
 
     if (state.size) {
         if (data.position == "Top") {
-            interpolate = [-state.size.height, StatusBar.currentHeight];
+            interpolate = [-state.size.height, Platform.OS == "web" ? 5 : StatusBar.currentHeight];
         } else {
             interpolate = [globalData.window.height + state.size.height, (globalData.window.height - state.size.height) - 30];
         }
     }
 
     const animateTop = () => {
-        animateY(state.visible ? 1 : 0, () => {
-            state.counter = 0;
-            if (state.visible)
+        const v = state.visible ? 1 : 0;
+        if (currentValue.y == v || !state.size)
+            return;
+       
+        timer.clear();
+        animateY(v, () => {
+            if (state.visible) {
+                state.counter = 0;
                 startCounter();
+            }
 
 
-            if (!state.visible && state.size) {
+            if (!state.visible) {
+                state.counter = 0;
                 state.size = undefined;
                 globalData.alertViewData.toastData = undefined;
                 timer.clear();
@@ -59,7 +66,7 @@ export const ToastView = () => {
     }
 
     globalData.useEffect(() => {
-
+        state.counter = 0;
         state.visible = globalData.alertViewData.toastData != undefined;
     }, "alertViewData.toastData")
 
@@ -76,32 +83,33 @@ export const ToastView = () => {
     switch (data.type) {
         case "Error":
             typeInfo = {
-                css: x => x.co("$co-light").baC("$baC-error"),
+                css: `_${data.type.toLowerCase()}`,
                 icon: (<Icon type="MaterialIcons" name="error" size={30} css="co:white" />)
             }
             break;
         case "Info":
             typeInfo = {
-                css: x => x.co("$co-light").baC("$baC-info"),
+                css: `_${data.type.toLowerCase()}`,
                 icon: (<Icon type="AntDesign" name="infocirlce" size={30} css="co:white" />)
             }
             break;
         case "Warning":
             typeInfo = {
-                css: x => x.co("$co-dark").baC("$baC-warning"),
+                css: `_${data.type.toLowerCase()}`,
                 icon: (<Icon type="FontAwesome" name="warning" size={30} css="co:white" />)
             }
             break;
         case "Success":
             typeInfo = {
-                css: x => x.co("$co-light").baC("$baC-success"),
+                css: `_${data.type.toLowerCase()}`,
                 icon: (<Icon type="Entypo" name="check" size={30} css="co:white" />)
             }
             break;
     }
 
     fn(state.id, <AnimatedView key={state.id} onLayout={({ nativeEvent }) => {
-        state.size = nativeEvent.layout;
+        if (!state.size)
+            state.size = nativeEvent.layout;
     }} style={{
         left: state.size ? (globalData.window.width - state.size.width) / 2 : 0,
         top: !state.size ? (data.position == "Bottom" ? "100%" : "-100%") : 0,
@@ -112,11 +120,11 @@ export const ToastView = () => {
                 extrapolate: "clamp"
             })
         }]
-    }} css={x => x.joinLeft("zi:2 miw:80% bor:5 bow:.5 boc:gray _overflow pa:5 maw:80% mih:30 _abc sh-sm").joinRight(typeInfo.css)}>
-        <View css={x => x.fl(1).fillView().flD("row").cls("_center").baC("$baC-transparent")}>
-            <View css={x => x.cls("_abc").fl(1).fillView().pos(0,0).zI(3).alI("flex-end").baC("$baC-transparent")}>
+    }} css={x => x.cls("_toast").joinRight(typeInfo.css)}>
+        <View>
+            <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$baC-transparent")}>
                 <Button onPress={() => state.visible = false} css={
-                    x => x.cls("sh-none","_center").size(30,30).baC("$baC-transparent").paL(1).boW(0)
+                    x => x.cls("sh-none", "_center").size(30, 30).baC("$baC-transparent").paL(1).boW(0)
                 } icon={<Icon type="AntDesign" name="close" size={15} />} />
             </View>
             <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac-transparent">

@@ -4,7 +4,7 @@ import { Button } from "./Button";
 import { AlertViewFullProps, AlertViewProps, Size, ToastProps, ToolTipProps, ToolTipRef } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "react-smart-state";
-import { ifSelector, newId, optionalStyle, setRef } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
@@ -24,14 +24,14 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         toolTipSize: undefined as Size | undefined
     }).ignore("ref", "pos", "toolTipSize").build();
 
-    const fn = state.visible ? context.add.bind(context) : context.remove.bind(context);
+    const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);
 
     setRef(ref, {
         visible: (value) => state.visible = value
     } as ToolTipRef);
 
     state.useEffect(() => {
-        if (state.ref)
+        if (state.ref && !state.pos && state.visible)
             state.ref.measureInWindow((x, y, w, h) => {
                 state.pos = {
                     x: x,
@@ -41,22 +41,23 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
                     width: w,
                     height: h
                 }
-            })
-        /* state.ref.measureInWindow((x, y, w, h, px, py) => {
-             state.pos = {
-                 x: x,
-                 y: y,
-                 px: px,
-                 py: py,
-                 width: w,
-                 height: h
-             }
-         })*/
+            });
     }, "ref")
+
+    globalData.useEffect(() => {
+        if (state.visible)
+            state.visible = false;
+    }, "window")
+
+    state.useEffect(() => {
+        if (!state.visible)
+            state.pos = undefined;
+
+    }, "visible")
 
     let left = state.pos?.px;
     let top = state.pos?.py;
-    if (state.toolTipSize) {
+    if (state.toolTipSize && state.pos) {
         left = left - (state.toolTipSize.width / 2)
         top = top + state.pos.height
         if (left + state.toolTipSize.width > globalData.window.width)
@@ -74,10 +75,10 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
             <Blur css="zi:1 bac-transparent" onPress={() => state.visible = false} />
             <View onLayout={({ nativeEvent }) => {
                 state.toolTipSize = nativeEvent.layout
-            }} style={[optionalStyle(props.style).o, {
+            }} style={[{
                 left: left,
                 top: top
-            }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).joinRight(props.css).cls("_abc")}>
+            }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip")}>
                 {
                     typeof props.text == "string" ? <Text css="fos-sm">{props.text}</Text> : props.text
                 }
@@ -88,7 +89,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     return (
         <TouchableOpacity ref={c => state.ref = c} onPress={() => {
             state.visible = !state.visible;
-        }} style={[style.o]} css={style.c}>
+        }} style={[style.o]} css={x => x.joinRight(style.c)}>
             {props.children}
         </TouchableOpacity>
     )

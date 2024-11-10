@@ -74,13 +74,30 @@ export type ButtonProps = {
     whilePressedDelay?: number;
 } & StyledProps & Omit<TouchableOpacityProps, "children"> & MouseProps;
 
+type Referer = {
+    id: string;
+    func: <T extends object>(props: T) => T;
+}
+
 export type IThemeContext = {
+    /** selectedThemeIndex */
     selectedIndex: number;
+    /** All themes eg black, light themes, it is a list of NestedStyleSheets */
     themes: { [key: string]: number }[],
+    /**
+     * This will always be loaded and its style could also be overridden by selected theme
+     */
     defaultTheme: { [key: string]: number };
+    /**
+     * referer refernce to a function in the ThemeContainer.provider to handle parsing/changing props
+     * this could be refer from NestedStyleSheet style in x=> x.props({refererId:${the id}})
+     */
+    referers?: Referer[];
     /** Save the parsed css to a storage so as to make it faster at parsing.
      * This is not needed on android and ios so use it only for web as it cant be saved locally
      * when the web refreshed
+     * use it only if you see that the parsing is to slow.
+     * Normally not needed, Added it just incase
      */
     storage?: Storage;
 }
@@ -134,7 +151,8 @@ export type GlobalState = {
     }
 }
 
-type Percentage = `${number}%` | number
+type Percentage = `${number}%` | number;
+export type AnimationStyle = "Scale" | "Opacity";
 
 export type ModalProps = {
     isVisible: boolean;
@@ -145,9 +163,10 @@ export type ModalProps = {
     style?: ViewStyle;
     css?: CSS_String;
     speed?: number;
+    animationStyle?: AnimationStyle;
 }
 
-export type ActionSheetProps = ModalProps & {
+export type ActionSheetProps = Omit<ModalProps, "animationStyle"> & {
     size: Percentage;
     lazyLoading?: boolean;
     position?: "Bottom" | "Top" | "Left" | "Right";
@@ -354,7 +373,7 @@ export type PagerProps = StyledProps & {
     render: (item: any, index: number, selectedCss: string) => React.ReactNode;
     items: any[];
     selectedIndex?: number;
-    scrollEnabled?:boolean;
+    scrollEnabled?: boolean;
     onChange?: (page: number, totalPages: number) => void;
     onSelect?: (item: any, index: number) => void;
     onEndReached?: () => void;

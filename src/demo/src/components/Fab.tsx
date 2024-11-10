@@ -4,7 +4,7 @@ import * as React from "react";
 import {
     useAnimate
 } from "../hooks";
-import { ifSelector, newId, optionalStyle, proc, readAble } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, proc, readAble } from "../config";
 import { FabProps, ProgressBarProps, Size } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Button } from "./Button";
@@ -89,7 +89,7 @@ export const Fab = (props: FabProps) => {
 
     const view = (
         <React.Fragment key={state.id}>
-            <Blur onPress={() => state.visible = false} ifTrue={state.visible} />
+            <Blur onPress={() => state.visible = false} ifTrue={()=> state.visible && props.blureScreen !== false} />
             <View css={`zi:100 overflow:visible _abc bac-transparent ${optionalStyle(props.css).c}`} style={[style, ...styles]}>
                 {!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null}
                 <TouchableOpacity style={props.prefixContainerStyle} onPress={() => state.visible = !state.visible}

@@ -12,6 +12,8 @@ export const useAnimate = ({
     y,
     x,
     speed,
+    easing,
+    delay,
     useNativeDriver = false
 }: any = {}) => {
     const currentValue = React.useRef({
@@ -25,7 +27,7 @@ export const useAnimate = ({
         })
     ).current;
 
-    const animating = React.useRef<any>();
+    const animating = React.useRef<any>({ x: undefined, y: undefined }).current;
     const animateY = (
         value: any,
         onFinished?: Function,
@@ -34,9 +36,10 @@ export const useAnimate = ({
         run(
             value,
             animate.y,
+            "y",
             () => {
-                animate.setValue({ y: value, x: 0 });
-                animate.flattenOffset();
+                animate.y.setValue(value);
+                animate.y.flattenOffset();
                 currentValue.y = value;
                 onFinished?.();
             },
@@ -52,9 +55,10 @@ export const useAnimate = ({
         run(
             value,
             animate.x,
+            "x",
             () => {
-                animate.setValue({ y: 0, x: value });
-                animate.flattenOffset();
+                animate.x.setValue(value);
+                animate.x.flattenOffset();
                 currentValue.x = value;
                 onFinished?.();
             },
@@ -62,27 +66,31 @@ export const useAnimate = ({
         );
     };
 
+
     const run = (
         value: any,
         animObject: any,
+        key: "x" | "y",
         onFinished?: Function,
-        sp?: any
+        sp?: any,
+
     ) => {
         try {
-            animating.current?.stop?.();
-            animating.current = Animated.timing(
+            animating[key]?.stop?.();
+            animating[key] = Animated.timing(
                 animObject,
                 {
                     toValue: value,
                     duration: sp ?? speed ?? 300,
-                    easing: Easing.linear,
+                    easing: easing ?? Easing.linear,
+                    delay,
                     useNativeDriver: useNativeDriver
                 }
             );
-            animating.current.start(() => {
+            animating[key].start(() => {
                 onFinished?.();
             });
-        } catch(e) {
+        } catch (e) {
             console.error("animObject", e)
         }
     };

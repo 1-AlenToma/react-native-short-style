@@ -3,8 +3,8 @@ import { AnimatedView, TouchableOpacity, View } from "./ReactNativeComponents";
 import { InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
 import StateBuilder from "react-smart-state";
-import { Platform, ViewStyle } from "react-native";
-import { newId, optionalStyle } from "../config/Methods";
+import { Easing, Platform, ViewStyle } from "react-native";
+import { newId, optionalStyle } from "../config";
 import { ModalProps } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
@@ -13,12 +13,10 @@ import { Blur } from "./Blur";
 
 export const Modal = (props: ModalProps) => {
     const context = React.useContext(InternalThemeContext);
-    const { animate, animateX } = useAnimate({
-        x: 0,
-        y: 0,
+    const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
-        useNativeDriver: false
     });
+
     const state = StateBuilder({
         isVisible: undefined,
         id: newId()
@@ -31,6 +29,7 @@ export const Modal = (props: ModalProps) => {
             state.isVisible = show;
         }
         render();
+        animateY(!show ? 0 : .5)
         animateX(!show ? 0 : 1, () => {
             if (!show && props.isVisible)
                 props.onHide();
@@ -54,30 +53,30 @@ export const Modal = (props: ModalProps) => {
         return () => context.remove(state.id)
     }, [])
 
+    const transform = { scale: undefined, opacity: undefined };
+    transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+        extrapolate: "clamp"
+    });
+
     const render = () => {
         let style = Array.isArray(props.style) ? props.style : [props.style];
         if (state.isVisible) {
             context.add(state.id,
-                <Blur key={state.id} css="op:1 bac:transparent fl:1" style={{ zIndex: context.totalItems() + 300 }}>
-                    <Blur onPress={() => {
-                        if (!props.disableBlurClick)
-                            toggle(false);
-                    }} css="zi:1" />
-                    <AnimatedView {...props} css={`_modalDefaultStyle sh-sm _overflow ${optionalStyle(props.css).c}`} style={[...style,
+                <View key={state.id} css="_blur op:1 bac:transparent fl:1" style={{ zIndex: context.totalItems() + 300 }}>
+                    <Blur style={{
+                        opacity: animate.y
+                    }} onPress={props.disableBlurClick ? undefined : () => {
+                        toggle(false);
+                    }} css="_blur zi:1" />
+                    <AnimatedView {...props} css={x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css)} style={[...style,
                     {
-                        transform: [
-                            {
-                                scale: animate.x.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0, 1],
-                                    extrapolate: "clamp"
-                                })
-                            }
-                        ]
-
+                        transform: transform.scale ? [transform] : undefined,
+                        opacity: transform.opacity ? transform.opacity : undefined
                     }
                     ]}>
-                        <View css={x => x.cls("_abc").he(30).wi(30).ri(0).zI(3).alI("flex-end").baC("$baC-transparent")}>
+                        <View css={x => x.cls("_modalClose")}>
                             <Button onPress={() => toggle(false)} css={
                                 x => x.cls("sh-none", "_center").size(30, 30).baC("$baC-transparent").paL(1).boW(0)
                             } icon={<Icon type="AntDesign" name="close" size={15} />} />
@@ -86,8 +85,7 @@ export const Modal = (props: ModalProps) => {
                             {props.children}
                         </View>
                     </AnimatedView>
-                </Blur>
-            )
+                </View>)
         } else {
             context.remove(state.id);
         }

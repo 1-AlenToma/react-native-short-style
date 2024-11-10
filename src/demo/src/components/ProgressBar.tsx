@@ -4,7 +4,7 @@ import * as React from "react";
 import {
     useAnimate
 } from "../hooks";
-import { ifSelector, optionalStyle, proc, readAble } from "../config/Methods";
+import { ifSelector, optionalStyle, proc, readAble } from "../config";
 import { ProgressBarProps, Size } from "../Typse";
 import { Blur } from "./Blur";
 

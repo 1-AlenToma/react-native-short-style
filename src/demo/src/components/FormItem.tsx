@@ -4,7 +4,7 @@ import { InternalThemeContext, globalData } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
 import { Platform } from "react-native";
-import { ifSelector, newId, optionalStyle, proc } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, proc } from "../config";
 import * as React from "react";
 import { FormItemProps } from "../Typse";
 import { ToolTip } from "./ToolTip";
@@ -17,15 +17,15 @@ export const FormItem = (props: FormItemProps) => {
     const css = "mar:5";
 
     return (
-        <View style={props.style} css={x=> x.joinLeft(x=> x.cls("_overflow").maH(200).boBC("$bobc-gray300").boBW(.8)).joinRight(props.css)}>
-            <View css={`wi:100% mah:95% _overflow fld:row juc:space-between ali:center pa:5`}>
+        <View style={props.style} css={x => x.cls("_formItem", "FormItem").joinRight(props.css)}>
+            <View>
                 <View ifTrue={() => icon != undefined} css={css}>
                     {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                 </View>
                 <View ifTrue={() => props.title != undefined} css={css}>
                     {props.title && typeof props.title == "string" ? <Text css="fos-sm fow:bold">{props.title}</Text> : props.title}
                 </View>
-                <View css="mih:40 _formItemChildren flg:1 _center ali:flex-end">
+                <View css="_formItemCenter">
                     {props.children}
                 </View>
                 <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={() => props.info != undefined} text={props.info}>

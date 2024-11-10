@@ -160,7 +160,7 @@ const css_translator = (
   id = id ?? css;
 
   if (Storage.has(id))
-    return {...Storage.get(id)};
+    return { ...Storage.get(id) };
   let shortk = ShortCSS;
   let CSS = styleFile;
   let translatedItem = extractProps(css);
@@ -176,48 +176,49 @@ const css_translator = (
 
   css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
   let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
-  for (let c of items) {
-    if (c.indexOf(":") !== -1) {
-      let k = splitSafe(c, ":", 0);
-      let value = checkObject(checkNumber(splitSafe(c, ":", 1)));
+  if (items && items.length > 0)
+    for (let c of items) {
+      if (c.indexOf(":") !== -1) {
+        let k = splitSafe(c, ":", 0);
+        let value = checkObject(checkNumber(splitSafe(c, ":", 1)));
 
 
-      if (has(value, "undefined") || has(value, "null"))
-        value = undefined;
-      else if (typeof value == "string" && value.startsWith("$")) {
-        value = value.substring(1);
-        if (value.toLowerCase() in CSS)
-          value = Object.values(CSS[value.toLowerCase()])[0];
+        if (has(value, "undefined") || has(value, "null"))
+          value = undefined;
+        else if (typeof value == "string" && value.startsWith("$")) {
+          value = value.substring(1);
+          if (value.toLowerCase() in CSS)
+            value = Object.values(CSS[value.toLowerCase()])[0];
+        }
+        let short = shortk.find(x => x[k.toLowerCase()] !== undefined);
+        if (short) {
+          if (!propStyle || propStyle[short.key])
+            cssItem[short.key] = value;
+        } else {
+          cssItem[k] = value;
+          // console.warn(k, "not found in react-native style props, but we will still add it")
+        }
+        continue;
       }
-      let short = shortk.find(x => x[k.toLowerCase()] !== undefined);
-      if (short) {
-        if (!propStyle || propStyle[short.key])
-          cssItem[short.key] = value;
-      } else {
-        cssItem[k] = value;
-        // console.warn(k, "not found in react-native style props, but we will still add it")
+
+      let style = CSS[c];
+      if (typeof style === "string")
+        style = css_translator(style, styleFile, propStyle);
+      if (style) {
+        if (style._props) {
+          cssItem._props = { ...cssItem._props, ...style._props };
+          delete style._props;
+        }
+
+        cssItem = {
+          ...cssItem,
+          ...cleanStyle(style, propStyle)
+        };
+        continue;
       }
-      continue;
     }
-
-    let style = CSS[c];
-    if (typeof style === "string")
-      style = css_translator(style, styleFile, propStyle);
-    if (style) {
-      if (style._props) {
-        cssItem._props = { ...cssItem._props, ...style._props };
-        delete style._props;
-      }
-
-      cssItem = {
-        ...cssItem,
-        ...cleanStyle(style, propStyle)
-      };
-      continue;
-    }
-  }
   Storage.set(id, cssItem);
-  return {...cssItem};
+  return { ...cssItem };
 };
 
 export default css_translator;

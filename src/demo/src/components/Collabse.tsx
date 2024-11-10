@@ -4,7 +4,7 @@ import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
 import StateBuilder from "react-smart-state";
 import { ViewStyle } from "react-native";
-import { ifSelector, newId, optionalStyle, setRef } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { CollabseProps, DropdownItem, DropdownListProps, DropdownRefItem, ModalProps } from "../Typse";
 import { Modal } from "./Modal";
 import { ActionSheet } from "./ActionSheet";

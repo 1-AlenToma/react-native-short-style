@@ -3,7 +3,7 @@ import StateBuilder from "react-smart-state";
 import { CheckBoxListProps, CheckBoxProps } from "../Typse";
 import { Form } from "./Form";
 import { View, Text, TouchableOpacity, AnimatedView } from "./ReactNativeComponents";
-import { ifSelector, newId, optionalStyle } from "../config/Methods";
+import { ifSelector, newId, optionalStyle } from "../config";
 import { Icon } from "./Icon";
 import { useAnimate } from "../hooks";
 type CheckBoxListContext = {

@@ -4,7 +4,7 @@ import { InternalThemeContext, globalData } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
 import { Platform } from "react-native";
-import { ifSelector, newId, optionalStyle, proc } from "../config/Methods";
+import { ifSelector, newId, optionalStyle, proc } from "../config";
 import * as React from "react";
 import { PortalProps } from "../Typse";
 

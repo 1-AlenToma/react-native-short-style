@@ -2,15 +2,22 @@ import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from "react-native";
 import { flatStyle } from "../config/CSSMethods";
 import { defaultTheme } from "../theme/DefaultStyle";
 import { ShortStyles } from "./validStyles";
+import { StyledProps } from "../Typse";
 
 type ValueType = ViewStyle & TextStyle & ImageStyle;
+type Sizes = 5 | 10 | 20 | 30 | 40 | 60 | 70 | 80 | 90 | 100;
 type Colors<K extends string> = `${K}-${keyof typeof defaultTheme.color}` | (string & {})
 type BackgroundColors<K extends string> = `${K}-${keyof typeof defaultTheme.backgroundColor}` | (string & {})
 type FontSizes = `$fos-${keyof typeof defaultTheme.fontSize}` | (ValueType["fontSize"] & {}) | (string & {})
 type BorderRadius = `$bor-${keyof typeof defaultTheme.borderRadius}` | (number & {});
-type Spacing = `$sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {})
+type Spacing = `$sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {});
+type SizeValue<K extends string> = `${Sizes}${K}` | number | (string & {});
+// referer refernce to a function in the ThemeContainer.provider to handle parsing/changing props
+export type CSSProps<T extends object> = T & StyledProps & { refererId?: string; }
 
-//let test: BorderRadius =98
+
+
+//let test: SizeValue<"%"> | SizeValue<"vh"> | SizeValue<"vw"> = ""
 
 type classNames = (`sh-${keyof typeof defaultTheme.shadow}` | `sp-${keyof typeof defaultTheme.spacing}`) | (string & {})
 
@@ -57,7 +64,7 @@ export abstract class ExtraCssStyle {
     }
 
     /** Add with and height of the View */
-    size(width: ValueType["width"], height?: ValueType["height"]) {
+    size(width: SizeValue<"%"> | SizeValue<"vw">, height?: SizeValue<"%"> | SizeValue<"vh">) {
         this.add(ShortStyles.width, width);
         if (height != undefined)
             this.add(ShortStyles.height, height);
@@ -91,7 +98,7 @@ export abstract class ExtraCssStyle {
     
         right and left x are 50px
       */
-    padding(v1: ValueType["paddingLeft"], v2?: ValueType["paddingLeft"], v3?: ValueType["paddingLeft"], v4?: ValueType["paddingLeft"]) {
+    padding(v1: ValueType["padding"], v2?: ValueType["padding"], v3?: ValueType["padding"], v4?: ValueType["padding"]) {
         if (v1 != undefined && v2 == undefined && v3 == undefined && v4 == undefined)
             return this.add(ShortStyles.padding, v1)
         if (v1 != undefined && v2 != undefined && v3 != undefined && v4 != undefined)
@@ -107,7 +114,7 @@ export abstract class ExtraCssStyle {
     /**
    * read https://www.w3schools.com/css/css_padding.asp on how this is used
    */
-    pa(v1: ValueType["paddingLeft"], v2?: ValueType["paddingLeft"], v3?: ValueType["paddingLeft"], v4?: ValueType["paddingLeft"]) {
+    pa(v1: ValueType["padding"], v2?: ValueType["padding"], v3?: ValueType["padding"], v4?: ValueType["padding"]) {
         return this.padding(v1, v2, v3, v4);
     }
 
@@ -263,7 +270,8 @@ export abstract class ExtraCssStyle {
 
     joinLeft(value: CSSStyle | string | ViewStyle | ImageStyle | TextStyle | ((x: CSSStyle) => CSSStyle)) {
         if (value && typeof value == "function") {
-            value = (value as Function)(new CSSStyle()).toString();
+            (value as Function)(this)
+            return this;
         }
         if (value && typeof value == "object" && (value as CSSStyle).type == this.type) {
             this.value = `${(value as CSSStyle).value} ${this.value}`;
@@ -295,7 +303,8 @@ export abstract class ExtraCssStyle {
 
     joinRight(value: CSSStyle | string | ViewStyle | ImageStyle | TextStyle | ((x: CSSStyle) => CSSStyle)) {
         if (value && typeof value == "function") {
-            value = (value as Function)(new CSSStyle()).toString();
+            (value as Function)(this)
+            return this;
         }
 
         if (value && typeof value == "object" && (value as CSSStyle).type == this.type) {
@@ -340,7 +349,7 @@ export class CSSStyle extends ExtraCssStyle {
     }
 
     public toString = (): string => {
-        return this.value;
+        return this.value ?? "";
     }
 
 
@@ -398,12 +407,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.backgroundColor(value);
     }
 
-    borderBottomColor(value?: Colors<"$bobc"> | null) {
+    borderBottomColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.borderBottomColor, value);
     }
 
     /** Add borderBottomColor */
-    boBC(value?: Colors<"$bobc"> | null) {
+    boBC(value?: Colors<"$co"> | null) {
         return this.borderBottomColor(value)
     }
 
@@ -434,21 +443,21 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.borderBottomWidth, value);
     }
 
-    borderColor(value?: Colors<"$boc"> | null) {
+    borderColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.borderColor, value);
     }
 
     /** Add borderColor */
-    boC(value?: Colors<"$boc"> | null) {
+    boC(value?: Colors<"$co"> | null) {
         return this.borderColor(value)
     }
 
-    borderLeftColor(value?: Colors<"$bolc"> | null) {
+    borderLeftColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.borderLeftColor, value);
     }
 
     /** Add borderLeftColor */
-    boLC(value?: Colors<"$bolc"> | null) {
+    boLC(value?: Colors<"$co"> | null) {
         return this.borderLeftColor(value)
     }
 
@@ -472,12 +481,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.borderRadius(value);
     }
 
-    borderRightColor(value?: Colors<"$boRc"> | null) {
+    borderRightColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.borderRightColor, value);
     }
 
     /** Add borderRightColor */
-    boRC(value?: Colors<"$boRc"> | null) {
+    boRC(value?: Colors<"$co"> | null) {
         return this.borderRightColor(value)
     }
 
@@ -499,13 +508,13 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.borderStyle, value);
     }
 
-    borderTopColor(value?: Colors<"$boTC"> | null) {
+    borderTopColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.borderTopColor, value);
     }
 
     /** Add borderTopColor */
-    boTC(value?: Colors<"$boTC"> | null) {
-        return this.add(ShortStyles.borderTopColor, value);
+    boTC(value?: Colors<"$co"> | null) {
+        return this.borderTopColor(value)
     }
 
     borderTopLeftRadius(value?: ValueType["borderTopLeftRadius"] | null) {
@@ -685,13 +694,13 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.fontWeight, value);
     }
 
-    height(value?: ValueType["height"] | null) {
+    height(value?: SizeValue<"%"> | SizeValue<"vh"> | null) {
         return this.add(ShortStyles.height, value);
     }
 
     /** Add height */
-    he(value?: ValueType["height"] | null) {
-        return this.add(ShortStyles.height, value);
+    he(value?: SizeValue<"%"> | SizeValue<"vh"> | null) {
+        return this.height(value);
     }
 
     includeFontPadding(value?: ValueType["includeFontPadding"] | null) {
@@ -795,40 +804,40 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.marginVertical, value);
     }
 
-    maxHeight(value?: ValueType["maxHeight"] | null) {
+    maxHeight(value?: SizeValue<"%"> | SizeValue<"vh"> | null) {
         return this.add(ShortStyles.maxHeight, value);
     }
 
     /** Add maxHeight */
-    maH(value?: ValueType["maxHeight"] | null) {
-        return this.add(ShortStyles.maxHeight, value);
+    maH(value?: SizeValue<"%"> | SizeValue<"vh"> | null) {
+        return this.maxHeight(value);
     }
 
-    maxWidth(value?: ValueType["maxWidth"] | null) {
+    maxWidth(value?: SizeValue<"%"> | SizeValue<"vw"> | null) {
         return this.add(ShortStyles.maxWidth, value);
     }
 
     /** Add maxWidth */
-    maW(value?: ValueType["maxWidth"] | null) {
-        return this.add(ShortStyles.maxWidth, value);
+    maW(value?: SizeValue<"%"> | SizeValue<"vw"> | null) {
+        return this.maxWidth(value);
     }
 
-    minHeight(value?: ValueType["minHeight"] | null) {
+    minHeight(value?: SizeValue<"%"> | SizeValue<"vh"> | null) {
         return this.add(ShortStyles.minHeight, value);
     }
 
     /** Add minHeight */
-    miH(value?: ValueType["minHeight"] | null) {
-        return this.add(ShortStyles.minHeight, value);
+    miH(value?: SizeValue<"%"> | SizeValue<"vh"> | null) {
+        return this.minHeight(value);
     }
 
-    minWidth(value?: ValueType["minWidth"] | null) {
+    minWidth(value?: SizeValue<"%"> | SizeValue<"vw"> | null) {
         return this.add(ShortStyles.minWidth, value);
     }
 
     /** Add minWidth */
-    miW(value?: ValueType["minWidth"] | null) {
-        return this.add(ShortStyles.minWidth, value);
+    miW(value?: SizeValue<"%"> | SizeValue<"vw"> | null) {
+        return this.miW(value);
     }
 
     opacity(value?: ValueType["opacity"] | null) {
@@ -849,12 +858,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.overflow, value);
     }
 
-    overlayColor(value?: Colors<"$ovC"> | null) {
+    overlayColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.overlayColor, value);
     }
 
     /** Add overlayColor */
-    ovC(value?: Colors<"$ovC"> | null) {
+    ovC(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.overlayColor, value);
     }
 
@@ -939,12 +948,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.right, value);
     }
 
-    shadowColor(value?: Colors<"$shC"> | null) {
+    shadowColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.shadowColor, value);
     }
 
     /** Add shadowColor */
-    shC(value?: Colors<"$shC"> | null) {
+    shC(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.shadowColor, value);
     }
 
@@ -988,12 +997,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.textAlignVertical, value);
     }
 
-    textDecorationColor(value?: Colors<"$teDC"> | null) {
+    textDecorationColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.textDecorationColor, value);
     }
 
     /** Add textDecorationColor */
-    teDC(value?: Colors<"$teDC"> | null) {
+    teDC(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.textDecorationColor, value);
     }
 
@@ -1015,12 +1024,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.textDecorationStyle, value);
     }
 
-    textShadowColor(value?: Colors<"$teSC"> | null) {
+    textShadowColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.textShadowColor, value);
     }
 
     /** Add textShadowColor */
-    teSC(value?: Colors<"$teSC"> | null) {
+    teSC(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.textShadowColor, value);
     }
 
@@ -1044,12 +1053,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.textShadowRadius, value);
     }
 
-    tintColor(value?: Colors<"$tiC"> | null) {
+    tintColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.tintColor, value);
     }
 
     /** Add tintColor */
-    tiC(value?: Colors<"$tiC"> | null) {
+    tiC(value?: Colors<"$co"> | null) {
         return this.tintColor(value)
     }
 
@@ -1072,13 +1081,13 @@ export class CSSStyle extends ExtraCssStyle {
        return this.add(ShortStyles.transform, value);
      }*/
 
-    width(value?: ValueType["width"] | null) {
+    width(value?: SizeValue<"%"> | SizeValue<"vw"> | null) {
         return this.add(ShortStyles.width, value);
     }
 
     /** Add width */
-    wi(value?: ValueType["width"] | null) {
-        return this.add(ShortStyles.width, value);
+    wi(value?: SizeValue<"%"> | SizeValue<"vw"> | null) {
+        return this.width(value);
     }
 
     writingDirection(value?: ValueType["writingDirection"] | null) {
@@ -1102,7 +1111,43 @@ export class CSSStyle extends ExtraCssStyle {
 
 // specific only for nested StyleSheet
 export class CSSStyleSheetStyle extends CSSStyle {
-    props<T extends object>(props: T | { css?: string | ((x: CSSStyle) => CSSStyle) }) {
+    private eqs: { css: CSSStyleSheetStyle | string, index: string | number }[] = [];
+
+
+    child(indexOrClassOrViewName: (number | "last" | (string & {})), css: ((x: CSSStyleSheetStyle) => CSSStyleSheetStyle) | string) {
+        if (!css)
+            throw "CSSStyleSheetStyle.view must containes css style";
+        let value: { css: CSSStyleSheetStyle, index: string | number } = {
+            index: indexOrClassOrViewName,
+            css: {} as any
+        }
+        if (typeof css == "function")
+            value.css = css(new CSSStyleSheetStyle()) as CSSStyleSheetStyle;
+        this.eqs.push(value);
+        return this;
+    }
+
+    /** Used in NestedStyleSheet */
+    getEqs(parentKey, item?: CSSStyleSheetStyle) {
+        let items: { key: string, css: string }[] = [];
+        for (let value of (item ?? this).eqs) {
+            let k = `${parentKey}_${value.index}`;
+            if (typeof value.index == "string" && value.index != "last")
+                k = `${parentKey}$${value.index}`;
+
+            let css: any = value.css;
+            if (value.css instanceof CSSStyleSheetStyle) {
+
+                if (value.css.eqs && value.css.eqs.length > 0)
+                    items = [...items, ...this.getEqs(k, value.css)]
+            }
+            items.push({ key: k, css: css.toString() })
+        }
+
+        return items;
+    }
+
+    props<T extends object>(props: Omit<CSSProps<T>, "ref">) {
         if (!props)
             return;
         if (Array.isArray(props)) {
@@ -1115,8 +1160,6 @@ export class CSSStyleSheetStyle extends CSSStyle {
                         console.warn("CSSStyle props dose not accept Functions props other then function for css", "so", k, "will be ignored")
                     else return (v(new CSSStyleSheetStyle()) as CSSStyle).toString();
                 }
-
-
             }
 
             return v;
@@ -1125,3 +1168,4 @@ export class CSSStyleSheetStyle extends CSSStyle {
         return this;
     }
 }
+

@@ -1,7 +1,7 @@
 import { TouchableOpacity, Text, View } from "./ReactNativeComponents";
 import * as React from "react";
 import { ButtonProps } from "../Typse";
-import { ifSelector, optionalStyle } from "../config/Methods";
+import { ifSelector, optionalStyle } from "../config";
 import { useTimer } from "../hooks";
 
 export const Button = (props: ButtonProps) => {
@@ -25,10 +25,6 @@ export const Button = (props: ButtonProps) => {
             fn();
         }
 
-        /*  pressableProps.onPress = (event) => {
-              props.onPress?.(event);
-          }*/
-
         pressableProps.onPressOut = (event) => {
             props.onPressOut?.(event);
             timer.clear();
@@ -45,16 +41,7 @@ export const Button = (props: ButtonProps) => {
             }} onMouseEnter={(event) => {
                 setShadow("sh-md")
                 props.onMouseEnter?.(event)
-            }} css={x => x.flD("row")
-                .pa(5)
-                .maB(5)
-                .if(props.icon != undefined && props.text != undefined, x => x.paL(5).juC("space-between"), x => x.paL(8))
-                .paR(8)
-                .boR(5)
-                .baC("$baC-primary")
-                .classNames(shadow)
-                .joinRight(props.css)
-                .if(disabled, x => x.op(.8))}>
+            }} css={x => x.cls(shadow, "_button").joinRight(props.css).if(disabled, x => x.cls("disabled"))}>
             {props.icon}
             <Text ifTrue={() => props.text != undefined} css={x => x.cls("fos-xs").joinRight(props.textCss)}>{props.text}</Text>
         </TouchableOpacity>

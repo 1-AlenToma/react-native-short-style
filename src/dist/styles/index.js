@@ -13,7 +13,7 @@ import cssTranslator, { serilizeCssStyle } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as allowedKeys from "./ValidViewStylesAttributes";
 import * as React from "react";
-import { getClasses } from "../config/Methods";
+import { getClasses } from "../config";
 let toArray = (item) => {
     if (!item)
         return [];

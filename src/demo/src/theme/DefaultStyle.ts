@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import NestedStyleSheet from "../styles/NestedStyleSheet";
 
 const colors = {
@@ -115,6 +116,27 @@ const colors = {
   transparent: 'rgba(0,0,0,0)',
 }
 
+const convertShadow = (item: any) => {
+
+  /*shadowColor: undefined,
+  shadowOffset: undefined,
+  shadowOpacity: undefined,
+  shadowRadius: undefined,
+  elevation: undefined*/
+  if (Platform.OS == "web") {
+    if (item.shadowColor === undefined)
+      return {
+        boxShadow: "none"
+      }
+    return {
+      elevation: item.elevation,
+      boxShadow: `${item.shadowOffset.width}px ${item.shadowOffset.height}px ${item.shadowRadius}px ${item.shadowColor}`
+    }
+  }
+
+  return item;
+}
+
 export const defaultTheme = {
   name: 'default',
   color: colors,
@@ -133,15 +155,17 @@ export const defaultTheme = {
     '6xl': 32,
   },
 
+
+
   shadow: {
-    none: {
+    none: convertShadow({
       shadowColor: undefined,
       shadowOffset: undefined,
       shadowOpacity: undefined,
       shadowRadius: undefined,
       elevation: undefined
-    },
-    xs: {
+    }),
+    xs: convertShadow({
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -151,8 +175,8 @@ export const defaultTheme = {
       shadowRadius: 1.0,
 
       elevation: 1,
-    },
-    sm: {
+    }),
+    sm: convertShadow({
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -162,8 +186,8 @@ export const defaultTheme = {
       shadowRadius: 2.62,
 
       elevation: 4,
-    },
-    md: {
+    }),
+    md: convertShadow({
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -173,8 +197,8 @@ export const defaultTheme = {
       shadowRadius: 4.65,
 
       elevation: 8,
-    },
-    lg: {
+    }),
+    lg: convertShadow({
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -184,8 +208,8 @@ export const defaultTheme = {
       shadowRadius: 7.49,
 
       elevation: 12,
-    },
-    xl: {
+    }),
+    xl: convertShadow({
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -195,8 +219,8 @@ export const defaultTheme = {
       shadowRadius: 10.32,
 
       elevation: 16,
-    },
-    '2xl': {
+    }),
+    '2xl': convertShadow({
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -206,7 +230,7 @@ export const defaultTheme = {
       shadowRadius: 13.16,
 
       elevation: 20,
-    },
+    }),
   },
 
   borderRadius: {
@@ -240,18 +264,18 @@ export const defaultTheme = {
 };
 
 export const ComponentsStyles = NestedStyleSheet.create({
-  _blur: x => x.cls("_topPostion").fl(1).cls("_center").baC("$baC-black").op(.5),
+  _blur: x => x.cls("_topPostion").fl(1).cls("_center").baC("$baC-black").op(.5).zI(100),
   _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("transparent"),
   _modalDefaultStyle: x => x.pa(10).zI(2).wi("80%").he("20%").boR(5).boW(1).boC("gray"),
   _abc: x => x.po("absolute"),
   _overflow: x => x.ov("hidden"),
-  _checkBox: x => x.flD("row").di("flex").classNames("_center"),
+  _checkBox: x => x.flD("row").di("flex").cls("_center"),
   _center: x => x.juC("center").alI("center"),
   _checkBox$View: x => x.size(25, 25).di("flex").boR(2).boW(.5).boC("gray").cls("_center"),
   _checkBox_Right: "mar:5",
   _checkBox_Left: "mal:5",
   _checkBox_checked: "bac:rgb(70 70 70)",
-  _actionSheet: x => x.zI(2).to(0).classNames("_abc").le(".5%").juC("flex-start").ov("hidden").boC("#CCCCCC"),
+  _actionSheet: x => x.zI(2).to(0).cls("_abc").le(".5%").juC("flex-start").ov("hidden").boC("#CCCCCC"),
   _actionSheet_Bottom: x => x.wi("99%").maH("80%").boTW(.5).boTLR(15).boTRR(15),
   _actionSheet_Top: x => x.maH("80%").wi("99%").boBW(.5).boBLR(15).boBRR(15),
   _actionSheet_Left: x => x.maH("99%").maW("80%").to(".5%").le(0).boTW(.5).boBW(.5).boTRR(15).boBRR(15),

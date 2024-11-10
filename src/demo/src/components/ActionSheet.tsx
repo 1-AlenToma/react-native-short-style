@@ -3,8 +3,8 @@ import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactN
 import { InternalThemeContext, globalData } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
-import { Platform } from "react-native";
-import { newId, optionalStyle, proc } from "../config/Methods";
+import { Easing, Platform } from "react-native";
+import { newId, optionalStyle, proc } from "../config";
 import * as React from "react";
 
 import {
@@ -36,8 +36,11 @@ export const ActionSheet = (props: ActionSheetProps) => {
     const { animateY, animateX, animate } = useAnimate({
         y: 0,
         x: 0,
-        speed: props.speed
+        speed: props.speed,
+        easing: Easing.bounce
     });
+
+    const blurAnimation = useAnimate();
 
     const state = StateBuilder({
         id: newId(),
@@ -97,6 +100,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
         setSize();
         const fn = !isVertical ? animateX : animateY;
+        blurAnimation.animateX(show ? 1 : 0)
         fn(
             firstValue(show),
             () => {
@@ -142,11 +146,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
             onPressIn={() => state.refItem.isTouched = true}
             onPressOut={() => state.refItem.isTouched = false}
             css={!isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle"}
-            onTouchStart={() => {
+            onTouchStart={(e) => {
                 state.refItem.isTouched = true;
             }}>
             <TouchableOpacity
-
                 onPress={() => {
                     toggle(false);
                 }}
@@ -231,13 +234,21 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
         fn(state.id,
             <View key={state.id} css={x => x.baC("$baC-transparent").cls("_topPostion")} style={{ zIndex: context.totalItems() + 300 }}>
-                <Blur onPress={() => {
+                <Blur style={{
+                    opacity: blurAnimation.animate.x.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, .5]
+                    })
+                }} onPress={() => {
                     if (!props.disableBlurClick)
                         toggle(false);
                 }} css="zi:1" />
                 <AnimatedView
+                    onTouchStart={()=> {
+                        state.refItem.isTouched = true;
+                    }}
 
-                    onTouchEnd={() => {
+                    onTouchEnd={(event) => {
                         state.refItem.isTouched = false;
                     }}
                     css={`_actionSheet _actionSheet_${position}`}

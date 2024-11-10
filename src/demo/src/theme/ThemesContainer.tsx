@@ -2,7 +2,7 @@ import { ThemeContext, globalData, InternalThemeContext } from "./ThemeContext";
 import * as React from "react";
 import { IThemeContext } from "../Typse";
 import StateBuilder from "react-smart-state";
-import { newId, clearAllCss } from "../config/Methods";
+import { newId, clearAllCss } from "../config";
 import { View, AlertView, ToastView } from "../components";
 
 
@@ -68,7 +68,7 @@ const ThemeInternalContainer = ({ children }: any) => {
             if (hasItems)
                 state.items.delete(id);
             if (hasStatic)
-                state.staticItems.delete(id);
+                state.staticItems.delete(id); 
 
             if (hasItems)
                 contextValue.onItemsChange?.();
