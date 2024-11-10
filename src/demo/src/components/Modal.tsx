@@ -20,7 +20,7 @@ export const Modal = (props: ModalProps) => {
     const state = StateBuilder({
         isVisible: undefined,
         id: newId()
-    }).timeout(undefined).build();
+    }).build();
 
     let toggle = async (
         show: boolean
@@ -53,7 +53,7 @@ export const Modal = (props: ModalProps) => {
         return () => context.remove(state.id)
     }, [])
 
-    const transform = { scale: undefined, opacity: undefined };
+    const transform: any = {};
     transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
         inputRange: [0, 1],
         outputRange: [0, 1],

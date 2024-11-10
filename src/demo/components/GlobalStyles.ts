@@ -1,7 +1,17 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { NestedStyleSheet } from "../src";
 
-export default NestedStyleSheet.create({
+const web = NestedStyleSheet.create({
+    container: x => x.flG(1).classNames("_center"),
+    block: "bor:5 bow:.5 boc:gray miw:200 he:auto flg:1 juc:center ali:center ma:5 pa:10" 
+})
+
+const android = NestedStyleSheet.create({
+    container: x => x.classNames("_center").wi("100%"),
+    block: "bor:5 bow:.5 boc:gray miw:200 he:auto juc:center ali:center ma:5 pa:10 fl:1 maw:90% fld:row mat:50 mih:50"
+})
+
+let _default = NestedStyleSheet.create({
     Text: "wi:100%",
     container: "fl:1",
     "container.Text": "fow:bold tea:center",
@@ -34,3 +44,10 @@ export default NestedStyleSheet.create({
         color: '#0a7ea4',
     },
 })
+
+if (Platform.OS == "web")
+    _default = { ..._default, ...web }
+else _default = { ..._default, ...android }
+
+export default _default;
+

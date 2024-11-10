@@ -488,7 +488,7 @@ export const TabBar = (props: TabBarProps) => {
                     {...state.refItem.panResponse.panHandlers}>
                     {children.map((x, i) => (
                         <View
-                            css={x => x.flG(1).baC("$baC-transparent").maW(state.size.width + 1)}
+                            css={x => x.flG(1).baC("$baC-transparent").maW(state.size.width)}
                             key={i}>
                             {x.props.head}
                             {!props.disableScrolling && !x.props.disableScrolling ? (

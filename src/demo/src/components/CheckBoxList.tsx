@@ -119,7 +119,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
     const disabled = context.checkBoxListProps.disabled ?? props.disabled ?? false;
     const selectionType = context.checkBoxListProps.selectionType;
     const { animateX, animate, currentValue } = useAnimate({ speed: 100 });
-    const swtichColor: any = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "gray", false: "white" }
+    const swtichColor: any = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "black", false: "white" }
     if (!context.ids || !context.ids.has(state.id))
         context.add?.(state.id, props.checked);
     const tAnimate = (value: number) => {
@@ -173,7 +173,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
         return swtichColor[isChecked as any]
     }
     const activeOpacity = disabled ? .5 : 1;
-    const disabledCss = disabled ? "op:" + activeOpacity : "";
+    const disabledCss =  disabled ? "disabled" : "";
 
     return (
         <>
@@ -183,7 +183,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
                 <View style={{ backgroundColor: color(state.checked) }} css={`_checkBox_${labelPostion}`} >
-                    <Icon ifTrue={() => state.checked} type="AntDesign" style={{ color: color(!state.checked) }} name="check" size={24} />
+                    <Icon ifTrue={() => state.checked} type="AntDesign" css={x=> x.co("$co-light")} name="check" size={24} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>

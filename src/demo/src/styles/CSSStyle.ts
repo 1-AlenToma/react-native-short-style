@@ -315,17 +315,16 @@ export abstract class ExtraCssStyle {
             for (let key in style) {
                 let v = style[key]
                 if (v == undefined)
-                    css += ` ${key}:undefined`;
+                    this.add(key, undefined)
                 else if (v === null)
-                    css += ` ${key}:null`;
+                    this.add(key, null);
                 else if (typeof v === "object") {
                     console.warn("CSSStyle cannot join object, value", v)
                     continue;
                 } else
-                    css += ` ${key}:${v}`;
+                    this.add(key, v);
             }
-
-            value = css;
+            return this;
         }
 
 

@@ -3,6 +3,7 @@ import * as Native from "react-native";
 import { Styleable } from "../styles";
 import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps, ImageProps, TextInputProps, Animated, FlatListProps } from "react-native/types";
 import { GenericViewProps, GenericView } from "../Typse";
+import * as NativeSlider from '@miblanchard/react-native-slider';
 
 
 const styledItems: any = {}
@@ -19,6 +20,7 @@ CreateView.prototype.CssStyleAble = CreateView.CssStyleAble = true;
 
 
 export const View = CreateView<Native.View, ViewProps>(Native.View);
+export const Slider = CreateView<NativeSlider.Slider, NativeSlider.SliderProps>(NativeSlider.Slider, "Slider");
 export const SafeAreaView = CreateView<Native.SafeAreaView, ViewProps>(Native.SafeAreaView);
 export const Text = CreateView<Native.Text, TextProps>(Native.Text);
 export const TextInput = CreateView<Native.TextInput, Native.TextInputProps>(Native.TextInput);

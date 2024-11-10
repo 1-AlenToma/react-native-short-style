@@ -50,7 +50,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         refItems: {
             scrollView: undefined as typeof ScrollView | undefined
         }
-    }).ignore("refItems.scrollView").timeout(undefined).build();
+    }).ignore("refItems.scrollView").build();
     const mode = props.mode ?? "Modal";
 
     state.useEffect(() => {
@@ -100,8 +100,8 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                     onPress={() => state.visible = !state.visible}
                     css={`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC ${state.shadow} ${optionalStyle(props.css).c}`}>
                     <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC">
-                        <Text style={{
-                            color: selectedText ? undefined : "#CCC"
+                        <Text style={selectedText ? undefined :{
+                            color: "#CCC"
                         }} css="fos-sm">{selectedText ?? props.placeHolder}</Text>
                     </View>
                     <View css="fl:1 _center wi:30 maw:30 he:100%">

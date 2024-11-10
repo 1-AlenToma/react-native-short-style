@@ -178,6 +178,7 @@ export type AlertViewAlertProps = {
     size?: CssSize;
     title?: string;
     okText?: string;
+    css?: CSS_String
 }
 
 export type ToastProps = Omit<AlertViewAlertProps, "okText"> & {
@@ -322,7 +323,7 @@ export type LoaderRef = {
 export type LoaderProps = Omit<ActivityIndicatorProps, "animating" | "hidesWhenStopped"> & {
     loading: boolean;
     text?: string | React.ReactNode;
-    children: React.ReactNode | React.ReactNode[];
+    children?: React.ReactNode | React.ReactNode[];
 }
 
 export type PortalProps = StyledProps & {

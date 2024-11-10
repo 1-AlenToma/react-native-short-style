@@ -8,7 +8,7 @@ import { newId } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
-import { Platform, StatusBar } from 'react-native'; 
+import { Platform, StatusBar } from 'react-native';
 
 export const ToastView = () => {
     globalData.hook("screen", "alertViewData.toastData");
@@ -47,7 +47,7 @@ export const ToastView = () => {
         const v = state.visible ? 1 : 0;
         if (currentValue.y == v || !state.size)
             return;
-       
+
         timer.clear();
         animateY(v, () => {
             if (state.visible) {
@@ -120,7 +120,7 @@ export const ToastView = () => {
                 extrapolate: "clamp"
             })
         }]
-    }} css={x => x.cls("_toast").joinRight(typeInfo.css)}>
+    }} css={x => x.cls("_toast").joinRight(typeInfo.css).joinRight(data.css)}>
         <View>
             <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
                 <Button onPress={() => state.visible = false} css={
@@ -135,7 +135,7 @@ export const ToastView = () => {
                 <Text css={x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css)}>{data.message}</Text>
             </View>
         </View>
-        <ProgressBar ifTrue={() => data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_abc bo:0 le:0 he:5 zi:2" />
+        <ProgressBar ifTrue={() => data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_toastProgressView" />
     </AnimatedView>, true)
 
     return null;

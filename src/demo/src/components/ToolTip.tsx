@@ -7,6 +7,7 @@ import StateBuilder from "react-smart-state";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import * as Native from "react-native"
 import { Blur } from "./Blur";
+import { useTimer } from "../hooks";
 
 export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) => {
     if (ifSelector(props.ifTrue) == false)
@@ -20,7 +21,8 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         pos: undefined as Size | undefined,
         toolTipSize: undefined as Size | undefined
     }).ignore("ref", "pos", "toolTipSize").build();
-    
+    const timer = useTimer(100)
+
     const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);
 
     setRef(ref, {
@@ -28,18 +30,20 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     } as ToolTipRef);
 
     state.useEffect(() => {
-        if (state.ref && !state.pos && state.visible)
-            state.ref.measureInWindow((x, y, w, h) => {
-                state.pos = {
-                    x: x,
-                    y: y,
-                    px: x,
-                    py: y,
-                    width: w,
-                    height: h
-                }
-            });
-    }, "ref")
+        timer(() => {
+            if (state.ref && !state.pos && state.visible)
+                state.ref.measureInWindow((x, y, w, h) => {
+                    state.pos = {
+                        x: x,
+                        y: y,
+                        px: x,
+                        py: y,
+                        width: w,
+                        height: h
+                    }
+                });
+        })
+    }, "ref", "visible")
 
     globalData.useEffect(() => {
         if (state.visible)
@@ -59,6 +63,8 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         top = top + state.pos.height
         if (left + state.toolTipSize.width > globalData.window.width)
             left = globalData.window.width - (state.toolTipSize.width)
+        else if (left < 0)
+                left = 5
         if (!props.postion || props.postion == "Top") {
             top -= state.toolTipSize.height + state.pos.height;
             if (top < 0)
@@ -68,7 +74,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     }
 
     fn(state.id, (
-        <View key={state.id} css={x => x.fillView().cls("_abc").pos(0, 0).baC("$co-transparent")}>
+        <View key={state.id} css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC("$co-transparent")}>
             <Blur css="zi:1 bac:transparent" onPress={() => state.visible = false} />
             <View onLayout={({ nativeEvent }) => {
                 state.toolTipSize = nativeEvent.layout

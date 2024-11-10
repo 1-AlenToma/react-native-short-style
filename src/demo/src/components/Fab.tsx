@@ -5,7 +5,7 @@ import {
     useAnimate
 } from "../hooks";
 import { ifSelector, newId, optionalStyle, proc, readAble } from "../config";
-import { FabProps, ProgressBarProps, Size } from "../Typse";
+import { CSS_String, FabProps, ProgressBarProps, Size } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Button } from "./Button";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
@@ -18,7 +18,8 @@ export const Fab = (props: FabProps) => {
     const state = StateBuilder({
         visible: false,
         id: newId(),
-    }).build();
+        size: undefined as Size | undefined
+    }).ignore("size").build();
 
     if (props.follow == "Window")
         globalData.hook("window");
@@ -42,18 +43,29 @@ export const Fab = (props: FabProps) => {
     }, [])
 
     let style = {} as ViewStyle;
+    let animatedItemPosition = undefined as CSS_String;
+
+
+
+
     switch (props.position) {
         case "RightBottom":
             style = {
                 bottom: 10,
                 right: 5
             }
+            if (state.size) {
+                animatedItemPosition = x => x.le((-(state.size.width / 2)))
+            }
+
             break;
         case "LeftBottom":
             style = {
                 bottom: 10,
                 left: 5
             }
+
+
             break;
         case "LeftTop":
             style = {
@@ -66,12 +78,20 @@ export const Fab = (props: FabProps) => {
                 top: 10,
                 right: 5
             }
+
+            if (state.size) {
+                animatedItemPosition = x => x.le((-(state.size.width / 2)))
+            }
+
             break;
     }
 
-    const styles = Array.isArray(props.style) ? props.style : [props.style];
+
     const animatedIItem = (
-        <AnimatedView style={{
+        <AnimatedView onLayout={({ nativeEvent }) => {
+
+            state.size = nativeEvent.layout;
+        }} style={{
             transform: [
                 {
                     scaleY: animate.y.interpolate({
@@ -80,7 +100,7 @@ export const Fab = (props: FabProps) => {
                         extrapolate: "clamp"
                     })
                 }]
-        }} css="mat:10 bac:transparent overflow:hidden miw:100 zi:1" key={state.id + "View"} >
+        }} css={x => x.joinRight("mat:10 bac:transparent po:relative overflow:hidden miw:100 zi:1").joinRight(animatedItemPosition)} key={state.id + "View"} >
             <>
                 {
                     props.children
@@ -93,8 +113,7 @@ export const Fab = (props: FabProps) => {
 
     const view = (
         <React.Fragment key={state.id}>
-            <Blur onPress={() => state.visible = false} ifTrue={() => state.visible && props.blureScreen !== false} />
-            <View css={x => x.cls("_fab").joinRight(props.css)} style={[style, ...styles]}>
+            <View css={x => x.cls("_fab").joinRight(style).joinRight(props.css)} style={props.style}>
                 {!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null}
                 <TouchableOpacity style={typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined} onPress={() => state.visible = !state.visible}
                     css={x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle))}>
@@ -102,6 +121,7 @@ export const Fab = (props: FabProps) => {
                 </TouchableOpacity>
                 {!["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null}
             </View>
+            <Blur onPress={() => state.visible = false} ifTrue={() => state.visible && props.blureScreen !== false} />
         </React.Fragment>
     )
 

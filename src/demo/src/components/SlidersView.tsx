@@ -1,5 +1,4 @@
-import * as NativeSlider from '@miblanchard/react-native-slider';
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Slider } from "./ReactNativeComponents";
 import * as React from "react";
 import {
     useAnimate,
@@ -11,8 +10,9 @@ import { Button } from "./Button";
 import { Icon } from './Icon';
 import StateBuilder from 'react-smart-state';
 import { ViewStyle } from 'react-native';
+import * as NativeSlider from '@miblanchard/react-native-slider';
 
-export const Slider = (props: NativeSlider.SliderProps & {
+export const SliderView = (props: NativeSlider.SliderProps & {
     enableButtons?: boolean,
     buttonCss?: CSS_String,
     ifTrue?: () => boolean | boolean,
@@ -24,8 +24,8 @@ export const Slider = (props: NativeSlider.SliderProps & {
     const state = StateBuilder({
         value: props.value,
         sliding: false
-    }).timeout(undefined).build();
-    const timer = useTimer(10)
+    }).build();
+    const timer = useTimer(800)
 
     let btnValue = typeof state.value == "number" ? state.value : ((state.value as []).length <= 1 ? state.value[0] : undefined);
     let step = props.step != undefined ? props.step : 1;
@@ -43,40 +43,43 @@ export const Slider = (props: NativeSlider.SliderProps & {
             state.value = props.value;
     }, [props.value])
 
+    const minus =()=> {
+        if (btnValue - step >= props.minimumValue)
+            onChange(btnValue - step)
+        else if (btnValue > props.minimumValue)
+            onChange(props.minimumValue)
+    }
 
+    const plus =()=> {
+        if (btnValue + step <= props.maximumValue)
+            onChange(btnValue + step)
+        else if (btnValue < props.maximumValue)
+            onChange(props.maximumValue);
+    }
 
     return (
-        <View css={x=> x.cls("_slider").joinRight(props.css)} style={props.style}>
+        <View css={x=> x.cls("_slider juc:space-between").joinRight(props.css)} style={props.style}>
             <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="minus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}
-                whilePressed={() => {
-                    if (btnValue - step >= props.minimumValue)
-                        onChange(btnValue - step)
-                    else if (btnValue > props.minimumValue)
-                        onChange(props.minimumValue)
-                }}></Button>
+                whilePressed={minus} onPress={minus}></Button>
 
-            <NativeSlider.Slider
-                renderAboveThumbComponent={!state.sliding ? undefined : () => <Text css="fos-sm mal:-37% bor:5 fow:bold mat:-35px bow:1 boc:#CCC miw:50 pat:2 pab:2 tea:center zi:100">{`${readAble(state.value as number, 1)}/${props.maximumValue}`}</Text>}
+            <Slider
+                renderAboveThumbComponent={!state.sliding ? undefined : () => <Text css="_sliderThump">{`${readAble(state.value as number, 1)}/${props.maximumValue}`}</Text>}
                 {...props}
                 onSlidingStart={(event, index: number) => {
                     props.onSlidingStart?.(event, index);
                     state.sliding = true;
                 }}
                 value={state.value}
-                containerStyle={{ ...props.containerStyle, width: props.enableButtons ? "60%" : props.containerStyle?.width ?? "100%" }}
+                css="fl:1"
+                containerStyle={{ ...props.containerStyle, flex:1, width:"100%"}}
                 onSlidingComplete={onChange} />
             <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}
-                whilePressed={() => {
-                    if (btnValue + step <= props.maximumValue)
-                        onChange(btnValue + step)
-                    else if (btnValue < props.maximumValue)
-                        onChange(props.maximumValue);
-                }}></Button>
+                whilePressed={plus} onPress={plus}></Button>
         </View>)
 }

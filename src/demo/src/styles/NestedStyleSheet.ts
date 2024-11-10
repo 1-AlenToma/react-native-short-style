@@ -11,6 +11,7 @@ class NestedStyleSheet {
 
     while (keysItems.length > 0) {
       let key = keysItems.shift();
+ 
       let value = obj[key];
       if (value && typeof value == "function") {
         value = value(new CSSStyleSheetStyle()) as any;
@@ -19,7 +20,6 @@ class NestedStyleSheet {
         let eqs = value.getEqs(key);
         oItem[key] = value = value.toString();
         for (let v of eqs) {
-
           if (!oItem[v.key]) {
             oItem[v.key] = v.css;
             keysItems.push(v.key);
@@ -63,6 +63,7 @@ class NestedStyleSheet {
         }
       }
     }
+
     return oItem;
   }
 };

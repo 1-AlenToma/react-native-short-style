@@ -30,7 +30,7 @@ const StaticFullView = () => {
 
 
     return (
-        <View css={x=> x.zI("$zi-lg").cls("_topPostion")} ifTrue={items.length > 0}>
+        <View css={x=> x.cls("_topPostion").zI("$zi-lg")} ifTrue={items.length > 0}>
             {
                 items.map((x, i) => (
                     <React.Fragment key={i}>
@@ -113,7 +113,7 @@ const ThemeInternalContainer = ({ children }: any) => {
     }
 
 
-
+   
     return (
         <InternalThemeContext.Provider value={contextValue}>
             <View onLayout={({ nativeEvent }) => {

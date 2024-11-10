@@ -4,7 +4,7 @@ import { View, Text } from "../src";
 export const BlockContainer = ({ children, title }: any) => {
 
     return (
-        <View css={x=> x.flG(1).classNames("_center")}>
+        <View css={"container flg:1"}>
             {children}
         </View>
     )

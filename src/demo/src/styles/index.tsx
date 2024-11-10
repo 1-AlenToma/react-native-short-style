@@ -207,7 +207,7 @@ class StyledItem {
         selectedThemeIndex: themecontext.selectedIndex,
         childrenIds: [],
       }
-    }).ignore("refItem", "contextValue").timeout(undefined).build();
+    }).ignore("refItem", "contextValue").build();
     ec?.register?.(state.id);
     const update = () => {
       css = props.css ?? "";
@@ -318,8 +318,6 @@ const Styleable = function <T>(
   let item = new StyledItem();
   item.view = View;
   item.viewPath = identifier;
-
-
   return refCreator<T & StyledProps>(item.render.bind(item), identifier, View);
 };
 

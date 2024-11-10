@@ -301,7 +301,7 @@ export const ComponentsStyles = NestedStyleSheet.create({
   _tabBarContainer: "wi:100% he:100% fl:1 fld:row po:relative bac:transparent",
   _tabBarContainerView: "po:relative miw:100% fld:row juc:space-between ali:center mah:40 he:40 fl:0 flg:1 bac:transparent",
   _tabBar: "wi:100% he:100% fl:1 _overflow",
-  _progressBar: "flex wi:100% he:20 zi:5 juc:center _overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
+  _progressBar: "fl:1 wi:100% he:20 zi:5 juc:center _overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
   _progressBarAnimatedView: x => x.zI(2).cls("_abc").to(0).le("-100%").fillView().op(.8),
   _selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
 })
