@@ -33,7 +33,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
     let context = useContext(InternalThemeContext);
     //globalData.hook("screen");
     const timer = useTimer(100);
-    const { animateY, animateX, animate } = useAnimate({
+    const { animateY, animateX, animate, animating, currentValue } = useAnimate({
         y: 0,
         x: 0,
         speed: props.speed,
@@ -93,17 +93,19 @@ export const ActionSheet = (props: ActionSheetProps) => {
     }
 
     let toggle = async (show: boolean) => {
-
+        if (animating.isAnimating)
+            return;
         if (!state.refItem.isVisible && show) {
             state.refItem.isVisible = props.isVisible;
             renderUpdate();
         }
         setSize();
         const fn = !isVertical ? animateX : animateY;
-        blurAnimation.animateX(show ? 1 : 0)
+
         fn(
             firstValue(show),
             () => {
+                blurAnimation.animateX(show ? 1 : 0, undefined, 1)
                 state.refItem.panResponse = undefined;
                 state.refItem.show = show;
                 state.refItem.isVisible = props.isVisible;
@@ -233,7 +235,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
             })
         }
         fn(state.id,
-            <View key={state.id} css={x => x.baC("$baC-transparent").cls("_topPostion")} style={{ zIndex: context.totalItems() + 300 }}>
+            <View key={state.id} css={x => x.baC("$co-transparent").cls("_topPostion")} style={{ zIndex: context.totalItems() + 300 }}>
                 <Blur style={{
                     opacity: blurAnimation.animate.x.interpolate({
                         inputRange: [0, 1],
@@ -244,7 +246,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         toggle(false);
                 }} css="zi:1" />
                 <AnimatedView
-                    onTouchStart={()=> {
+                    onTouchStart={() => {
                         state.refItem.isTouched = true;
                     }}
 

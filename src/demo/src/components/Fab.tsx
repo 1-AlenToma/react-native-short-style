@@ -8,7 +8,7 @@ import { ifSelector, newId, optionalStyle, proc, readAble } from "../config";
 import { FabProps, ProgressBarProps, Size } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Button } from "./Button";
-import { InternalThemeContext } from "../theme/ThemeContext";
+import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { ViewStyle } from "react-native";
 import { Blur } from "./Blur";
 
@@ -18,8 +18,11 @@ export const Fab = (props: FabProps) => {
     const state = StateBuilder({
         visible: false,
         id: newId(),
-
     }).build();
+
+    if (props.follow == "Window")
+        globalData.hook("window");
+
 
     const animateState = () => {
         let value = state.visible ? 1 : 0;
@@ -38,7 +41,6 @@ export const Fab = (props: FabProps) => {
         animateState();
     }, [])
 
-    const children = Array.isArray(props.children) ? props.children : [props.children]
     let style = {} as ViewStyle;
     switch (props.position) {
         case "RightBottom":
@@ -78,7 +80,7 @@ export const Fab = (props: FabProps) => {
                         extrapolate: "clamp"
                     })
                 }]
-        }} css="mat:10 bac-transparent overflow:hidden miw:100 zi:1" key={state.id + "View"} >
+        }} css="mat:10 bac:transparent overflow:hidden miw:100 zi:1" key={state.id + "View"} >
             <>
                 {
                     props.children
@@ -87,20 +89,28 @@ export const Fab = (props: FabProps) => {
         </AnimatedView >
     )
 
+
+
     const view = (
         <React.Fragment key={state.id}>
-            <Blur onPress={() => state.visible = false} ifTrue={()=> state.visible && props.blureScreen !== false} />
-            <View css={`zi:100 overflow:visible _abc bac-transparent ${optionalStyle(props.css).c}`} style={[style, ...styles]}>
+            <Blur onPress={() => state.visible = false} ifTrue={() => state.visible && props.blureScreen !== false} />
+            <View css={x => x.cls("_fab").joinRight(props.css)} style={[style, ...styles]}>
                 {!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null}
-                <TouchableOpacity style={props.prefixContainerStyle} onPress={() => state.visible = !state.visible}
-                    css="bac-transparent zi:2 fl:1 bac:blue bor:25 he:60 wi:50 pa:10 juc:center ali:center">
+                <TouchableOpacity style={typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined} onPress={() => state.visible = !state.visible}
+                    css={x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle))}>
                     {typeof props.prefix == "string" ? <Text css="fos-xs">{props.prefix}</Text> : props.prefix}
                 </TouchableOpacity>
                 {!["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null}
             </View>
         </React.Fragment>
     )
+
+    if (props.follow == "Parent")
+        return view as React.ReactNode;
+    else {
+        context.add(state.id, view, true);
+    }
     //context.add(state.id, view, true);
 
-    return view as React.ReactNode;
+    return null as React.ReactNode;
 }

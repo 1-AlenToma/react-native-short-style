@@ -24,8 +24,8 @@ export const Slider = (props: NativeSlider.SliderProps & {
     const state = StateBuilder({
         value: props.value,
         sliding: false
-    }).build();
-    const timer = useTimer(800)
+    }).timeout(undefined).build();
+    const timer = useTimer(10)
 
     let btnValue = typeof state.value == "number" ? state.value : ((state.value as []).length <= 1 ? state.value[0] : undefined);
     let step = props.step != undefined ? props.step : 1;

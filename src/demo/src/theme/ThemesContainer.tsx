@@ -6,6 +6,17 @@ import { newId, clearAllCss } from "../config";
 import { View, AlertView, ToastView } from "../components";
 
 
+const StaticItem = ({ onMounted, id, item }: any) => {
+    const state = StateBuilder({
+        item: item
+    }).ignore("item").build();
+
+    onMounted(x => state.item = x);
+    return state.item;
+}
+
+
+
 const StaticFullView = () => {
     const context = React.useContext(InternalThemeContext);
     const state = StateBuilder({
@@ -15,12 +26,18 @@ const StaticFullView = () => {
     context.onItemsChange = () => {
         state.updater = newId();
     }
-    const items: any[] = [...context.items().items.values()];
+    const items: any[] = [...context.items().items.values()]
 
 
     return (
-        <View css="zi:2 _topPostion fl:1" ifTrue={items.length > 0}>
-            {items}
+        <View css={x=> x.zI("$zi-lg").cls("_topPostion")} ifTrue={items.length > 0}>
+            {
+                items.map((x, i) => (
+                    <React.Fragment key={i}>
+                        {x.el}
+                    </React.Fragment>
+                ))
+            }
         </View>
     )
 }
@@ -35,9 +52,13 @@ const StaticView = () => {
         state.updater = newId();
 
     }
-    const items: any[] = [...context.items().staticItems.values()];
+    const items: any[] = [...context.items().staticItems.values()]
     return (
-        items
+        items.map((x, i) => (
+            <React.Fragment key={i}>
+                {x.el}
+            </React.Fragment>
+        ))
     )
 
 
@@ -45,22 +66,27 @@ const StaticView = () => {
 
 const ThemeInternalContainer = ({ children }: any) => {
     const state = StateBuilder({
-        items: new Map(),
-        staticItems: new Map(),
+        items: new Map<string, { el: any, onchange: Function }>(),
+        staticItems: new Map<string, { el: any, onchange: Function }>(),
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
-    }).ignore("items", "containerSize").build();
+    }).ignore("items", "containerSize", "staticItems").build();
 
     const contextValue = {
         add: (id: string, element: React.ReactNode, isStattic?: boolean) => {
-            if (!isStattic)
-                state.items.set(id, element);
-            else
-                state.staticItems.set(id, element);
+            let item = !isStattic ? state.items.get(id) : state.staticItems.get(id);
+            if (!item) {
+                item = { onchange: undefined, el: undefined }
+                item.el = (<StaticItem id={id} item={element} onMounted={(fn) => item.onchange = fn} />)
+                if (!isStattic)
+                    state.items.set(id, item);
+                else
+                    state.staticItems.set(id, item);
 
-            if (!isStattic)
-                contextValue.onItemsChange?.();
-            else
-                contextValue.onStaticItemsChange?.();
+                if (!isStattic)
+                    contextValue.onItemsChange?.();
+                else
+                    contextValue.onStaticItemsChange?.();
+            } else item.onchange?.(element);
         },
         remove: (id: string) => {
             let hasItems = state.items.has(id);
@@ -68,7 +94,7 @@ const ThemeInternalContainer = ({ children }: any) => {
             if (hasItems)
                 state.items.delete(id);
             if (hasStatic)
-                state.staticItems.delete(id); 
+                state.staticItems.delete(id);
 
             if (hasItems)
                 contextValue.onItemsChange?.();

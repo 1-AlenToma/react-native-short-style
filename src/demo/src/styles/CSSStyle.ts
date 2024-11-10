@@ -7,12 +7,12 @@ import { StyledProps } from "../Typse";
 type ValueType = ViewStyle & TextStyle & ImageStyle;
 type Sizes = 5 | 10 | 20 | 30 | 40 | 60 | 70 | 80 | 90 | 100;
 type Colors<K extends string> = `${K}-${keyof typeof defaultTheme.color}` | (string & {})
-type BackgroundColors<K extends string> = `${K}-${keyof typeof defaultTheme.backgroundColor}` | (string & {})
 type FontSizes = `$fos-${keyof typeof defaultTheme.fontSize}` | (ValueType["fontSize"] & {}) | (string & {})
+type zIndex = `$zi-${keyof typeof defaultTheme.zIndex}` | (ValueType["zIndex"] & {}) | (string & {})
 type BorderRadius = `$bor-${keyof typeof defaultTheme.borderRadius}` | (number & {});
 type Spacing = `$sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {});
 type SizeValue<K extends string> = `${Sizes}${K}` | number | (string & {});
-// referer refernce to a function in the ThemeContainer.provider to handle parsing/changing props
+// referer refernce to a function in the ThemeContainer.przIndexovider to handle parsing/changing props
 export type CSSProps<T extends object> = T & StyledProps & { refererId?: string; }
 
 
@@ -398,12 +398,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.backfaceVisibility, value);
     }
 
-    backgroundColor(value?: BackgroundColors<"$baC"> | null) {
+    backgroundColor(value?: Colors<"$co"> | null) {
         return this.add(ShortStyles.backgroundColor, value);
     }
 
     /** Add backgroundColor */
-    baC(value?: BackgroundColors<"$baC"> | null) {
+    baC(value?: Colors<"$co"> | null) {
         return this.backgroundColor(value);
     }
 
@@ -1099,12 +1099,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.writingDirection, value);
     }
 
-    zIndex(value?: ValueType["zIndex"] | null) {
+    zIndex(value?: zIndex | null) {
         return this.add(ShortStyles.zIndex, value);
     }
 
     /** Add zIndex */
-    zI(value?: ValueType["zIndex"] | null) {
+    zI(value?: zIndex | null) {
         return this.add(ShortStyles.zIndex, value);
     }
 }

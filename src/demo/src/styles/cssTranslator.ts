@@ -149,6 +149,7 @@ export const clearAll = () => {
   Storage.clear();
 }
 
+
 const css_translator = (
   css?: string,
   styleFile?: any,
@@ -161,7 +162,7 @@ const css_translator = (
 
   if (Storage.has(id))
     return { ...Storage.get(id) };
-  let shortk = ShortCSS;
+
   let CSS = styleFile;
   let translatedItem = extractProps(css);
   if (translatedItem._hasValue) {
@@ -169,31 +170,31 @@ const css_translator = (
     delete translatedItem.css;
     delete translatedItem._hasValue;
     cssItem._props = { ...translatedItem }
-    // console.error(translatedItem)
   }
-  //if (styleFile)
-  //  CSS = serilizeCssStyle(styleFile);
+
 
   css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
-  let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0);
+  let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g);
   if (items && items.length > 0)
     for (let c of items) {
+      if (!c || c.trim().length <= 0)
+        continue;
       if (c.indexOf(":") !== -1) {
         let k = splitSafe(c, ":", 0);
         let value = checkObject(checkNumber(splitSafe(c, ":", 1)));
 
 
-        if (has(value, "undefined") || has(value, "null"))
+        if (typeof value == "string" && /(undefined)|(null)/gi.test(value))
           value = undefined;
         else if (typeof value == "string" && value.startsWith("$")) {
           value = value.substring(1);
           if (value.toLowerCase() in CSS)
             value = Object.values(CSS[value.toLowerCase()])[0];
         }
-        let short = shortk.find(x => x[k.toLowerCase()] !== undefined);
+        let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
         if (short) {
-          if (!propStyle || propStyle[short.key])
-            cssItem[short.key] = value;
+          if (!propStyle || propStyle[short])
+            cssItem[short] = value;
         } else {
           cssItem[k] = value;
           // console.warn(k, "not found in react-native style props, but we will still add it")
@@ -212,7 +213,8 @@ const css_translator = (
 
         cssItem = {
           ...cssItem,
-          ...cleanStyle(style, propStyle)
+          ...style
+          //...cleanStyle(style, propStyle)
         };
         continue;
       }

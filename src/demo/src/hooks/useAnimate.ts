@@ -27,7 +27,7 @@ export const useAnimate = ({
         })
     ).current;
 
-    const animating = React.useRef<any>({ x: undefined, y: undefined }).current;
+    const animating = React.useRef<any>({ x: undefined, y: undefined, isAnimating:false }).current;
     const animateY = (
         value: any,
         onFinished?: Function,
@@ -76,6 +76,7 @@ export const useAnimate = ({
 
     ) => {
         try {
+            animating.isAnimating = true;
             animating[key]?.stop?.();
             animating[key] = Animated.timing(
                 animObject,
@@ -88,6 +89,7 @@ export const useAnimate = ({
                 }
             );
             animating[key].start(() => {
+                animating.isAnimating = false;
                 onFinished?.();
             });
         } catch (e) {
@@ -100,6 +102,7 @@ export const useAnimate = ({
         animateX,
         run,
         animate,
-        currentValue
+        currentValue,
+        animating
     };
 };

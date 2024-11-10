@@ -90,7 +90,7 @@ export default function App() {
     items: [],
     loading: false,
 
-  }).ignore("items").build();
+  }).ignore("items").timeout(undefined).build();
 
   const update = () => state.id = newId();
 
@@ -156,7 +156,8 @@ export default function App() {
         }
       }}>
         <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css: "co:#000" }}>
-          <Fab position="RightBottom" prefixContainerStyle={{ backgroundColor: "red" }} style={{ bottom: 40 }} blureScreen={true} prefix={<Icon type="AntDesign" size={30} color={"white"} name='plus' />}>
+          <Fab follow="Window" position="RightBottom"
+            prefixContainerStyle={x => x.baC("$co-dark")} style={{ bottom: 40 }} blureScreen={true} prefix={<Icon type="AntDesign" size={30} css={x => x.co("$co-light")} name='plus' />}>
             <Button text='btn 1'></Button>
             <Button text='btn 1'></Button>
           </Fab>
@@ -355,7 +356,7 @@ export default function App() {
                   onEndReached={loadItems}
                   onSelect={(item) => state.selectedValue = item.value}
                   renderHeader={false} horizontal={false} render={(item, index, css) => (
-                    <View css={`wi:100% he:40 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
+                    <View css={`wi:100% he:40 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac:transparent ${css}`}>
                       <Text css={`fos-sm ${css}`}>{item.label}</Text>
                     </View>)} />
               </Loader>
@@ -367,7 +368,7 @@ export default function App() {
                   showsVerticalScrollIndicator={true} items={state.items} onEndReached={loadItems}
                   onSelect={(item) => state.selectedValue = item.value}
                   renderHeader={true} horizontal={false} render={(item, index, css) => (
-                    <View css={`wi:100% he:40 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac-transparent ${css}`}>
+                    <View css={`wi:100% he:40 juc:center mab:5 bobw:1 boc:#CCC pal:5 pa:10 bac:transparent ${css}`}>
                       <Text css={`fos-sm ${css}`}>{item.label}</Text>
                     </View>)} />
               </Loader>

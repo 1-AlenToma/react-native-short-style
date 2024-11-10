@@ -8,7 +8,7 @@ import { newId } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
-import { Platform, StatusBar } from 'react-native';
+import { Platform, StatusBar } from 'react-native'; 
 
 export const ToastView = () => {
     globalData.hook("screen", "alertViewData.toastData");
@@ -122,15 +122,15 @@ export const ToastView = () => {
         }]
     }} css={x => x.cls("_toast").joinRight(typeInfo.css)}>
         <View>
-            <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$baC-transparent")}>
+            <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
                 <Button onPress={() => state.visible = false} css={
-                    x => x.cls("sh-none", "_center").size(30, 30).baC("$baC-transparent").paL(1).boW(0)
+                    x => x.cls("sh-none", "_center").size(30, 30).baC("$co-transparent").paL(1).boW(0)
                 } icon={<Icon type="AntDesign" name="close" size={15} />} />
             </View>
-            <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac-transparent">
+            <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac:transparent">
                 {data.icon ?? typeInfo.icon}
             </View>
-            <View css="fl:1 zi:1 bac-transparent">
+            <View css="fl:1 zi:1 bac:transparent">
                 <Text ifTrue={() => data.title != undefined} css={x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css)}>{data.title}</Text>
                 <Text css={x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css)}>{data.message}</Text>
             </View>

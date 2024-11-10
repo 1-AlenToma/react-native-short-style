@@ -275,11 +275,12 @@ export type TabBarProps = StyledProps & {
 
 export type FabProps = StyledProps & {
     position: "LeftTop" | "RightTop" | "LeftBottom" | "RightBottom";
+    follow: "Window" | "Parent",
     onVisible?: () => void;
     blureScreen?: boolean;
     onPress?: (index: number) => void;
     prefix: string | React.ReactNode;
-    prefixContainerStyle?: ViewStyle;
+    prefixContainerStyle?: CSS_String | ViewStyle;
     children: React.ReactNode | React.ReactNode[];
 }
 

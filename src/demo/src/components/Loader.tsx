@@ -28,9 +28,9 @@ export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
     } as LoaderRef);
 
 
-    return (<View css="wi:100% he:100% bac-transparent">
+    return (<View css="wi:100% he:100% bac:transparent">
         <Blur css="bor:5 zi:2" ifTrue={props.loading} />
-        <View ifTrue={props.loading} css="juc:center ali:center _abc wi:100% he:100% bac-transparent zi:3">
+        <View ifTrue={props.loading} css="juc:center ali:center _abc wi:100% he:100% bac:transparent zi:3">
             <ActivityIndicator color="white" size="large" {...props} children={null} />
             {
                 typeof props.text == "string" ? (<Text css="fos-lg co:white fow:bold">

@@ -13,6 +13,30 @@ import * as ReactNtive from "react-native";
 import { FormItem } from "./FormItem";
 import { TabBar, TabView } from "./TabBar";
 
+const DropDownItemController = ({ item, index, state, props }: { props: any, item: DropdownItem, index: number, state: any }) => {
+    const itemState = StateBuilder({
+        selected: undefined as any
+    }).ignore("selected").build();
+    if (!(state.text == "" || item.label.toLowerCase().indexOf(state.text.toLowerCase()) != -1))
+        return null
+
+    return (
+        <TouchableOpacity onPress={() => {
+            state.selectedValue = item.value;
+            props.onSelect?.(item);
+            state.visible = false;
+        }} onMouseEnter={() => itemState.selected = index}
+            onMouseLeave={() => itemState.selected = undefined}
+            css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC ${item.value === state.selectedValue || index == itemState.selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>
+            {
+                props.render ? props.render(item) : (
+                    <Text css={`fos-sm ${item.value === state.selectedValue || index == itemState.selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>{item.label}</Text>
+                )
+            }
+        </TouchableOpacity>
+    )
+}
+
 export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>((props, ref) => {
     if (ifSelector(props.ifTrue) == false)
         return null;
@@ -21,12 +45,12 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         shadow: "",
         text: "",
         index: 0,
-        tempSelection: undefined,
+        selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
         refItems: {
-            scrollView: undefined as ReactNtive.ScrollView | undefined
+            scrollView: undefined as typeof ScrollView | undefined
         }
-    }).ignore("refItems.scrollView").build();
+    }).ignore("refItems.scrollView").timeout(undefined).build();
     const mode = props.mode ?? "Modal";
 
     state.useEffect(() => {
@@ -39,36 +63,24 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
     }, "refItems.scrollView")
 
     state.useEffect(() => {
-        if (!state.visible)
+        if (!state.visible && state.text != "")
             state.text = "";
     }, "visible")
+
+    React.useEffect(() => {
+        if (state.selectedValue != props.selectedValue)
+            state.selectedValue = props.selectedValue;
+    }, [props.selectedValue])
 
     setRef(ref, {
         open: () => state.visible = true,
         close: () => state.visible = false,
-        selectedValue: props.selectedValue
+        selectedValue: state.selectedValue
     } as DropdownRefItem);
 
-    const getItem = (item: DropdownItem, index: number) => {
-        return (
-            <TouchableOpacity onPress={() => {
-                props.onSelect?.(item);
-                state.visible = false;
-            }} key={index}
-                onMouseEnter={() => state.tempSelection = index}
-                onMouseLeave={() => state.tempSelection = undefined}
-                css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC ${item.value === props.selectedValue || index == state.tempSelection ? props.selectedItemCss ?? "_selectedValue" : ""}`}>
-                {
-                    props.render ? props.render(item) : (
-                        <Text css={`fos-sm ${item.value === props.selectedValue || index == state.tempSelection ? props.selectedItemCss ?? "_selectedValue" : ""}`}>{item.label}</Text>
-                    )
-                }
-            </TouchableOpacity>
-        )
-    }
 
     const Component = mode == "Modal" ? Modal : mode == "ActionSheet" ? ActionSheet : TabView;
-    const selectedText = props.items.find(x => x.value == props.selectedValue)?.label;
+    const selectedText = props.items.find(x => x.value == state.selectedValue)?.label;
     let componentsProps: any = { css: `he:${props.size ?? "50%"}`, size: props.size ?? "50%", isVisible: state.visible, onHide: () => state.visible = false }
     if (mode == "Fold") {
         componentsProps = {
@@ -83,7 +95,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         <Container disableScrolling={true} onTabChange={(index) => state.index = index} style={{ flex: null, flexBasis: state.index == 1 ? undefined : 38 }} selectedTabIndex={state.visible ? 1 : 0}>
             <Selector>
                 <TouchableOpacity onLayout={({ nativeEvent }) => {
-                    state.propsSize = nativeEvent.layout;
+                        state.propsSize = nativeEvent.layout;
                 }} onMouseEnter={() => state.shadow = "sh-sm"} onMouseLeave={() => state.shadow = ""}
                     onPress={() => state.visible = !state.visible}
                     css={`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC ${state.shadow} ${optionalStyle(props.css).c}`}>
@@ -107,10 +119,9 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                     <TextInput css="mab:5 pa:5 bow:.5 boc:#CCC" placeholderTextColor={"#CCC"} placeholder={props.textInputPlaceHolder ?? "Search here..."} defaultValue={state.text}
                         onChangeText={txt => state.text = txt} />
                 </FormItem>
-                <ScrollView style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }} ref={c => state.refItems.scrollView = c}>
+                <ScrollView style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }} ref={c => state.refItems.scrollView = c as any}>
                     {
-                        props.items.filter(x => state.text == "" || x.label.toLowerCase().indexOf(state.text.toLowerCase()) != -1)
-                            .map(getItem)
+                        props.items.map((x, index) => (<DropDownItemController key={index} item={x} index={index} props={props} state={state} />))
                     }
                 </ScrollView>
             </Component>

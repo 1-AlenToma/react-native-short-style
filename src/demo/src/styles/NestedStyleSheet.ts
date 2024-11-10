@@ -8,6 +8,7 @@ class NestedStyleSheet {
   static create<T extends NamedStyles<T> | NamedStyles<any>>(obj: T & NamedStyles<any>): { [key: string]: number } {
     let keysItems = Object.keys(obj);
     let oItem: any = obj;
+
     while (keysItems.length > 0) {
       let key = keysItems.shift();
       let value = obj[key];
@@ -17,9 +18,6 @@ class NestedStyleSheet {
       if (value && value instanceof CSSStyleSheetStyle) {
         let eqs = value.getEqs(key);
         oItem[key] = value = value.toString();
-        if (eqs.length > 0)
-          console.log(eqs, value)
-
         for (let v of eqs) {
 
           if (!oItem[v.key]) {

@@ -180,7 +180,6 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         textTransform: "uppercase",
         color: "#000"
     }
-
     return (
         <View css={x => x.cls("_tabBarMenu").if(position == "Bottom", x => x.boTC("$co-gray300").boTW(.5), x => x.boBC("$co-gray300").boBW(.5)).joinRight(header.style.c)} style={[header.style.o]}>
             {position != "Top" ? border : null}
@@ -461,7 +460,7 @@ export const TabBar = (props: TabBarProps) => {
     return (
         <View onLayout={({ nativeEvent }) => {
             state.size = nativeEvent.layout;
-        }} css={`_tabBar ${optionalStyle(props.css).c}`} style={props.style}>
+        }} css={x=> x.cls("_tabBar").joinRight(props.css)} style={props.style}>
             <TabBarContext.Provider value={contextValue}>
                 {position === "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />

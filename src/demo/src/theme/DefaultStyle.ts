@@ -140,7 +140,19 @@ const convertShadow = (item: any) => {
 export const defaultTheme = {
   name: 'default',
   color: colors,
-  backgroundColor: colors,
+
+  zIndex: {
+    xs: 1,
+    sm: 2,
+    md: 3,
+    lg: 4,
+    xl: 5,
+    '2xl': 10,
+    '3xl': 20,
+    '4xl': 30,
+    '5xl': 40,
+    '6xl': 50,
+  },
 
   fontSize: {
     xs: 11,
@@ -264,8 +276,8 @@ export const defaultTheme = {
 };
 
 export const ComponentsStyles = NestedStyleSheet.create({
-  _blur: x => x.cls("_topPostion").fl(1).cls("_center").baC("$baC-black").op(.5).zI(100),
-  _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("transparent"),
+  _blur: x => x.cls("_topPostion").fl(1).cls("_center").baC("$co-black").op(.5),
+  _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("transparent").zI("$zi-sm"),
   _modalDefaultStyle: x => x.pa(10).zI(2).wi("80%").he("20%").boR(5).boW(1).boC("gray"),
   _abc: x => x.po("absolute"),
   _overflow: x => x.ov("hidden"),
@@ -292,5 +304,4 @@ export const ComponentsStyles = NestedStyleSheet.create({
   _progressBar: "flex wi:100% he:20 zi:5 juc:center _overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
   _progressBarAnimatedView: x => x.zI(2).cls("_abc").to(0).le("-100%").fillView().op(.8),
   _selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
-  _formItemChildren$TextInput: x => x.fl(1).wi("100%").boW(0).boC("$boc-light").paL(5).boR("$bor-xs").add("outlineStyle", "none")
 })

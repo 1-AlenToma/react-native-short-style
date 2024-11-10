@@ -20,7 +20,7 @@ export const Modal = (props: ModalProps) => {
     const state = StateBuilder({
         isVisible: undefined,
         id: newId()
-    }).build();
+    }).timeout(undefined).build();
 
     let toggle = async (
         show: boolean
@@ -78,7 +78,7 @@ export const Modal = (props: ModalProps) => {
                     ]}>
                         <View css={x => x.cls("_modalClose")}>
                             <Button onPress={() => toggle(false)} css={
-                                x => x.cls("sh-none", "_center").size(30, 30).baC("$baC-transparent").paL(1).boW(0)
+                                x => x.cls("sh-none", "_center").size(30, 30).baC("$co-transparent").paL(1).boW(0)
                             } icon={<Icon type="AntDesign" name="close" size={15} />} />
                         </View>
                         <View css={x => x.fillView().zI(1).if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>

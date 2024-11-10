@@ -161,7 +161,7 @@ class InternalStyledContext {
     for (let s of this.classNames()) {
       cpyCss.prepend(` ${s}_${itemIndex}`);
       if (isLast)
-        cpyCss.add(` ${s}_last`);
+        cpyCss.prepend(` ${s}_last`);
     }
 
     for (let s of parent.classes()) {
@@ -169,7 +169,7 @@ class InternalStyledContext {
       cpyCss.add(` ${s}.${name}`);
 
       if (isLast)
-        cpyCss.add(` ${s}_last`);
+        cpyCss.prepend(` ${s}_last`);
     }
 
     cpyCss.prepend(name, `${name}_${itemIndex}`, this.viewPath());
@@ -207,24 +207,26 @@ class StyledItem {
         selectedThemeIndex: themecontext.selectedIndex,
         childrenIds: [],
       }
-    }).ignore("refItem", "contextValue").build();
+    }).ignore("refItem", "contextValue").timeout(undefined).build();
     ec?.register?.(state.id);
     const update = () => {
       css = props.css ?? "";
       state.contextValue.update(state.id, css, props, styleFile, ec);
+
+      if (state.contextValue.changed() || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
+        state.refItem.style = undefined;
+        state.contextValue.prevCSS = undefined;
+        state.refItem.selectedThemeIndex = themecontext.selectedIndex;
+      }
     }
 
-    update();
+
     const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
 
     if (isText)
       globalData.hook("activePan")
 
-    if (state.contextValue.changed() || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
-      state.refItem.style = undefined;
-      state.contextValue.prevCSS = undefined;
-      state.refItem.selectedThemeIndex = themecontext.selectedIndex;
-    }
+    update();
 
     React.useEffect(() => {
       () => ec?.remove?.(state.id);
@@ -232,17 +234,7 @@ class StyledItem {
 
     React.useEffect(() => {
       update();
-      if (state.contextValue.changed() || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
-        state.refItem.style = undefined;
-        state.contextValue.prevCSS = undefined;
-
-      }
     }, [props.css])
-
-    /*  React.useEffect(() => {
-  
-        console.log(state.id, viewPath, css)
-      })*/
 
     if ((styleFile && state.refItem.style == undefined)) {
       let sArray = [];

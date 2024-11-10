@@ -12,7 +12,7 @@ import { ButtonGroup } from "./ButtonGroup";
 const RenderItem = ({ item, index, props, state, onload }: { onload: (size: Size) => void, item: any, index: number, props: PagerProps, state: any }) => {
     const itemState = StateBuilder({
         selected: false
-    }).build()
+    }).timeout(undefined).build()
     const Component = props.onSelect ? TouchableOpacity : View;
 
     const css = itemState.selected || state.selectedIndex == index ? "_selectedValue " + (props.selectedStyle ?? "") : ""
@@ -80,7 +80,7 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
     const loadButtons = () => {
         state.buttons = props.renderHeader && state.itemPerPage > 0 && state.page >= 0 ? [...Array(totalPages())].reduce((c, v, index) => {
             let end = (index + 1) * state.itemPerPage;
-            end = end > props.items.length - 1 ? props.items.length  : end;
+            end = end > props.items.length - 1 ? props.items.length : end;
             let start = (index * state.itemPerPage) + 1;
             c.push(`${start}-${end}`)
             return c;
@@ -97,7 +97,7 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
             loadButtons();
         } else if (props.items.length > 0)
             state.items = [props.items[0]]
-       
+
     }
 
     const scroll = (offset: number) => {
@@ -184,7 +184,7 @@ export const Pager = React.forwardRef<PageRef, PagerProps>((props, ref) => {
                 horizontal={props.horizontal}
                 style={{
                     flex: 1,
-                    flexGrow:1,
+                    flexGrow: 1,
                     maxHeight: state.size?.height,
                     maxWidth: "100%",
                 }}

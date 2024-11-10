@@ -5,9 +5,6 @@ import { AlertViewFullProps, AlertViewProps, Size, ToastProps, ToolTipProps, Too
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "react-smart-state";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
-import { useAnimate, useTimer } from "../hooks";
-import { ProgressBar } from "./ProgressBar";
-import { Icon } from "./Icon";
 import * as Native from "react-native"
 import { Blur } from "./Blur";
 
@@ -23,7 +20,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         pos: undefined as Size | undefined,
         toolTipSize: undefined as Size | undefined
     }).ignore("ref", "pos", "toolTipSize").build();
-
+    
     const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);
 
     setRef(ref, {
@@ -71,8 +68,8 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     }
 
     fn(state.id, (
-        <View key={state.id} css={x => x.fillView().cls("_abc").pos(0, 0).baC("$baC-transparent")}>
-            <Blur css="zi:1 bac-transparent" onPress={() => state.visible = false} />
+        <View key={state.id} css={x => x.fillView().cls("_abc").pos(0, 0).baC("$co-transparent")}>
+            <Blur css="zi:1 bac:transparent" onPress={() => state.visible = false} />
             <View onLayout={({ nativeEvent }) => {
                 state.toolTipSize = nativeEvent.layout
             }} style={[{
