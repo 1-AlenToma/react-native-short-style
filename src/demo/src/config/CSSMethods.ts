@@ -92,11 +92,10 @@ export const ValueIdentity = {
         let parts = value.split(":");
         if (parts.length < 2)
             parts = value.split("-");
-        let item = { key: parts[0], value: parts[1], kvalue: value, isClassName: false };
+        let item = { key: parts[0], value: parts.filter((_, i) => i > 0).join("-"), kvalue: value, isClassName: false };
         if (item.value.startsWith("$")) {
             item.isClassName = true;
             item.value = `${value.split("$")[1]}`
-
         }
         return item;
     },

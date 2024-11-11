@@ -183,8 +183,6 @@ const css_translator = (
         let kValue = ValueIdentity.keyValue(c);
         let k = kValue.key;
         let value = kValue.isClassName ? kValue.value : checkObject(checkNumber(kValue.value));
-
-
         if (typeof value == "string" && /(undefined)|(null)/gi.test(value))
           value = undefined;
         else if (kValue.isClassName) {
@@ -208,11 +206,11 @@ const css_translator = (
       if (style && typeof style === "string") {
         style = css_translator(style, styleFile, propStyle);
         CSS[c] = { ...style } // so as to not parse it again
-
       }
 
       if (style) {
         if (style._props) {
+          style = { ...style } // this so CSS retains the props property
           cssItem._props = { ...cssItem._props, ...style._props };
           delete style._props;
         }
@@ -220,7 +218,6 @@ const css_translator = (
         cssItem = {
           ...cssItem,
           ...style
-          //...cleanStyle(style, propStyle)
         };
         continue;
       }
