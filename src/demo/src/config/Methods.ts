@@ -84,28 +84,6 @@ export const ifSelector = (item?: boolean | Function) => {
     return item;
 }
 
-export const getCssArray = (css: string) => {
-    css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
-    return css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g)?.filter(x => x && x.trim().length > 0) ?? [];
-}
-
-export const getClasses = (css: string, globalStyle: any, itemIndex?: number) => {
-    let items = getCssArray(css) ?? [];
-    let props: any = {};
-    for (let item of items) {
-        if (item && item.indexOf(":") == -1 && !(item in props) && item in globalStyle) {
-            props[item] = item;
-        }
-        if (item && itemIndex != undefined) {
-            item = `${item}_${itemIndex}`;
-            if (item in globalStyle)
-                props[item] = item;
-        }
-    }
-
-    return Object.keys(props);
-}
-
 export const proc = (partialValue, totalValue) => {
     return (partialValue / 100) * totalValue;
 }

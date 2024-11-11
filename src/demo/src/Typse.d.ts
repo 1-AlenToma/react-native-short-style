@@ -112,13 +112,6 @@ export type InternalThemeContext = {
     containerSize: () => Size
 }
 
-export type ICSSContext = {
-    parentKey: () => string;
-    registerChild: (id: string, name: string) => { index: number, name: string };
-    deleteChild: (id) => void;
-    parentClassNames: (pk: string, name: string, elementPosition: { index: number, name: string }) => string;
-}
-
 export type Size = {
     height: number;
     width: number;

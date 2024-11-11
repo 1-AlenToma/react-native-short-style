@@ -14,13 +14,15 @@ export const Button = (props: ButtonProps) => {
         pressableProps.onLongPress = undefined;
         pressableProps.activeOpacity = 0.5;
     } else if (props.whilePressed) {
-        pressableProps.onPress=(event)=> {
+        pressableProps.onPress = (event) => {
             timer.clear();
+            event.preventDefault();
+            event.stopPropagation();
             props.onPress(event);
-           
+            
         }
-        pressableProps.onPressIn = (event) => {
-            props.onPressIn?.(event);
+        pressableProps.onLongPress = (event) => {
+            props.onLongPress?.(event);
             const fn = () => {
                 props.whilePressed();
                 timer(fn);

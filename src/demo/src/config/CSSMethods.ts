@@ -1,3 +1,5 @@
+import { globalData } from "../theme/ThemeContext";
+
 export const flatStyle = (style: any) => {
     if (style && Array.isArray(style) && typeof style == "object")
         style = style.reduce((a, v) => {
@@ -78,4 +80,51 @@ export const newId = (inc?: string): string => {
     }
     ids.set(id, id);
     return id;
+}
+
+
+export const ValueIdentity = {
+    chars: [":", "-"] as const,
+    has: (value: any) => {
+        return value && typeof value == "string" && ValueIdentity.chars.find(x => value.indexOf(x) !== -1)
+    },
+    keyValue: (value: string) => {
+        let parts = value.split(":");
+        if (parts.length < 2)
+            parts = value.split("-");
+        let item = { key: parts[0], value: parts[1], kvalue: value, isClassName: false };
+        if (item.value.startsWith("$")) {
+            item.isClassName = true;
+            item.value = `${value.split("$")[1]}`
+
+        }
+        return item;
+    },
+    splitCss: (css: string) => {
+        if (!css || typeof css !== "string")
+            return [];
+        let k = `${css}_splitCss_Result`;
+        if (globalData.storage.has(k))
+            return globalData.storage.get(k);
+        let cssClean = css.replace(/( )?((\:)|(\-))( )?/gmi, "$2")
+        let result = cssClean.trim().match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g) ?? [];
+
+        globalData.storage.set(k, result);
+        return result;
+    },
+    getClasses: (css: string, globalStyle: any, itemIndex?: number) => {
+        let items = ValueIdentity.splitCss(css);
+        let props: any = {};
+        for (let item of items) {
+            if (item && !ValueIdentity.has(item) && !(item in props) && item in globalStyle) {
+                props[item] = item;
+            }
+            if (item && itemIndex != undefined) {
+                item = `${item}_${itemIndex}`;
+                if (item in globalStyle)
+                    props[item] = item;
+            }
+        }
+        return Object.keys(props);
+    }
 }

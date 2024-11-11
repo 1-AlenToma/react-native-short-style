@@ -1,6 +1,7 @@
 import { extractProps } from "../config/CSSMethods";
 import { Storage } from "../config/Storage";
 import { StylesAttributes, ShortCSS } from "./validStyles";
+import { ValueIdentity } from "../config/CSSMethods";
 
 let styleKeys = [...StylesAttributes]
 
@@ -172,39 +173,44 @@ const css_translator = (
     cssItem._props = { ...translatedItem }
   }
 
-
-  css = css.replace(/( )?(\:)( )?/gmi, ":").trim();
-  let items = css.match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g);
+  let items = ValueIdentity.splitCss(css);
   if (items && items.length > 0)
     for (let c of items) {
       if (!c || c.trim().length <= 0)
         continue;
-      if (c.indexOf(":") !== -1) {
-        let k = splitSafe(c, ":", 0);
-        let value = checkObject(checkNumber(splitSafe(c, ":", 1)));
+      let style = CSS[c] ?? CSS[c.toLowerCase()];
+      if (style === undefined && ValueIdentity.has(c)) {
+        let kValue = ValueIdentity.keyValue(c);
+        let k = kValue.key;
+        let value = kValue.isClassName ? kValue.value : checkObject(checkNumber(kValue.value));
 
 
         if (typeof value == "string" && /(undefined)|(null)/gi.test(value))
           value = undefined;
-        else if (typeof value == "string" && value.startsWith("$")) {
-          value = value.substring(1);
-          if (value.toLowerCase() in CSS)
-            value = Object.values(CSS[value.toLowerCase()])[0];
+        else if (kValue.isClassName) {
+          if (value in CSS || value.toLowerCase() in CSS) {
+            value = Object.values(CSS[value] ?? CSS[value.toLowerCase()])[0];
+          }
         }
+
         let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
         if (short) {
           if (!propStyle || propStyle[short])
             cssItem[short] = value;
         } else {
           cssItem[k] = value;
-          // console.warn(k, "not found in react-native style props, but we will still add it")
+          //  console.log(kValue, "not found in react-native style props, but we will still add it")
         }
         continue;
       }
 
-      let style = CSS[c];
-      if (typeof style === "string")
+
+      if (style && typeof style === "string") {
         style = css_translator(style, styleFile, propStyle);
+        CSS[c] = { ...style } // so as to not parse it again
+
+      }
+
       if (style) {
         if (style._props) {
           cssItem._props = { ...cssItem._props, ...style._props };

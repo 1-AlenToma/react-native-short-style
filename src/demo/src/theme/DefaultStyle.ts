@@ -117,7 +117,6 @@ const colors = {
 }
 
 const convertShadow = (item: any) => {
-
   /*shadowColor: undefined,
   shadowOffset: undefined,
   shadowOpacity: undefined,
@@ -277,7 +276,7 @@ export const defaultTheme = {
 
 export const ComponentsStyles = NestedStyleSheet.create({
   _blur: x => x.cls("_topPostion").fl(1).cls("_center").baC("$co-black").op(.5),
-  _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("transparent").zI("$zi-sm"),
+  _topPostion: x => x.po("absolute").to(0).le(0).fillView().baC("$co-transparent").zI("$zi-sm"),
   _modalDefaultStyle: x => x.pa(10).zI(2).wi("80%").he("20%").boR(5).boW(1).boC("gray"),
   _abc: x => x.po("absolute"),
   _overflow: x => x.ov("hidden"),

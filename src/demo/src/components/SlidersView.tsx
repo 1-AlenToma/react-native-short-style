@@ -73,7 +73,6 @@ export const SliderView = (props: NativeSlider.SliderProps & {
                     state.sliding = true;
                 }}
                 value={state.value}
-                css="fl:1"
                 containerStyle={{ ...props.containerStyle, flex:1, width:"100%"}}
                 onSlidingComplete={onChange} />
             <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}

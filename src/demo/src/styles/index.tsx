@@ -2,12 +2,12 @@ import cssTranslator, { serilizeCssStyle, clearCss } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as React from "react";
 import * as reactNative from "react-native";
-import { getClasses, ifSelector, newId, currentTheme, getCssArray, refCreator } from "../config";
+import { ifSelector, newId, currentTheme, refCreator } from "../config";
 import buildState from 'react-smart-state';
 import { ThemeContext, globalData } from "../theme/ThemeContext";
-import { ICSSContext, InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
+import { InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
 import { CSSStyle, CSSProps } from "./CSSStyle";
-import { extractProps } from "../config/CSSMethods";
+import { extractProps, ValueIdentity } from "../config/CSSMethods";
 
 let toArray = (item: any) => {
   if (!item) return [];
@@ -29,7 +29,7 @@ class CSS {
       if (k.trim().endsWith(".") || k.trim().length == 0)
         continue;
       k = k.trim();
-      if (this.css.indexOf(` ${k} `) === -1 && (k in this.styleFile || k.indexOf(":") != -1 || k.indexOf("-") != -1))
+      if (this.css.indexOf(` ${k} `) === -1 && (k in this.styleFile || ValueIdentity.has(k)))
         this.css += `${k.trim()} `;
     }
 
@@ -43,7 +43,7 @@ class CSS {
       if (k.trim().endsWith(".") || k.trim().length == 0)
         continue;
       k = k.trim();
-      if (this.css.indexOf(` ${k} `) === -1 && (k in this.styleFile || k.indexOf(":") != -1 || k.indexOf("-") != -1))
+      if (this.css.indexOf(` ${k} `) === -1 && (k in this.styleFile || ValueIdentity.has(k)))
         this.css = `${k.trim()} ` + this.css;
     }
 
@@ -51,12 +51,12 @@ class CSS {
   }
 
   classes() {
-    return getClasses(this.css, this.styleFile);
+    return ValueIdentity.getClasses(this.css, this.styleFile);
   }
 
   distinct() {
     let items = new CSS(this.styleFile, "").add(
-      ...getCssArray(this.css)
+      ...ValueIdentity.splitCss(this.css)
     );
     return items.css;
   }
@@ -143,7 +143,7 @@ class InternalStyledContext {
   }
 
   classNames() {
-    let classNames = getClasses(this.cleanCss(), this.styleFile, this.prevContext?.indexOf?.(this.id) ?? undefined);
+    let classNames = ValueIdentity.getClasses(this.cleanCss(), this.styleFile, this.prevContext?.indexOf?.(this.id) ?? undefined);
     return classNames;
   }
 
@@ -158,22 +158,23 @@ class InternalStyledContext {
     let name = this.viewName;
     let parent = new CSS(this.styleFile, this.prevContext.join?.());
     let cpyCss = new CSS(this.styleFile, this.cleanCss())
-    for (let s of this.classNames()) {
-      cpyCss.prepend(` ${s}_${itemIndex}`);
-      if (isLast)
-        cpyCss.prepend(` ${s}_last`);
-    }
+    if (itemIndex != undefined)
+      for (let s of this.classNames()) {
+        cpyCss.prepend(` ${s}_${itemIndex}`);
+        if (isLast)
+          cpyCss.prepend(` ${s}_last`);
+      }
 
     for (let s of parent.classes()) {
-      cpyCss.prepend(` ${s}.${name}_${itemIndex}`);
+      if (itemIndex != undefined)
+        cpyCss.prepend(` ${s}.${name}_${itemIndex}`);
       cpyCss.add(` ${s}.${name}`);
 
       if (isLast)
         cpyCss.prepend(` ${s}_last`);
     }
 
-    cpyCss.prepend(name, `${name}_${itemIndex}`, this.viewPath());
-
+    cpyCss.prepend(name, itemIndex != undefined ? `${name}_${itemIndex}` : "", this.viewPath());
     this.prevCSS = this.getCss();
 
     return (this.cpyCss = cpyCss.toString());
@@ -199,7 +200,7 @@ class StyledItem {
     let ec = React.useContext(CSSContext);
     let themecontext = React.useContext(ThemeContext);
     const styleFile = currentTheme(themecontext);
-    const state = buildState({
+    const state = React.useRef({
       id: newId(),
       contextValue: new InternalStyledContext(viewPath),
       refItem: {
@@ -207,7 +208,7 @@ class StyledItem {
         selectedThemeIndex: themecontext.selectedIndex,
         childrenIds: [],
       }
-    }).ignore("refItem", "contextValue").build();
+    }).current;
     ec?.register?.(state.id);
     const update = () => {
       css = props.css ?? "";
