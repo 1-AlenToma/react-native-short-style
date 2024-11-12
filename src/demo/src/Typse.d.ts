@@ -134,6 +134,7 @@ export type GlobalState = {
     screen: Size;
     window: Size;
     storage: CSSStorage;
+    tStorage: CSSStorage;
     appStart: () => EventListener[];
     alertViewData: {
         alert: (props: AlertViewProps | string) => void;

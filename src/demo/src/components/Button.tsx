@@ -1,7 +1,7 @@
 import { TouchableOpacity, Text, View } from "./ReactNativeComponents";
 import * as React from "react";
 import { ButtonProps } from "../Typse";
-import { ifSelector, optionalStyle } from "../config";
+import { ifSelector, optionalStyle, RemoveProps } from "../config";
 import { useTimer } from "../hooks";
 
 export const Button = (props: ButtonProps) => {
@@ -9,46 +9,54 @@ export const Button = (props: ButtonProps) => {
     const disabled = ifSelector(props.disabled);
     const timer = useTimer(props.whilePressedDelay ?? 300);
     const pressableProps = { ...props };
+    const onPress = (event: any) => {
+        timer.clear();
+        event.preventDefault();
+        event.stopPropagation();
+        props.onPress(event);
+    }
+
+    const onLongPress = (event: any) => {
+        props.onLongPress?.(event);
+        const fn = () => {
+            props.whilePressed();
+            timer(fn);
+        }
+        fn();
+    }
+
+    const onPressOut = (event) => {
+        props.onPressOut?.(event);
+        timer.clear();
+    }
+
     if (disabled === true) {
-        pressableProps.onPress = undefined;
-        pressableProps.onLongPress = undefined;
+        RemoveProps(pressableProps, "onPress", "onLongPress", "onPressIn", "onPressOut");
         pressableProps.activeOpacity = 0.5;
     } else if (props.whilePressed) {
-        pressableProps.onPress = (event) => {
-            timer.clear();
-            event.preventDefault();
-            event.stopPropagation();
-            props.onPress(event);
-            
-        }
-        pressableProps.onLongPress = (event) => {
-            props.onLongPress?.(event);
-            const fn = () => {
-                props.whilePressed();
-                timer(fn);
-            }
-            fn();
-        }
+        delete pressableProps.whilePressed;
+        pressableProps.onPress = onPress;
+        pressableProps.onLongPress = onLongPress;
+        pressableProps.onPressOut = onPressOut;
+    }
 
-        pressableProps.onPressOut = (event) => {
-            props.onPressOut?.(event);
-            timer.clear();
-        }
+    const onMouseEnter = (event: any) => {
+        setShadow("sh-md")
+        props.onMouseEnter?.(event)
+    }
+
+    const onMouseLeave = (event: any) => {
+        setShadow("sh-sm");
+        props.onMouseLeave?.(event);
     }
 
 
 
     return (
         <TouchableOpacity {...pressableProps}
-            onMouseLeave={(event) => {
-                setShadow("sh-sm");
-                props.onMouseLeave?.(event);
-            }} onMouseEnter={(event) => {
-                setShadow("sh-md")
-                props.onMouseEnter?.(event)
-            }} css={x => x.cls(shadow, "_button").joinRight(props.css).if(disabled, x => x.cls("disabled"))}>
+            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={x => x.cls(shadow, "_button").joinRight(props.css).if(disabled, x => x.cls("disabled"))}>
             {props.icon}
-            <Text ifTrue={() => props.text != undefined} css={x => x.cls("fos-xs").joinRight(props.textCss)}>{props.text}</Text>
+            <Text ifTrue={props.text != undefined} css={x => x.cls("fos-xs").joinRight(props.textCss)}>{props.text}</Text>
         </TouchableOpacity>
     )
 

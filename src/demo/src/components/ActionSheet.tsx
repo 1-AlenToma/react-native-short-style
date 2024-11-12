@@ -265,7 +265,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         style={{ flexDirection: !isVertical ? "row" : undefined }}
                         css="wi:100% he:100% pa:10 flex:1">
                         {position == "Bottom" || position == "Right" ? handle : null}
-                        <View ifTrue={() => state.refItem.show || !props.lazyLoading} style={props.style} css={`flex:1 flg:1 zi:5 maw:99% _overflow mat:5 ${optionalStyle(props.css).c}`}>
+                        <View ifTrue={state.refItem.show || !props.lazyLoading} style={props.style} css={`flex:1 flg:1 zi:5 maw:99% _overflow mat:5 ${optionalStyle(props.css).c}`}>
                             {props.children}
                         </View>
                         {position == "Top" || position == "Left" ? handle : null}

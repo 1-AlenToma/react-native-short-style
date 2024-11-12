@@ -121,7 +121,7 @@ export const Fab = (props: FabProps) => {
                 </TouchableOpacity>
                 {!["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null}
             </View>
-            <Blur onPress={() => state.visible = false} ifTrue={() => state.visible && props.blureScreen !== false} />
+            <Blur onPress={() => state.visible = false} ifTrue={state.visible && props.blureScreen !== false} />
         </React.Fragment>
     )
 

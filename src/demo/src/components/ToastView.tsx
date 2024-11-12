@@ -25,6 +25,7 @@ export const ToastView = () => {
     }).ignore("id").build();
     let fn = data.message ? context.add.bind(context) : context.remove.bind(context);
     let interpolate = [0, 1];
+
     const startCounter = () => {
         if (data.loader == false)
             return;
@@ -131,11 +132,11 @@ export const ToastView = () => {
                 {data.icon ?? typeInfo.icon}
             </View>
             <View css="fl:1 zi:1 bac:transparent">
-                <Text ifTrue={() => data.title != undefined} css={x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css)}>{data.title}</Text>
+                <Text ifTrue={data.title != undefined} css={x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css)}>{data.title}</Text>
                 <Text css={x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css)}>{data.message}</Text>
             </View>
         </View>
-        <ProgressBar ifTrue={() => data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_toastProgressView" />
+        <ProgressBar ifTrue={data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_toastProgressView" />
     </AnimatedView>, true)
 
     return null;

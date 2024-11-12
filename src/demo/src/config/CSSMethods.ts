@@ -89,13 +89,14 @@ export const ValueIdentity = {
         return value && typeof value == "string" && ValueIdentity.chars.find(x => value.indexOf(x) !== -1)
     },
     keyValue: (value: string) => {
+        value = value.trim();
         let parts = value.split(":");
         if (parts.length < 2)
             parts = value.split("-");
         let item = { key: parts[0], value: parts.filter((_, i) => i > 0).join("-"), kvalue: value, isClassName: false };
         if (item.value.startsWith("$")) {
             item.isClassName = true;
-            item.value = `${value.split("$")[1]}`
+            item.value = value.split("$")[1];
         }
         return item;
     },
@@ -103,12 +104,12 @@ export const ValueIdentity = {
         if (!css || typeof css !== "string")
             return [];
         let k = `${css}_splitCss_Result`;
-        if (globalData.storage.has(k))
-            return globalData.storage.get(k);
-        let cssClean = css.replace(/( )?((\:)|(\-))( )?/gmi, "$2")
+        if (globalData.tStorage.has(k))
+            return globalData.tStorage.get(k);
+        let cssClean = css.replace(/( )?((\:)|(\-))( )?/gmi, "$2");
         let result = cssClean.trim().match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g) ?? [];
 
-        globalData.storage.set(k, result);
+        globalData.tStorage.set(k, result);
         return result;
     },
     getClasses: (css: string, globalStyle: any, itemIndex?: number) => {

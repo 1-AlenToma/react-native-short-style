@@ -43,14 +43,14 @@ export const SliderView = (props: NativeSlider.SliderProps & {
             state.value = props.value;
     }, [props.value])
 
-    const minus =()=> {
+    const minus = () => {
         if (btnValue - step >= props.minimumValue)
             onChange(btnValue - step)
         else if (btnValue > props.minimumValue)
             onChange(props.minimumValue)
     }
 
-    const plus =()=> {
+    const plus = () => {
         if (btnValue + step <= props.maximumValue)
             onChange(btnValue + step)
         else if (btnValue < props.maximumValue)
@@ -58,24 +58,24 @@ export const SliderView = (props: NativeSlider.SliderProps & {
     }
 
     return (
-        <View css={x=> x.cls("_slider juc:space-between").joinRight(props.css)} style={props.style}>
-            <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}
+        <View css={x => x.cls("_slider juc:space-between").joinRight(props.css)} style={props.style}>
+            <Button css={x => x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="minus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}
                 whilePressed={minus} onPress={minus}></Button>
 
             <Slider
-                renderAboveThumbComponent={!state.sliding ? undefined : () => <Text css="_sliderThump">{`${readAble(state.value as number, 1)}/${props.maximumValue}`}</Text>}
+                renderAboveThumbComponent={!state.sliding ? undefined : () => <Text css="_sliderThump">{`${readAble(btnValue as number, 1)}/${props.maximumValue}`}</Text>}
                 {...props}
                 onSlidingStart={(event, index: number) => {
                     props.onSlidingStart?.(event, index);
                     state.sliding = true;
                 }}
                 value={state.value}
-                containerStyle={{ ...props.containerStyle, flex:1, width:"100%"}}
+                containerStyle={{ ...props.containerStyle, flex: 1, width: "100%" }}
                 onSlidingComplete={onChange} />
-            <Button css={x=> x.cls("_sliderButton").joinRight(props.buttonCss)}
+            <Button css={x => x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 onPressIn={() => state.sliding = true}

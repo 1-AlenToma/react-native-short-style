@@ -173,7 +173,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
         return swtichColor[isChecked as any]
     }
     const activeOpacity = disabled ? .5 : 1;
-    const disabledCss =  disabled ? "disabled" : "";
+    const disabledCss = disabled ? "disabled" : "";
 
     return (
         <>
@@ -183,17 +183,17 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
                 <View style={{ backgroundColor: color(state.checked) }} css={`_checkBox_${labelPostion}`} >
-                    <Icon ifTrue={() => state.checked} type="AntDesign" css={x=> x.co("$co-light")} name="check" size={24} />
+                    <Icon ifTrue={state.checked} type="AntDesign" css={x => x.co("$co-light")} name="check" size={24} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox juc:end mab:5 ${optionalStyle(props.css).c} ${disabledCss}`} ifTrue={checkBoxType == "RadioButton"} onPress={() => {
+            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss)} ifTrue={checkBoxType == "RadioButton"} onPress={() => {
                 if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                     state.checked = !state.checked
             }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
                 <View style={{ borderRadius: 15, backgroundColor: "transparent" }} css={`_checkBox_${labelPostion}`}>
-                    <Icon ifTrue={() => state.checked} css="mal:1" size={24} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
+                    <Icon ifTrue={state.checked} size={24} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>

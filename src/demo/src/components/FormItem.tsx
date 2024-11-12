@@ -19,20 +19,20 @@ export const FormItem = (props: FormItemProps) => {
     return (
         <View style={props.style} css={x => x.cls("_formItem", "FormItem").joinRight(props.css)}>
             <View>
-                <View ifTrue={() => icon != undefined} css={css}>
+                <View ifTrue={icon != undefined} css={css}>
                     {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                 </View>
-                <View ifTrue={() => props.title != undefined} css={css}>
+                <View ifTrue={props.title != undefined} css={css}>
                     {props.title && typeof props.title == "string" ? <Text css="fos-sm fow:bold">{props.title}</Text> : props.title}
                 </View>
                 <View css="_formItemCenter">
                     {props.children}
                 </View>
-                <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={() => props.info != undefined} text={props.info}>
+                <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={props.info != undefined} text={props.info}>
                     <Icon type="AntDesign" name="infocirlce" size={15} />
                 </ToolTip>
             </View>
-            <View ifTrue={() => props.message != undefined} css="fl:1 pal:10 pab:5">
+            <View ifTrue={props.message != undefined} css="fl:1 pal:10 pab:5">
                 {props.message}
             </View>
 

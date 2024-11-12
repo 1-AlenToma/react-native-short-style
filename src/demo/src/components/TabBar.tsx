@@ -251,6 +251,7 @@ export const TabBar = (props: TabBarProps) => {
         }
 
     }).ignore("refItem").build();
+    globalData.hook("screen");
     const getWidth = (index: number) => {
         let v = index * (state.size.width ?? globalData.window.width);
         if (isNaN(v)) return 0;
@@ -460,7 +461,7 @@ export const TabBar = (props: TabBarProps) => {
     return (
         <View onLayout={({ nativeEvent }) => {
             state.size = nativeEvent.layout;
-        }} css={x=> x.cls("_tabBar").joinRight(props.css)} style={props.style}>
+        }} css={x => x.cls("_tabBar").joinRight(props.css)} style={props.style}>
             <TabBarContext.Provider value={contextValue}>
                 {position === "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />

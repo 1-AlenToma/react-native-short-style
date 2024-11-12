@@ -6,11 +6,22 @@ import { CSSStyle } from "../styles/CSSStyle"
 import { PlatformStyleSheet } from "../theme/PlatformStyles";
 import React from "react";
 
+
+export const RemoveProps = <T extends object>(props: T, ...items:( keyof T)[]) => {
+    items.forEach(x => {
+        if (x in props)
+            delete props[x]
+    });
+
+    return props;
+}
+
 export const readAble = function (nr: number | string, total?: number) {
+    if (Array.isArray(nr))
+        nr = nr[0];
     let nrs = nr?.toString().split(".") ?? [];
     if (nrs.length <= 1) return nr;
-    if (/[1-9]/g.test(nrs[1])) return `${nrs[0]}.${nrs[1].substring(0, total ?? 2)}`;
-    return nr;
+    return parseFloat((nr as any)?.toFixed(total ?? 2));
 };
 
 export const optionalStyle = (style: any) => {

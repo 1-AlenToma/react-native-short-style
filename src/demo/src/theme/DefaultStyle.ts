@@ -282,7 +282,7 @@ export const ComponentsStyles = NestedStyleSheet.create({
   _overflow: x => x.ov("hidden"),
   _checkBox: x => x.flD("row").di("flex").cls("_center"),
   _center: x => x.juC("center").alI("center"),
-  _checkBox$View: x => x.size(25, 25).di("flex").boR(2).boW(.5).boC("gray").cls("_center"),
+  _checkBox$View: x => x.size(24, 24).di("flex").cls("_overflow").boR(5).boW(.5).boC("gray").cls("_center"),
   _checkBox_Right: "mar:5",
   _checkBox_Left: "mal:5",
   _checkBox_checked: "bac:rgb(70 70 70)",

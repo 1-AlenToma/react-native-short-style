@@ -3,11 +3,10 @@ import NestedStyleSheet from "./NestedStyleSheet";
 import * as React from "react";
 import * as reactNative from "react-native";
 import { ifSelector, newId, currentTheme, refCreator } from "../config";
-import buildState from 'react-smart-state';
 import { ThemeContext, globalData } from "../theme/ThemeContext";
-import { InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
+import { ButtonProps, InternalStyledProps, IThemeContext, StyledProps } from "../Typse";
 import { CSSStyle, CSSProps } from "./CSSStyle";
-import { extractProps, ValueIdentity } from "../config/CSSMethods";
+import { extractProps, flatStyle, ValueIdentity } from "../config/CSSMethods";
 
 let toArray = (item: any) => {
   if (!item) return [];
@@ -184,90 +183,130 @@ class InternalStyledContext {
 
 let CSSContext = React.createContext<InternalStyledContext>({} as any);
 
+class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { cRef: any, themeContext: any }, {}> {
+  static contextType = CSSContext;
+  refItem: {
+    id: string,
+    contextValue: InternalStyledContext,
+    style: any[],
+    selectedThemeIndex: number,
+    currentStyle: any,
+    init: boolean
+  }
 
-class StyledItem {
-  view: any;
-  viewPath: string;
 
-  render(props: CSSProps<InternalStyledProps>, ref: any) {
-    let css = props.css ?? "";
-    const View = this.view;
-    const viewPath = this.viewPath;
-    const {
-      style
-    } = props;
 
-    let ec = React.useContext(CSSContext);
-    let themecontext = React.useContext(ThemeContext);
-    const styleFile = currentTheme(themecontext);
-    const state = React.useRef({
-      id: newId(),
-      contextValue: new InternalStyledContext(viewPath),
-      refItem: {
-        style: undefined,
-        selectedThemeIndex: themecontext.selectedIndex,
-        childrenIds: [],
+  componentDidMount() {
+    this.refItem.init = true;
+  }
+
+  shouldComponentUpdate(nextProps, _) {
+    let props: CSSProps<InternalStyledProps> & { cRef: any, themeContext: any } = { ...nextProps }
+    if (props?.themeContext != undefined) {
+      if (props.themeContext.selectedIndex !== this.props.themeContext.selectedIndex) {
+        this.refItem.currentStyle = currentTheme(props.themeContext);
+        return true;
       }
-    }).current;
-    ec?.register?.(state.id);
-    const update = () => {
-      css = props.css ?? "";
-      state.contextValue.update(state.id, css, props, styleFile, ec);
+      delete props.themeContext;
+    }
 
-      if (state.contextValue.changed() || state.refItem.selectedThemeIndex != themecontext.selectedIndex) {
-        state.refItem.style = undefined;
-        state.contextValue.prevCSS = undefined;
-        state.refItem.selectedThemeIndex = themecontext.selectedIndex;
+    if ("css" in props) {
+      if (this.update({ ...this.props, ...nextProps })) {
+        return true;
       }
+      delete props.css;
     }
 
 
-    const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
+    // delete props.ifTrue
 
-    if (isText)
-      globalData.hook("activePan")
 
-    update();
+    if (props.viewPath)
+      delete props.viewPath;
+    if (props.View)
+      delete props.View;
 
-    React.useEffect(() => {
-      () => ec?.remove?.(state.id);
-    }, [])
+    for (let k in props) {
+      let v1 = props[k];
+      let v2 = this.props[k];
+      if (v1 !== v2) {
+        return true;
+      }
+    }
+    return false
+  }
 
-    React.useEffect(() => {
-      update();
-    }, [props.css])
+  constructor(props) {
+    super(props);
+    this.refItem = {
+      id: newId(),
+      contextValue: new InternalStyledContext(this.props.viewPath),
+      style: undefined,
+      selectedThemeIndex: this.props.themeContext.selectedIndex,
+      currentStyle: currentTheme(props.themeContext),
+      init: false
+    }
+  }
 
-    if ((styleFile && state.refItem.style == undefined)) {
+  getContext() {
+    return this.context as any;
+  }
+
+  componentWillUnmount() {
+    this.refItem.init = false;
+    this.getContext().remove?.(this.refItem.id);
+  }
+
+  update(props: any) {
+    let css = props?.css ?? "";
+    this.refItem.contextValue.update(this.refItem.id, css, props, this.refItem.currentStyle, this.context as any);
+    if (this.refItem.contextValue.changed() || this.refItem.selectedThemeIndex != this.props.themeContext.selectedIndex) {
+      this.refItem.style = undefined;
+      this.refItem.contextValue.prevCSS = undefined;
+      this.refItem.selectedThemeIndex = this.props.themeContext.selectedIndex;
+      return true;
+    }
+    return false;
+  }
+
+  render() {
+    let context: any = this.context;
+    context?.register?.(this.refItem.id);
+    const isText = this.props.View.displayName && this.props.View.displayName == "Text" && reactNative.Platform.OS == "web";
+    this.update(this.props);
+    if ((this.refItem.currentStyle && this.refItem.style == undefined)) {
       let sArray = [];
-      let cpyCss = state.contextValue.join();
+      let cpyCss = this.refItem.contextValue.join();
       let tCss = cssTranslator(
         cpyCss,
-        styleFile,
+        this.refItem.currentStyle,
         undefined
       );
       if (tCss._props)
-        state.contextValue.cssProps = { ...tCss._props }
-      else state.contextValue.cssProps = {};
+        this.refItem.contextValue.cssProps = { ...tCss._props }
+      else this.refItem.contextValue.cssProps = {};
       delete tCss._props;
       if (tCss) sArray.push(tCss);
-      state.refItem.style = sArray;
+      this.refItem.style = sArray;
     }
+
 
     let styles = [
       isText && globalData.activePan ? { userSelect: "none" } : {},
-      ...toArray(state.refItem.style),
-      ...toArray(style),
-      ...toArray(state.contextValue.cssProps?.style)
+      ...toArray(this.refItem.style),
+      ...toArray(this.props.style),
+      ...toArray(this.refItem.contextValue.cssProps?.style)
     ];
 
-    if (state.contextValue.cssProps?.style) {
-      delete state.contextValue.cssProps.style;
+
+    if (this.refItem.contextValue.cssProps?.style) {
+      delete this.refItem.contextValue.cssProps.style;
     }
 
-    let rProps = { ...props, ...state.contextValue.cssProps, style: styles };
-    const refererId = state.contextValue.cssProps?.refererId ?? props.refererId;
-    if (refererId && themecontext.referers) {
-      let ref = themecontext.referers.find(x => x.id == refererId);
+    let rProps = { ...this.props, ...this.refItem.contextValue.cssProps, style: styles };
+    const refererId = this.refItem.contextValue.cssProps?.refererId ?? this.props.refererId;
+    if (refererId && this.props.themeContext.referers) {
+      let ref = this.props.themeContext.referers.find(x => x.id == refererId);
       if (!ref) {
         if (__DEV__)
           console.warn("referer with id", refererId, "could not be found");
@@ -285,22 +324,41 @@ class StyledItem {
 
     }
 
-
-
     if (ifSelector(rProps.ifTrue) === false) {
       return null;
     }
 
     return (
-      <CSSContext.Provider value={state.contextValue}>
-        <View
-          dataSet={{ css: reactNative.Platform.OS == "web" && state.contextValue.cpyCss && __DEV__ ? "__DEV__ CSS:" + state.contextValue.cpyCss : "" }}
-          viewPath={viewPath}
+      <CSSContext.Provider value={this.refItem.contextValue}>
+        <this.props.View
+          dataSet={{ css: reactNative.Platform.OS == "web" && this.refItem.contextValue.cpyCss && __DEV__ ? "__DEV__ CSS:" + this.refItem.contextValue.cpyCss : "" }}
+          viewPath={this.props.viewPath}
           {...rProps}
-          ref={ref}
+          ref={this.props.cRef}
         />
       </CSSContext.Provider>
     );
+  }
+}
+
+
+
+class StyledItem {
+  view: any;
+  viewPath: string;
+
+  render(props: CSSProps<InternalStyledProps> & ButtonProps & reactNative.TouchableOpacityProps & reactNative.ViewProps, ref: any) {
+    let css = props.css ?? "";
+    const View = this.view;
+    const viewPath = this.viewPath;
+    let themecontext = React.useContext(ThemeContext);
+    if (themecontext == undefined)
+      throw "Error ThemeContext must be provided with its themes and default style";
+
+    return (
+      <StyledComponent {...props} View={View} viewPath={viewPath} themeContext={themecontext} cRef={ref} />
+    )
+
   }
 }
 
