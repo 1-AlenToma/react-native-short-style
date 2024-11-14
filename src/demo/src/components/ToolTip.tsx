@@ -64,7 +64,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         if (left + state.toolTipSize.width > globalData.window.width)
             left = globalData.window.width - (state.toolTipSize.width)
         else if (left < 0)
-                left = 5
+            left = 5
         if (!props.postion || props.postion == "Top") {
             top -= state.toolTipSize.height + state.pos.height;
             if (top < 0)
@@ -83,7 +83,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
                 top: top
             }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip")}>
                 {
-                    typeof props.text == "string" ? <Text css="fos-sm">{props.text}</Text> : props.text
+                    typeof props.text == "string" ? <Text selectable={true} css="fos-sm">{props.text}</Text> : props.text
                 }
             </View>
         </View>

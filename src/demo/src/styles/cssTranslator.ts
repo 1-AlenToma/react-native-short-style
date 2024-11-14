@@ -157,7 +157,7 @@ const css_translator = (
   propStyle?: any,
   id?: string
 ): object & { _props: any } => {
-  let cssItem = { _props: {} };
+  let cssItem = { _props: {}, important: {} };
   if (!css || css.trim().length <= 0) return cssItem;
   id = id ?? css;
 
@@ -179,6 +179,7 @@ const css_translator = (
       if (!c || c.trim().length <= 0)
         continue;
       let style = CSS[c] ?? CSS[c.toLowerCase()];
+      let important = CSS[`${c}.important`] ?? CSS[`${c.toLowerCase()}.important`];
       if (style === undefined && ValueIdentity.has(c)) {
         let kValue = ValueIdentity.keyValue(c);
         let k = kValue.key;
@@ -191,13 +192,15 @@ const css_translator = (
           }
         }
 
+
         let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
         if (short) {
           if (!propStyle || propStyle[short])
             cssItem[short] = value;
         } else {
           cssItem[k] = value;
-          //  console.log(kValue, "not found in react-native style props, but we will still add it")
+          if (__DEV__)
+            console.warn(kValue, "not found in react-native style props, but we will still add it")
         }
         continue;
       }
@@ -215,13 +218,25 @@ const css_translator = (
           delete style._props;
         }
 
-        cssItem = {
-          ...cssItem,
-          ...style
-        };
+        if (important) {
+          cssItem.important = {
+            ...cssItem.important,
+            ...style
+          }
+        } else {
+          cssItem = {
+            ...cssItem,
+            ...style
+          };
+        }
         continue;
       }
     }
+
+  if (cssItem.important) {
+    cssItem = { ...cssItem, ...cssItem.important }
+    delete cssItem.important;
+  }
   Storage.set(id, cssItem);
   return { ...cssItem };
 };

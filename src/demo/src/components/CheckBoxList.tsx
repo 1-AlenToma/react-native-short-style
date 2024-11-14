@@ -1,7 +1,7 @@
 import * as React from "react";
 import StateBuilder from "react-smart-state";
 import { CheckBoxListProps, CheckBoxProps } from "../Typse";
-import { Form } from "./Form";
+import { FormGroup } from "./FormGroup";
 import { View, Text, TouchableOpacity, AnimatedView } from "./ReactNativeComponents";
 import { ifSelector, newId, optionalStyle } from "../config";
 import { Icon } from "./Icon";
@@ -30,7 +30,7 @@ export const CheckBoxList = (props: CheckBoxListProps) => {
         working: false
     }).build();
 
-    let ViewItem = props.label ? Form : View;
+    let ViewItem = props.label ? FormGroup : View;
     const reset = (lastId: string, value: boolean) => {
         if (props.selectionType == "CheckBox" || !state.isInit)
             return;
@@ -140,7 +140,6 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
 
 
     React.useEffect(() => {
-
         state.isInit = true;
         return () => context.remove?.(state.id)
     }, [])
@@ -177,7 +176,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
 
     return (
         <>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox juc:end mab:5 ${optionalStyle(props.css).c} ${disabledCss}`} ifTrue={checkBoxType == "CheckBox"} onPress={() => {
+            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox _overflow juc:end mab:5 ${optionalStyle(props.css).c} ${disabledCss}`} ifTrue={checkBoxType == "CheckBox"} onPress={() => {
                 if (!disabled)
                     state.checked = !state.checked
             }}>
@@ -187,13 +186,16 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss)} ifTrue={checkBoxType == "RadioButton"} onPress={() => {
-                if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
-                    state.checked = !state.checked
-            }}>
+            <TouchableOpacity style={props.style}
+                css={x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss)}
+                ifTrue={checkBoxType == "RadioButton"}
+                onPress={() => {
+                    if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
+                        state.checked = !state.checked
+                }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={{ borderRadius: 15, backgroundColor: "transparent" }} css={`_checkBox_${labelPostion}`}>
-                    <Icon ifTrue={state.checked} size={24} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
+                <View style={{ borderRadius: 24, backgroundColor: "transparent" }} css={`_checkBox_${labelPostion}`}>
+                    <Icon ifTrue={state.checked} size={21} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>

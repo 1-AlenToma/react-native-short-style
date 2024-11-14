@@ -32,7 +32,7 @@ import {
 } from './src';
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
-import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, ProgressView } from './components';
+import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -69,7 +69,8 @@ const themes = [
     TextInput: {
       color: "#fff"
     },
-    Icon: x => x.props({ refererId: "iconHandler" }).co("$co-light")
+    Icon: x => x.props({ refererId: "iconHandler" }).co("$co-light"),
+    header: "bac:red"
   })
 ]
 
@@ -99,7 +100,7 @@ export default function App() {
         }
       }}>
         <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css: "co:#000" }}>
-          <Fab follow="Window" style={{bottom:50,right:0}} position="RightBottom"
+          <Fab follow="Window" style={{ bottom: 50 }} position="RightBottom"
             prefixContainerStyle={x => x.baC("$co-dark")} blureScreen={true} prefix={<Icon type="AntDesign" size={30} css={x => x.co("$co-light")} name='plus' />}>
             <Button text='btn 1'></Button>
             <Button text='btn 1'></Button>
@@ -145,6 +146,9 @@ export default function App() {
         <TabView title='Modal & Alert'>
           <ModalView />
           <StatusBar style="auto" />
+        </TabView>
+        <TabView disableScrolling={true} title="ScrollMenu">
+          <ScrollMenuView />
         </TabView>
       </TabBar>
     </ThemeContainer >

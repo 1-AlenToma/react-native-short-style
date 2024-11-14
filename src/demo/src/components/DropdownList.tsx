@@ -10,7 +10,7 @@ import { Modal } from "./Modal";
 import { ActionSheet } from "./ActionSheet";
 import { Icon } from "./Icon";
 import * as ReactNtive from "react-native";
-import { FormItem } from "./FormItem";
+import { FormItem } from "./FormGroup";
 import { TabBar, TabView } from "./TabBar";
 
 const DropDownItemController = ({ item, index, state, props }: { props: any, item: DropdownItem, index: number, state: any }) => {
@@ -89,25 +89,31 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
 
     const Container = mode == "Fold" ? TabBar : React.Fragment;
     const Selector = mode == "Fold" ? TabView : React.Fragment;
+    const containerProps = mode == "Fold" ? {
+        disableScrolling: true,
+        onTabChange: (index) => state.index = index,
+        style: { flex: null, flexBasis: state.index == 1 ? undefined : 38 },
+        selectedTabIndex: state.visible ? 1 : 0
+    } : {};
 
 
     return (
-        <Container disableScrolling={true} onTabChange={(index) => state.index = index} style={{ flex: null, flexBasis: state.index == 1 ? undefined : 38 }} selectedTabIndex={state.visible ? 1 : 0}>
+        <Container {...containerProps}>
             <Selector>
                 <TouchableOpacity onLayout={({ nativeEvent }) => {
-                        state.propsSize = nativeEvent.layout;
+                    state.propsSize = nativeEvent.layout;
                 }} onMouseEnter={() => state.shadow = "sh-sm"} onMouseLeave={() => state.shadow = ""}
                     onPress={() => state.visible = !state.visible}
                     css={`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC ${state.shadow} ${optionalStyle(props.css).c}`}>
                     <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC">
-                        <Text style={selectedText ? undefined :{
+                        <Text style={selectedText ? undefined : {
                             color: "#CCC"
                         }} css="fos-sm">{selectedText ?? props.placeHolder}</Text>
                     </View>
                     <View css="fl:1 _center wi:30 maw:30 he:100%">
                         <Icon style={{
                             transform: [{
-                                rotateX: mode == "Fold" ? undefined : state.visible ? "180deg" : "0deg"
+                                rotateX: (mode == "Fold" ? "0deg" : (state.visible ? "180deg" : "0deg"))
                             }]
                         }} type="AntDesign" name={mode == "Fold" ? "caretright" : "caretdown"} />
                     </View>

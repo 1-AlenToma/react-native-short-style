@@ -35,7 +35,7 @@ type ITabBarContext = {
 }
 const TabBarContext = React.createContext<ITabBarContext>({} as any)
 
-export class TabView extends React.Component<TabItemProps, {}> {
+export class TabView extends React.PureComponent<TabItemProps, {}> {
     static contextType = TabBarContext;
     render(): React.ReactNode {
         const props = this.props;

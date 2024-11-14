@@ -12,15 +12,17 @@ import { Icon } from "./Icon";
 import * as ReactNtive from "react-native";
 
 export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props, ref) => {
-    if (ifSelector(props.ifTrue) == false)
-        return null;
+
     const state = StateBuilder({
         visible: props.defaultActive ?? false,
         prefix: props.defaultActive ? "minus" : "plus"
     }).build();
 
-    const { animate, animateY } = useAnimate({ speed: 500 });
+    const { animate, animateY, animateX } = useAnimate({ speed: 300 });
     const show = () => {
+        animateX(state.visible ? 1 : 0, () => {
+            
+        }, 1000)
         animateY(state.visible ? 1 : 0, () => {
             state.prefix = state.visible ? "minus" : "plus"
         })
@@ -37,10 +39,11 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
     }, [])
 
     state.useEffect(() => show(), "visible")
-
+    if (ifSelector(props.ifTrue) == false)
+        return null;
 
     return (
-        <View style={props.style} css={`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5 ${optionalStyle(props.css).c}`}>
+        <View style={props.style} css={x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css)}>
             <TouchableOpacity onPress={() => state.visible = !state.visible} css="wi:100% he:30 ali:center fld:row">
                 {props.icon}
                 <Text css="fos-lg fow:bold">{props.text}</Text>
@@ -54,7 +57,18 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
                     extrapolate: "clamp"
                 })
             }}>
-                {props.children}
+                <AnimatedView style={{
+                    flex: 0,
+                    flexGrow: 1,
+                    opacity: animate.x.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 1],
+                        extrapolate: "clamp"
+                    })
+
+                }}>
+                    {props.children}
+                </AnimatedView>
             </AnimatedView>
         </View>
     )

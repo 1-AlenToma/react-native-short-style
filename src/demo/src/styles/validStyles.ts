@@ -341,7 +341,7 @@ export const ShortCSS =
   fontfamily: 'fontFamily',
   fof: 'fontFamily',
   fontsize: 'fontSize',
-  fos: 'fontStyle',
+  fos: 'fontSize',
   fontstyle: 'fontStyle',
   fontvariant: 'fontVariant',
   fov: 'fontVariant',
@@ -429,12 +429,16 @@ export const ShortCSS =
   writingdirection: 'writingDirection',
   wrd: 'writingDirection',
   zindex: 'zIndex',
-  zi: 'zIndex'
+  zi: 'zIndex',
+  outlineStyle: "outlineStyle",
+  ouS: "outlineStyle"
 }
 
 
 
 export const ShortStyles = {
+  outlineStyle: "outlineStyle",
+  ouS: "outlineStyle",
   "textTransform": "textTransform",
   "alignContent": " alignContent:",
   "alC": " alignContent:",
@@ -507,7 +511,7 @@ export const ShortStyles = {
   "fontFamily": " fontFamily:",
   "foF": " fontFamily:",
   "fontSize": " fontSize:",
-  "foS": " fontStyle:",
+  "foS": " fontSize:",
   "fontStyle": " fontStyle:",
   "fontVariant": " fontVariant:",
   "foV": " fontVariant:",

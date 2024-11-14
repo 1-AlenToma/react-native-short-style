@@ -21,6 +21,15 @@ class CSS {
     this.styleFile = styleFile;
   }
 
+  append(css: string) {
+    if (css && css.length > 0) {
+      console.log(css, "this", this.css)
+      this.css = this.css.replace(css, "");
+    }
+    this.add(css)
+    return this;
+  }
+
   add(...keys: string[]) {
     for (let k of keys) {
       if (!k || k == "undefined")
@@ -153,7 +162,6 @@ class InternalStyledContext {
 
     let itemIndex = this.prevContext?.indexOf?.(this.id);
     let isLast = this.prevContext?.isLast?.(this.id);
-    //  console.log(itemIndex, this.prevContext?.isLast?.(this.id))
     let name = this.viewName;
     let parent = new CSS(this.styleFile, this.prevContext.join?.());
     let cpyCss = new CSS(this.styleFile, this.cleanCss())
@@ -167,13 +175,14 @@ class InternalStyledContext {
     for (let s of parent.classes()) {
       if (itemIndex != undefined)
         cpyCss.prepend(` ${s}.${name}_${itemIndex}`);
-      cpyCss.add(` ${s}.${name}`);
+      cpyCss.prepend(` ${s}.${name}`);
 
       if (isLast)
         cpyCss.prepend(` ${s}_last`);
     }
 
-    cpyCss.prepend(name, itemIndex != undefined ? `${name}_${itemIndex}` : "", this.viewPath());
+    cpyCss.prepend(name, itemIndex != undefined ? `${name}_${itemIndex}` : "", this.viewPath()).add(this.cleanCss());
+
     this.prevCSS = this.getCss();
 
     return (this.cpyCss = cpyCss.toString());
@@ -183,7 +192,7 @@ class InternalStyledContext {
 
 let CSSContext = React.createContext<InternalStyledContext>({} as any);
 
-class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { cRef: any, themeContext: any }, {}> {
+class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { cRef: any, themeContext: any, activePan?: boolean }, {}> {
   static contextType = CSSContext;
   refItem: {
     id: string,
@@ -221,14 +230,10 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     // delete props.ifTrue
 
 
-    if (props.viewPath)
-      delete props.viewPath;
-    if (props.View)
-      delete props.View;
-
     for (let k in props) {
       let v1 = props[k];
       let v2 = this.props[k];
+
       if (v1 !== v2) {
         return true;
       }
@@ -292,11 +297,13 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
 
 
     let styles = [
-      isText && globalData.activePan ? { userSelect: "none" } : {},
+      isText && this.props.activePan ? { userSelect: "none" } : {},
       ...toArray(this.refItem.style),
       ...toArray(this.props.style),
       ...toArray(this.refItem.contextValue.cssProps?.style)
     ];
+
+
 
 
     if (this.refItem.contextValue.cssProps?.style) {
@@ -348,15 +355,18 @@ class StyledItem {
   viewPath: string;
 
   render(props: CSSProps<InternalStyledProps> & ButtonProps & reactNative.TouchableOpacityProps & reactNative.ViewProps, ref: any) {
-    let css = props.css ?? "";
     const View = this.view;
     const viewPath = this.viewPath;
     let themecontext = React.useContext(ThemeContext);
+    const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
+    if (isText)
+      globalData.hook("activePan")
+
     if (themecontext == undefined)
       throw "Error ThemeContext must be provided with its themes and default style";
 
     return (
-      <StyledComponent {...props} View={View} viewPath={viewPath} themeContext={themecontext} cRef={ref} />
+      <StyledComponent {...props} activePan={isText ? globalData.activePan : undefined} View={View} viewPath={viewPath} themeContext={themecontext} cRef={ref} />
     )
 
   }

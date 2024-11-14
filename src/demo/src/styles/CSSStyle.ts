@@ -2,7 +2,7 @@ import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from "react-native";
 import { flatStyle } from "../config/CSSMethods";
 import { defaultTheme } from "../theme/DefaultStyle";
 import { ShortStyles } from "./validStyles";
-import { StyledProps } from "../Typse";
+import { CSS_String, StyledProps } from "../Typse";
 
 type ValueType = ViewStyle & TextStyle & ImageStyle;
 type Sizes = 5 | 10 | 20 | 30 | 40 | 60 | 70 | 80 | 90 | 100;
@@ -258,13 +258,13 @@ export abstract class ExtraCssStyle {
 
 
     /** Add css value with conditions */
-    if(value: boolean | Function | undefined | null, $this: ((x: CSSStyle) => CSSStyle), $else?: ((x: CSSStyle) => CSSStyle)) {
+    if(value: boolean | Function | undefined | null, $this: CSS_String, $else?: CSS_String) {
         if (value && typeof value == "function")
             value = value();
         if (value)
-            return $this(this as any as CSSStyle);
+            return this.joinRight($this);
         else if ($else)
-            return $else(this as any as CSSStyle);
+            return this.joinRight($else)
         return this;
     }
 
@@ -1112,6 +1112,12 @@ export class CSSStyle extends ExtraCssStyle {
 export class CSSStyleSheetStyle extends CSSStyle {
     private eqs: { css: CSSStyleSheetStyle | string, index: string | number }[] = [];
 
+    //** override all css with this */
+    important() {
+        if (this.value.indexOf("!important") == -1)
+            this.value += " !important";
+        return this;
+    }
 
     child(indexOrClassOrViewName: (number | "last" | (string & {})), css: ((x: CSSStyleSheetStyle) => CSSStyleSheetStyle) | string) {
         if (!css)

@@ -5,10 +5,11 @@ import { CreateView, View } from "./ReactNativeComponents";
 
 let styledItems = {};
 export const Icon = (props: IConProps) => {
-    Icons[props.type].displayName = props.type;
-    let Ico: (props: IConProps) => React.ReactNode = styledItems[props.type] ? styledItems[props.type] : (styledItems[props.type] = CreateView<any, any>(Icons[props.type], "Icon"));
+    let TypeIcon = Icons[props.type]
+    TypeIcon.displayName = props.type;
+    let Ico: (props: IConProps) => React.ReactNode = styledItems[props.type] ?? (styledItems[props.type] = CreateView<any, any>(TypeIcon, "Icon"));
 
     return (
-        <Ico {...props} style={undefined} />
+        <Ico {...props} />
     );
 };

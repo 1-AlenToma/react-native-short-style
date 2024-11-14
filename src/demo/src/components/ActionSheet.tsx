@@ -253,7 +253,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                     onTouchEnd={(event) => {
                         state.refItem.isTouched = false;
                     }}
-                    css={`_actionSheet _actionSheet_${position}`}
+                    css={`_actionSheet _actionSheet_${position} zi-2`}
                     style={[
                         {
                             width: !isVertical ? getHeight() : "99%",

@@ -1,5 +1,5 @@
 import StateBuilder from "react-smart-state"
-import { CheckBox, CheckBoxList, DropdownList, FormItem, TextInput } from "../src"
+import { CheckBox, CheckBoxList, DropdownList, FormItem, TextInput, FormGroup } from "../src"
 import { Block } from "./Block"
 
 
@@ -9,7 +9,7 @@ export const InputForm = () => {
         checkBoxes: [true, false]
     }).build();
     return (
-        <Block title='Form'>
+        <FormGroup formStyle="Headless" labelPosition="Top" title='User-Form jhkjhasd kjhasd kjhasd kjhasd'>
             <FormItem title="FullName" icon={{ type: "AntDesign", name: "user" }}>
                 <TextInput css="fl:1" />
             </FormItem>
@@ -36,11 +36,11 @@ export const InputForm = () => {
                 }} checkBoxType="RadioButton" selectionType="Radio">
                     {
                         state.checkBoxes.map((x, i) => (
-                            <CheckBox key={i} label={i==0 ? "Yes" : "No"} checked={x} />
+                            <CheckBox key={i} label={i == 0 ? "Yes" : "No"} checked={x} />
                         ))
                     }
                 </CheckBoxList>
             </FormItem>
-        </Block>
+        </FormGroup>
     )
 }

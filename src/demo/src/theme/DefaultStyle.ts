@@ -290,7 +290,7 @@ export const ComponentsStyles = NestedStyleSheet.create({
   _actionSheet_Bottom: x => x.wi("99%").maH("80%").boTW(.5).boTLR(15).boTRR(15),
   _actionSheet_Top: x => x.maH("80%").wi("99%").boBW(.5).boBLR(15).boBRR(15),
   _actionSheet_Left: x => x.maH("99%").maW("80%").to(".5%").le(0).boTW(.5).boBW(.5).boTRR(15).boBRR(15),
-  _actionSheet_Right: "mah:99% maw:80% to:.5% le:0 ri:0 botrw:.5 botlw:.5 boblR:15 botlr:15",
+  _actionSheet_Right: "mah:99% maw:80% to:.5% le:0 ri:0 botw-.5 boblR:15 botlr:15",
   _actionSheet_vertical_handle: "mah:10 zi:1 flg:1 _overflow",
   _actionSheet_horizontal_handle: "he:100% wi:10 _overflow",
   _actionSheet_vertical_handle_Button: "_center bor:5 zi:1 to:0 wi:40 he:10 bac:gray _overflow _abc le:45%",

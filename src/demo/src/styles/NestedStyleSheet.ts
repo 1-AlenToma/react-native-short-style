@@ -11,7 +11,7 @@ class NestedStyleSheet {
 
     while (keysItems.length > 0) {
       let key = keysItems.shift();
- 
+
       let value = obj[key];
       if (value && typeof value == "function") {
         value = value(new CSSStyleSheetStyle()) as any;
@@ -33,6 +33,8 @@ class NestedStyleSheet {
       if (value && typeof value == "function") {
         oItem[key] = value = value(new CSSStyleSheetStyle()).toString();
       }
+
+
 
       if (key.indexOf("$$") != -1) {
         let keys = parseKeys(key);
@@ -61,6 +63,12 @@ class NestedStyleSheet {
           if (!(sKey in obj))
             oItem[sKey] = "";
         }
+      }
+
+      if (value && typeof value == "string" && value.indexOf("!important") !== -1) {
+        oItem[key] = value.replace("!important", "");
+        let newKey = `${key}.important`;
+        oItem[newKey] = true;
       }
     }
 

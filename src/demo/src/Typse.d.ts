@@ -1,4 +1,4 @@
-import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, TextStyle, ViewStyle, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps } from "react-native";
+import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, TextStyle, ViewStyle, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps } from "react-native";
 import { NestedStyleSheet } from "./styles";
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
@@ -349,9 +349,16 @@ export type ToolTipProps = StyledProps & {
 export type FormItemProps = StyledProps & {
     children?: React.ReactNode | React.ReactNode[];
     title?: string | React.ReactNode;
+    labelPosition?: "Left" | "Top",
     icon?: IConProps | React.ReactNode;
     info?: string;
     message?: React.ReactNode;
+}
+
+export type FormGroupProps = StyledProps & {
+    title?: string | React.ReactNode;
+    formStyle?: "Normal" | "Headless",
+    labelPosition?: "Left" | "Top",
 }
 
 export type GenericViewProps<T, P> = P & StyledProps & MouseProps & { ref?: React.Ref<T> }
@@ -390,4 +397,12 @@ export type CSSStorage = {
     has: (key: string) => boolean;
     /** Clear All keys that start with CSSStyled_ */
     clear: () => void;
+}
+
+type ScrollMenuProps = StyledProps & {
+    children: React.ReactElement<StyledProps>[];
+    horizontal?: boolean;
+    selectedIndex?: number;
+    onChange?: (index: number) => void;
+    scrollViewProps?: Omit<ScrollViewProps, "style" | "contentContainerStyle" | "horizontal">;
 }

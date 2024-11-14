@@ -14,6 +14,11 @@ export const AlertView = () => {
         size: undefined
     }).build();
 
+    globalData.useEffect(() => {
+        if (state.size)
+            state.size = undefined;
+    }, "window", "alertViewData.data")
+
     const answer = (a) => {
         globalData.alertViewData.data.callBack?.(a);
         globalData.alertViewData.data = undefined;
@@ -22,20 +27,22 @@ export const AlertView = () => {
     const data: AlertViewFullProps = globalData.alertViewData.data ?? {} as any;
 
     return (
-        <Modal css={data.css} style={{ minHeight: state.size?.height, minWidth: state.size?.width }} disableBlurClick={data.callBack != undefined} isVisible={globalData.alertViewData.data != undefined} onHide={() => globalData.alertViewData.data = undefined}>
-            <View css="fl:1">
-                <View css="fl:1" style={{ height: data.callBack ? "90%" : "100%" }} onLayout={({ nativeEvent }) => {
-                    state.size = nativeEvent.layout;
-                }}>
+        <Modal css={x => x.joinLeft(data.css).joinRight("pa-0 ma-0")} style={{ minHeight: state.size?.height, minWidth: state.size?.width }} disableBlurClick={data.callBack != undefined} isVisible={globalData.alertViewData.data != undefined} onHide={() => globalData.alertViewData.data = undefined}>
+            <View css="fl:1 pa-0">
+                <View css="fl:1 pa-10" style={{ height: data.callBack ? "90%" : "100%" }}
+                    onLayout={({ nativeEvent }) => {
+                        if (!state.size)
+                            state.size = nativeEvent.layout;
+                    }}>
                     <Text css={`fos-md fow:bold`} ifTrue={data.title != undefined}>{data.title}</Text>
                     <Text css={`fos-${data.size ?? "sm"} co:gray pal:2`}>{data.message}</Text>
                 </View>
-                <View ifTrue={data.callBack != undefined} css="fld:row juc:flex-end ali:center">
-                    <Button css="mar:5" text={data.yesText ?? "Yes"} onPress={() => answer(true)} />
+                <View ifTrue={data.callBack != undefined} css="alertViewButtonContainer">
+                    <Button text={data.yesText ?? "Yes"} onPress={() => answer(true)} />
                     <Button text={data.cancelText ?? "No"} onPress={() => answer(false)} />
                 </View>
-                <View ifTrue={data.callBack == undefined} css="fld:row juc:flex-end ali:center">
-                    <Button css="mar:5" text={data.okText ?? "Ok"} onPress={() => answer(false)} />
+                <View ifTrue={data.callBack == undefined} css="alertViewButtonContainer">
+                    <Button text={data.okText ?? "Ok"} onPress={() => answer(false)} />
                 </View>
             </View>
         </Modal>)

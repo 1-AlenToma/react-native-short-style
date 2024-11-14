@@ -9,7 +9,7 @@ import { CSS_String, FabProps, ProgressBarProps, Size } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Button } from "./Button";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
-import { ViewStyle } from "react-native";
+import { Platform, StatusBar, ViewStyle } from "react-native";
 import { Blur } from "./Blur";
 
 export const Fab = (props: FabProps) => {
@@ -47,49 +47,57 @@ export const Fab = (props: FabProps) => {
 
 
 
-
+    let leftDefault = 15;
+    let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : StatusBar.currentHeight ?? 10;
     switch (props.position) {
         case "RightBottom":
             style = {
-                bottom: 10,
-                right: 5
+                bottom: defaultTop,
+                right: leftDefault
             }
             if (state.size) {
-                animatedItemPosition = x => x.le((-(state.size.width / 2)))
+                animatedItemPosition = x => x.ri(leftDefault).maT(-state.size.height)
             }
 
             break;
         case "LeftBottom":
             style = {
-                bottom: 10,
-                left: 5
+                bottom: defaultTop,
+                left: leftDefault
+            }
+
+            if (state.size) {
+                animatedItemPosition = x => x.le(leftDefault).maT(-state.size.height)
             }
 
 
             break;
         case "LeftTop":
             style = {
-                top: 10,
-                left: 5
+                top: defaultTop,
+                left: leftDefault
+            }
+
+            if (state.size) {
+                animatedItemPosition = x => x.le(leftDefault).maT(state.size.height)
             }
             break;
         case "RightTop":
             style = {
-                top: 10,
-                right: 5
+                top: defaultTop,
+                right: leftDefault
             }
 
             if (state.size) {
-                animatedItemPosition = x => x.le((-(state.size.width / 2)))
+                animatedItemPosition = x => x.ri(leftDefault).maT(state.size.height)
             }
 
             break;
     }
 
 
-    const animatedIItem = (
+    const animatedIItem = !state.visible ? null : (
         <AnimatedView onLayout={({ nativeEvent }) => {
-
             state.size = nativeEvent.layout;
         }} style={{
             transform: [
@@ -100,7 +108,7 @@ export const Fab = (props: FabProps) => {
                         extrapolate: "clamp"
                     })
                 }]
-        }} css={x => x.joinRight("mat:10 bac:transparent po:relative overflow:hidden miw:100 zi:1").joinRight(animatedItemPosition)} key={state.id + "View"} >
+        }} css={x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(animatedItemPosition)} key={state.id + "View"} >
             <>
                 {
                     props.children

@@ -125,6 +125,6 @@ export const ValueIdentity = {
                     props[item] = item;
             }
         }
-        return Object.keys(props);
+        return Object.keys(props)
     }
 }
