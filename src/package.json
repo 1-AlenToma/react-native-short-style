@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "web": "cd example && npx expo start",
+    "web": "cd demo && npx expo start",
     "test": "tsc  && jest tsx ./dist/test/Methods.test.js"
   },
   "peerDependencies": {
@@ -32,8 +32,8 @@
     "./"
   ],
   "dependencies": {
-    "react-smart-state": "^1.0.2",
-    "react-native-slider": "^0.11.0",
-    "react-native-get-random-values": "^1.11.0"
+    "react-smart-state": "*",
+    "react-native-get-random-values": "*",
+    "@miblanchard/react-native-slider": "*"
   }
 }

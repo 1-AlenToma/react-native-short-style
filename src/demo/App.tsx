@@ -85,6 +85,7 @@ export default function App() {
       id: "iconHandler",
       func: (props: any) => {
         return props;
+        // edit the props
         props.ifTrue = true;
         return props;
       }
