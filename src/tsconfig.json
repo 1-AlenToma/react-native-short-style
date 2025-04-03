@@ -7,7 +7,7 @@
       "dom",
       "esnext"
     ],
-    "moduleResolution":"Node",
+    "moduleResolution": "Node",
     "jsx": "react",
     "sourceMap": true,
     "declaration": true,

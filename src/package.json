@@ -1,12 +1,12 @@
 {
   "name": "react-native-short-style",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "type": "module",
   "license": "MIT",
   "repository": "https://github.com/1-AlenToma/react-native-short-style",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "source": "index.ts",
   "engines": {
     "node": ">=10"

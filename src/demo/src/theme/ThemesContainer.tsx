@@ -120,7 +120,7 @@ const ThemeInternalContainer = ({ children }: any) => {
             <View onLayout={(event) => {
                 if (Platform.OS !== "web") {
                     event.target.measure(
-                        (x, y, width, height, pageX, pageY) => {
+                        (x, y, width, height) => {
                             state.containerSize.height = height;
                             state.containerSize.width = width;
                             state.containerSize.y = y;
