@@ -7,6 +7,9 @@ You dont need to import styles in every file and your are also able to have nest
 
 so like css `view text` will be applied without doing it your self all the time.
 
+# App using `react-native-short-style`
+[Novelo](https://github.com/1-AlenToma/Novelo)
+
 here is how it look like
 ![screenshot](https://raw.githubusercontent.com/1-AlenToma/react-native-short-style/main/src/screenshot/image.png)
 
