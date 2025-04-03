@@ -27,7 +27,7 @@ export const ModalView = () => {
             message: "Loaders are enabled by default. Use `loader`, `loaderBg` to change the default behavior",
             title: type,
             position: "Top",
-            loader: false,
+            loader: true,
             type: type
         });
     }

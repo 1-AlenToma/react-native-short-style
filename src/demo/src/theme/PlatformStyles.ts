@@ -7,7 +7,7 @@ const cachedCss: any = { web: undefined, android: undefined }
 const userStyle = NestedStyleSheet.create({
     header: "bac-#292e34",
     header$Text: x => x.foS("$fos-lg").co("$co-light").foW("bold"),
-    headerLine: "bac-transparent _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1",
+    headerLine: "bac-inherit _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1",
     headerLine$View: "ali-center",
     headerLine$View$Text: x => x.foS("$fos-lg").foW("bold"),
     disabled: x => x.op(.8).baC("$co-gray400"),

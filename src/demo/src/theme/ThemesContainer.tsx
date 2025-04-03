@@ -4,6 +4,7 @@ import { IThemeContext } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { newId, clearAllCss } from "../config";
 import { View, AlertView, ToastView } from "../components";
+import { Platform } from "react-native";
 
 
 const StaticItem = ({ onMounted, id, item }: any) => {
@@ -117,15 +118,23 @@ const ThemeInternalContainer = ({ children }: any) => {
     return (
         <InternalThemeContext.Provider value={contextValue}>
             <View onLayout={(event) => {
-                event.target.measure(
-                    (x, y, width, height, pageX, pageY) => {
-                        state.containerSize.height = height;
-                        state.containerSize.width = width;
-                        state.containerSize.y = y;
-                        state.containerSize.x = x;
-                        globalData.containerSize = state.containerSize;
-                    },
-                );
+                if (Platform.OS !== "web") {
+                    event.target.measure(
+                        (x, y, width, height, pageX, pageY) => {
+                            state.containerSize.height = height;
+                            state.containerSize.width = width;
+                            state.containerSize.y = y;
+                            state.containerSize.x = x;
+                            globalData.containerSize = state.containerSize;
+                        },
+                    );
+                } else {
+                    state.containerSize.height = event.nativeEvent.layout.height;
+                    state.containerSize.width = event.nativeEvent.layout.width;
+                    state.containerSize.y = event.nativeEvent.layout.y;
+                    state.containerSize.x = event.nativeEvent.layout.x;
+                    globalData.containerSize = state.containerSize;
+                }
             }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
                 <StaticFullView />
                 <StaticView />

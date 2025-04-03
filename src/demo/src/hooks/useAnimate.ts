@@ -33,8 +33,10 @@ export const useAnimate = ({
         onFinished?: Function,
         sp?: any
     ) => {
-        if (animate.y == currentValue.y)
+        if (animate.y == currentValue.y) {
+            onFinished?.();
             return;
+        }
         currentValue.y = value;
         run(
             value,
@@ -55,6 +57,7 @@ export const useAnimate = ({
         sp?: any
     ) => {
         if (value == currentValue.x) {
+            onFinished?.();
             return;
         }
         currentValue.x = value;

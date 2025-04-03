@@ -51,7 +51,7 @@ export const FormGroup = (props: FormGroupProps & { children: (React.ReactElemen
     return (
         <ForGroupContext.Provider value={{ labelPosition: props.labelPosition }}>
             <View style={props.style} css={x => x.cls("_formGroup FormGroup").maT(30).joinRight(props.css)}>
-                <View ifTrue={props.title != undefined && props.formStyle == "Headless"} css="headerLine bac-transparent">
+                <View ifTrue={props.title != undefined && props.formStyle == "Headless"} css="headerLine">
                     <View css="bac-transparent">
                         <Text numberOfLines={1}>{props.title}</Text>
                     </View>

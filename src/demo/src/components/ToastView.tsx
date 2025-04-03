@@ -125,7 +125,7 @@ export const ToastView = () => {
         <View>
             <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
                 <TouchableOpacity onPress={() => state.visible = false}>
-                    <Icon type="AntDesign" css="co:red" name="close" size={15} />
+                    <Icon type="AntDesign" css="co:white" name="close" size={15} />
                 </TouchableOpacity>
             </View>
             <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac:transparent">

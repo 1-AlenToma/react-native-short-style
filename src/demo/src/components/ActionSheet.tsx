@@ -14,18 +14,15 @@ import {
     Animated,
     PanResponder
 } from "react-native";
-import { ActionSheetProps } from "../Typse";
+import { ActionSheetProps, Size } from "../Typse";
 import { Blur } from "./Blur";
-import { ISize } from "Types";
 export const ActionSheet = (props: ActionSheetProps) => {
     globalData.hook("containerSize")
-    let position = props.position;
-    if (props.position == undefined)
-        position = "Bottom";
+    let position = props.position ?? "Bottom";
     const isVertical = ["Top", "Bottom"].includes(position);
     const state = StateBuilder({
         id: newId(),
-        size: undefined as ISize | undefined,
+        size: undefined as Size | undefined,
         refItem: {
             startValue: 0,
             isVisible: false,
@@ -47,11 +44,11 @@ export const ActionSheet = (props: ActionSheetProps) => {
         if ((typeof h === "string")) {
             h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), (isVertical ? globalData.containerSize.height : globalData.containerSize.width));
         }
-        return Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 90));
+        let value = Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 90));
+        return value;
     }
 
     let context = useContext(InternalThemeContext);
-    //globalData.hook("screen");
     const timer = useTimer(100);
     const { animateY, animateX, animate, animating, currentValue } = useAnimate({
         y: 0,
@@ -61,9 +58,6 @@ export const ActionSheet = (props: ActionSheetProps) => {
     });
 
     const blurAnimation = useAnimate();
-
-
-
     const setSize = () => {
         let size = globalData.containerSize;
         let containerHeight = size.height;
