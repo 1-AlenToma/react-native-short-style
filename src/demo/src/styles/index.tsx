@@ -129,6 +129,8 @@ function assignRf(item: DomPath<any, InternalStyledProps>, props: InternalStyled
   if (!item._elementsChildren)
     item._elementsChildren = [];
 
+  if (reactNative.Platform.OS == "web")
+    return item; // those methods already exist.
   item.querySelector = function (selector: string, parentItems?: any[]) {
     try {
       let res = this;
