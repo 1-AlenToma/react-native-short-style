@@ -34,9 +34,10 @@ import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { globalData } from './src/theme/ThemeContext';
+import { DomPath } from './src/Typse';
 
 const themes = [
   NestedStyleSheet.create({
@@ -78,7 +79,16 @@ export default function App() {
   const state = buildState({
     id: newId(),
     selectedTheme: 0,
-  }).build();
+    el: undefined as DomPath<typeof View, any> | undefined
+  }).ignore("el").build();
+
+  let el = useRef<DomPath<typeof View, any> | undefined>()
+
+  useEffect(() => {
+    if (el.current) {
+      console.warn("Found item", el.current.querySelector<HTMLDivElement>("View[css*='button']"))
+    }
+  }, [el.current])
 
   return (
     <ThemeContainer referers={[{
@@ -91,7 +101,13 @@ export default function App() {
       }
     }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
-
+      <View css="button bac-red" ref={el}>
+        <View css={x => x.cls("button").baC("$co-blue100")}>
+          <Text viewId='txt'>test</Text>
+          <Text viewId='txt'>test</Text>
+          <Text viewId='txt2'>test2</Text>
+        </View>
+      </View>
 
       <TabBar position='Bottom' header={{
         selectedIconStyle: "color:red",

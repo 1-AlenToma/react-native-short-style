@@ -11,6 +11,18 @@ export const flatStyle = (style: any) => {
     return style ?? {};
 }
 
+export const hasString = (a: string, b: string) => {
+    a = a ?? "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
+    b = b ?? "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
+    return a.toLowerCase().indexOf(b.toLowerCase()) != -1;
+}
+
+export const eqString = (a: string, b: string) => {
+    a = a ?? "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
+    b = b ?? "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
+    return a.toLowerCase() == b.toLowerCase();
+}
+
 export const parseKeys = (key: string) => {
     let t = "";
     let keys: string[] = [];

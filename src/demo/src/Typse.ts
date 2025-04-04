@@ -16,11 +16,18 @@ export type ICSS = {
     props: string[]; // .button etc
 }
 
-type InternalStyledProps = StyledProps & {
-    View: any;
-    viewPath: string;
-    fullParentPath?: string;
-    classNames?: string[];
+export type DomPath<O, P> = O & {
+    querySelector: <T>(selector: string) => DomPath<T, unknown> | undefined;
+    querySelectorAll: <T>(selected: string) => DomPath<T, unknown>[];
+    _elementsChildren: DomPath<O, P>[],
+    _elemntsProps: P & InternalStyledProps;
+}
+
+export type InternalStyledProps = StyledProps & {
+    readonly View: any;
+    readonly viewPath: string;
+    readonly fullParentPath?: string;
+    readonly classNames?: string[];
 }
 
 export type MouseProps = {
@@ -37,6 +44,7 @@ export type StyledProps = {
     css?: CSS_String;
     ifTrue?: ((() => boolean) | boolean);
     style?: ViewStyle;
+    viewId?: string;
 };
 
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";
@@ -378,7 +386,7 @@ export type FormGroupProps = StyledProps & {
     labelPosition?: "Left" | "Top",
 }
 
-export type GenericViewProps<T, P> = P & StyledProps & MouseProps & { ref?: React.Ref<T> }
+export type GenericViewProps<T, P> = P & StyledProps & MouseProps & { ref?: React.Ref<DomPath<T, P>> }
 export type GenericView<T, P> = Omit<T, "props" | "ref"> & {
     props: GenericViewProps<T, P>
 };
