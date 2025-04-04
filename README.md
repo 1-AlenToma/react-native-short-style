@@ -98,78 +98,32 @@ export default function App() {
     selectedTheme: 0,
   }).build();
 
+  let el = useRef<DomPath<typeof View, any> | undefined>()
+
+  useEffect(() => {
+    if (el.current) {
+      // you are also able to search recrusivly throw element event in react-native android, IOS,Web and windows.
+      console.warn("Found item", el.current.querySelectorAll<typeof Text>(".button #txt, #txt2[someattr*='kas']"))
+    }
+  }, [el.current])
   return (
     <ThemeContainer referers={[{
       id: "iconHandler",
       func: (props: any) => {
         return props;
-        // edit the props
+        // edit the props look up at Icon refererId
         props.ifTrue = true;
         return props;
       }
     }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
-
-
-      <TabBar position='Bottom' header={{
-        selectedIconStyle: "color:red",
-        style: x => x.baC("#ffffff"),
-        overlayStyle: {
-          content: x => x.baC("#8a88ee").op(.4)
-        }
-      }}>
-        <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css: "co:#000" }}>
-          <Fab follow="Window" style={{ bottom: 50 }} position="RightBottom"
-            prefixContainerStyle={x => x.baC("$co-dark")} blureScreen={true} prefix={<Icon type="AntDesign" size={30} css={x => x.co("$co-light")} name='plus' />}>
-            <Button text='btn 1'></Button>
-            <Button text='btn 1'></Button>
-          </Fab>
-          <BlockContainer>
-            <Block title="Theme Example">
-              <Button icon={<Icon type="AntDesign" name="adduser" color="red" />} disabled={false} onPress={() => state.selectedTheme = state.selectedTheme == 0 ? 1 : 0} text="Toggle Theme" />
-            </Block>
-
-            <ProgressView />
-            <InputForm />
-          </BlockContainer>
-          <BlockContainer>
-            <ButtonGroupView />
-            <Block style={{ width: 300 }} title='Collabse'>
-              <Collabse icon={<Icon type="AntDesign" name='book' size={20} />} text={"header test"}>
-                <Text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus nobis
-                  corporis ut, ex sed aperiam. Debitis, facere! Animi quis laudantium, odio
-                  nulla recusandae labore pariatur in, vitae corporis delectus repellendus.</Text>
-              </Collabse>
-            </Block>
-
-            <Block style={{ width: 300 }} title='Loader'>
-              <Loader loading={true} text="Loading...">
-                <Collabse defaultActive={true} icon={<Icon type="AntDesign" name='book' size={20} />} text={"header test"}>
-                  <Text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus nobis
-                    corporis ut, ex sed aperiam. Debitis, facere! Animi quis laudantium, odio
-                    nulla recusandae labore pariatur in, vitae corporis delectus repellendus.</Text>
-                </Collabse>
-              </Loader>
-            </Block>
-            <Block style={{ width: 300 }} title='ToolTip'>
-              <ToolTip text={`Lorem ipsum'
-               dolor sit amet consectetur adipisicing elit. Minus nobis corporis ut, ex sed aperiam. Debitis, facere! Animi quis 
-                laudantium, odio nulla recusandae labore pariatur in, vitae corporis delectus repellendus.`}>
-                <Text>Press Here</Text>
-              </ToolTip>
-            </Block>
-
-
-          </BlockContainer>
-        </TabView>
-        <TabView title='Modal & Alert'>
-          <ModalView />
-          <StatusBar style="auto" />
-        </TabView>
-        <TabView disableScrolling={true} title="ScrollMenu">
-          <ScrollMenuView />
-        </TabView>
-      </TabBar>
+     <View css="button bac-red fld-column" ref={el}>
+        <View css={x => x.cls("button").baC("$co-blue100")}>
+          <Text viewId='txt'>test</Text>
+          <Text viewId='txt'>test</Text>
+          <Text viewId='txt2' css="tea-center bac-red wi-100%" someattr="kaskdj">test2</Text>
+        </View>
+      </View>
     </ThemeContainer >
   );
 }
