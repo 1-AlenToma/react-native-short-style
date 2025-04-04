@@ -8,6 +8,16 @@ export const flatStyle = (style) => {
         }, {});
     return style !== null && style !== void 0 ? style : {};
 };
+export const hasString = (a, b) => {
+    a = a !== null && a !== void 0 ? a : "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
+    b = b !== null && b !== void 0 ? b : "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
+    return a.toLowerCase().indexOf(b.toLowerCase()) != -1;
+};
+export const eqString = (a, b) => {
+    a = a !== null && a !== void 0 ? a : "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
+    b = b !== null && b !== void 0 ? b : "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
+    return a.toLowerCase() == b.toLowerCase();
+};
 export const parseKeys = (key) => {
     var _a;
     let t = "";

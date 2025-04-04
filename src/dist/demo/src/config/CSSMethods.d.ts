@@ -1,4 +1,6 @@
 export declare const flatStyle: (style: any) => any;
+export declare const hasString: (a: string, b: string) => boolean;
+export declare const eqString: (a: string, b: string) => boolean;
 export declare const parseKeys: (key: string) => string[];
 export declare const extractProps: (css?: string) => {
     css: string;
