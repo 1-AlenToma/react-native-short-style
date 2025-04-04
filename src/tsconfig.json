@@ -13,11 +13,11 @@
     "declaration": true,
     "esModuleInterop": true,
     "noImplicitReturns": true,
-    "noImplicitThis": true,
+    "noImplicitThis": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },

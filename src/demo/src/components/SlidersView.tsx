@@ -58,6 +58,8 @@ export const SliderView = (props: NativeSlider.SliderProps & {
             onChange(props.maximumValue);
     }
 
+
+
     return (
         <View css={x => x.cls("_slider juc:space-between").joinRight(props.css)} style={props.style}>
             <Button css={x => x.cls("_sliderButton").joinRight(props.buttonCss)}
@@ -76,9 +78,9 @@ export const SliderView = (props: NativeSlider.SliderProps & {
                     props.onSlidingStart?.(event, index);
                     state.sliding = true;
                 }}
-                onTouchStart={e => {
+                onTouchStart={(e => {
                     globalData.panEnabled = false;
-                }}
+                }) as any}
                 onTouchEnd={e => {
                     globalData.panEnabled = true;
                 }}

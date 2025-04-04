@@ -1,4 +1,4 @@
-import { optionalStyle } from "../config";
+import * as React from "react";
 import { BlurProps } from "../Typse";
 import { AnimatedTouchableOpacity, AnimatedView } from "./ReactNativeComponents";
 

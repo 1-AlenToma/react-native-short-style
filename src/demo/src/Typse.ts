@@ -386,9 +386,12 @@ export type FormGroupProps = StyledProps & {
     labelPosition?: "Left" | "Top",
 }
 
-export type GenericViewProps<T, P> = P & StyledProps & MouseProps & { ref?: React.Ref<DomPath<T, P>> }
+export type GenericViewProps<T, P> = P & StyledProps & MouseProps & {
+    ref?: React.Ref<DomPath<T, P>>
+    [key: string]: any;
+}
 export type GenericView<T, P> = Omit<T, "props" | "ref"> & {
-    props: GenericViewProps<T, P>
+    props: GenericViewProps<T, P>;
 };
 
 export type PageRef = {
@@ -424,7 +427,7 @@ export type CSSStorage = {
     clear: () => void;
 }
 
-type ScrollMenuProps = StyledProps & {
+export type ScrollMenuProps = StyledProps & {
     children: React.ReactElement<StyledProps>[];
     horizontal?: boolean;
     selectedIndex?: number;

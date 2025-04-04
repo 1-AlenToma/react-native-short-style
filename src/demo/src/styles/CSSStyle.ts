@@ -1,8 +1,9 @@
-import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from "react-native";
+import { StyleSheet, ViewStyle, TextStyle, ImageStyle, StyleProp } from "react-native";
 import { flatStyle } from "../config/CSSMethods";
 import { defaultTheme } from "../theme/DefaultStyle";
 import { ShortStyles } from "./validStyles";
 import { CSS_String, StyledProps } from "../Typse";
+
 
 type ValueType = ViewStyle & TextStyle & ImageStyle;
 type Sizes = 5 | 10 | 20 | 30 | 40 | 60 | 70 | 80 | 90 | 100;
@@ -268,7 +269,7 @@ export abstract class ExtraCssStyle {
         return this;
     }
 
-    joinLeft(value: CSSStyle | string | ViewStyle | ImageStyle | TextStyle | ((x: CSSStyle) => CSSStyle)) {
+    joinLeft(value: CSSStyle | string | StyleProp<ViewStyle> | StyleProp<ImageStyle> | StyleProp<TextStyle> | ((x: CSSStyle) => CSSStyle)) {
         if (value && typeof value == "function") {
             (value as Function)(this)
             return this;
@@ -301,7 +302,7 @@ export abstract class ExtraCssStyle {
         return this;
     }
 
-    joinRight(value: CSSStyle | string | ViewStyle | ImageStyle | TextStyle | ((x: CSSStyle) => CSSStyle)) {
+    joinRight(value: CSSStyle | string | StyleProp<ViewStyle> | StyleProp<ImageStyle> | StyleProp<TextStyle> | ((x: CSSStyle) => CSSStyle)) {
         if (value && typeof value == "function") {
             (value as Function)(this)
             return this;
@@ -1154,7 +1155,7 @@ export class CSSStyleSheetStyle extends CSSStyle {
 
     props<T extends object>(props: Omit<CSSProps<T>, "ref">) {
         if (!props)
-            return;
+            return this;
         if (Array.isArray(props)) {
             throw "CSSStyle props only accept json object";
         }
