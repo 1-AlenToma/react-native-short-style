@@ -4,6 +4,7 @@ import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
 
 
+
 type TextCustomInputProps = StyledProps & TextInputProps & {
     mode: "Outlined" | "Flat" | "Normal"
 }
@@ -11,6 +12,11 @@ type TextCustomInputProps = StyledProps & TextInputProps & {
 type ViewStyle = ReactNative.StyleProp<ReactNative.ViewStyle>;
 
 type TextStyle = ReactNative.StyleProp<ReactNative.TextStyle>;
+
+export type ConvertedElement = {
+    querySelector: <T>(selector: string) => DomPath<T, unknown> | undefined;
+    querySelectorAll: <T>(selected: string) => DomPath<T, unknown>[];
+}
 
 export type ICSS = {
     props: string[]; // .button etc
@@ -21,6 +27,8 @@ export type DomPath<O, P> = O & {
     querySelectorAll: <T>(selected: string) => DomPath<T, unknown>[];
     _elementsChildren: DomPath<O, P>[],
     _elemntsProps: P & InternalStyledProps;
+    ___HTMLELEMENT: ConvertedElement;
+    ___parent: DomPath<any, unknown> | undefined;
 }
 
 export type InternalStyledProps = StyledProps & {
@@ -44,7 +52,7 @@ export type StyledProps = {
     css?: CSS_String;
     ifTrue?: ((() => boolean) | boolean);
     style?: ViewStyle;
-    viewId?: string;
+    id?: string;
 };
 
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";

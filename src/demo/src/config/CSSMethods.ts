@@ -11,6 +11,16 @@ export const flatStyle = (style: any) => {
     return style ?? {};
 }
 
+export const removeProps = (item: any, ...props: string[]) => {
+    item = item ?? {};
+    for (let p of props) {
+        if (p in item)
+            delete item[p];
+    }
+
+    return item;
+}
+
 export const hasString = (a: string, b: string) => {
     a = a ?? "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
     b = b ?? "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";

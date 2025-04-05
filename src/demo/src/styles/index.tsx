@@ -2,124 +2,11 @@ import cssTranslator, { serilizeCssStyle, clearCss } from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as React from "react";
 import * as reactNative from "react-native";
-import { ifSelector, newId, currentTheme, refCreator, setRef, hasString, eqString } from "../config";
+import { ifSelector, newId, currentTheme, refCreator, setRef, hasString, eqString, HElement } from "../config";
 import { ThemeContext, globalData } from "../theme/ThemeContext";
 import { ButtonProps, DomPath, InternalStyledProps, StyledProps } from "../Typse";
 import { CSSStyle, CSSProps } from "./CSSStyle";
 import { extractProps, ValueIdentity } from "../config/CSSMethods";
-
-function advancedSplit(input) {
-  const result = [];
-  let current = '';
-  let inBracket = false;
-  let inParen = false;
-  let quoteChar = null;
-
-  for (let i = 0; i < input.length; i++) {
-    const char = input[i];
-
-    if (quoteChar) {
-      current += char;
-      if (char === quoteChar) {
-        quoteChar = null;
-      }
-    } else if (char === '"' || char === "'") {
-      current += char;
-      quoteChar = char;
-    } else if (char === '[') {
-      inBracket = true;
-      current += char;
-    } else if (char === ']') {
-      inBracket = false;
-      current += char;
-    } else if (char === '(') {
-      inParen = true;
-      current += char;
-    } else if (char === ')') {
-      inParen = false;
-      current += char;
-    } else if (char === ',' && !inBracket && !inParen && !quoteChar) {
-      if (current.trim()) result.push(current.trim());
-      result.push('or');
-      current = '';
-    } else if (char === ' ' && !inBracket && !inParen && !quoteChar) {
-      if (current.trim()) {
-        result.push(current.trim());
-        current = '';
-      }
-    } else {
-      current += char;
-    }
-  }
-
-  if (current.trim()) result.push(current.trim());
-
-  return result;
-}
-
-
-function parseAttributes(selector) {
-  const attrPattern = /\[([a-zA-Z0-9_-]+)\s*(\*?=)\s*(['"])(.*?)\3\]/g;
-  const pseudoPattern = /:contains\s*\(\s*(['"])(.*?)\1\s*\)/g;
-
-  const result = {};
-  let match;
-
-  // Extract attributes like [href='value'] or [name*='value']
-  while ((match = attrPattern.exec(selector)) !== null) {
-    const [, key, operator, , value] = match;
-    result[key] = { text: value, valid: operator };
-  }
-
-  // Extract pseudo-class :contains('value')
-  while ((match = pseudoPattern.exec(selector)) !== null) {
-    const [, , value] = match;
-    result["contains"] = { text: value, valid: "*=" };
-  }
-
-  return result;
-}
-
-
-function attrIsValid(item: DomPath<any, InternalStyledProps>, attr: any) {
-  let res = true;
-
-  for (let k in attr) {
-
-    if (res == false)
-      break;
-
-    let value = attr[k].text;
-    let validator = attr[k].valid;
-    if (k == "contains")
-      k = "children";
-    let kValue = item._elemntsProps[k];
-    const getText = () => {
-      if (!kValue)
-        return kValue;
-
-      if (k == "children" && typeof kValue != "string") {
-        kValue = kValue["props"]?.["children"];
-        return getText();
-      }
-      return kValue;
-    }
-
-    switch (validator) {
-      case "*=":
-        res = hasString(getText(), value);
-        break;
-      case "!=":
-        res = !eqString(getText(), value);
-        break;
-      default:
-        res = eqString(getText(), value);
-        break;
-    }
-  }
-
-  return res;
-}
 
 
 
@@ -128,80 +15,9 @@ function assignRf(item: DomPath<any, InternalStyledProps>, props: InternalStyled
   item._elemntsProps = props;
   if (!item._elementsChildren)
     item._elementsChildren = [];
-
-  if (reactNative.Platform.OS == "web")
-    return item; // those methods already exist.
-  item.querySelector = function (selector: string, parentItems?: any[]) {
-    try {
-      let res = this;
-      let sl: string[] = advancedSplit(selector);
-
-      for (let str of sl) {
-        if (str == "or") {
-          if (res != undefined && (!parentItems || !parentItems.includes(res)))
-            return res; // already found the first search.
-          continue;
-        }
-
-        const char = str.startsWith(".") || str.startsWith("#") ? str[0] : undefined;
-        let select = char ? str.substring(1) : str;
-        const attibutes = parseAttributes(select);
-        if (select.indexOf(":") != -1)
-          select = select.substring(0, select.indexOf(":")).trim();
-        if (select.indexOf("[") != -1)
-          select = select.substring(0, select.indexOf("[")).trim();
-        let tItem = res;
-        switch (char) {
-          case "#":
-            res = tItem._elementsChildren?.find(x => eqString(x._elemntsProps.viewId, select) && attrIsValid(x, attibutes) && (!parentItems || !parentItems.includes(x)));
-            break;
-          case ".":
-            res = tItem._elementsChildren?.find(x => hasString(x._elemntsProps.css, select) && attrIsValid(x, attibutes) && (!parentItems || !parentItems.includes(x)));
-            break;
-          default:
-            console.log(select)
-            res = tItem._elementsChildren?.find(x => eqString(x._elemntsProps.viewPath, select) && attrIsValid(x, attibutes) && (!parentItems || !parentItems.includes(x)));
-            break;
-        }
-
-        if (res == undefined) {
-          for (let x of tItem._elementsChildren) {
-            res = x.querySelector(str, parentItems);
-            if (res)
-              break;
-          }
-        }
-
-        if (res == undefined) {
-          break;
-        }
-
-      }
-      return res && res !== this && (!parentItems || !parentItems.includes(res)) ? res : undefined;
-    } catch (e) {
-      console.error(e)
-      return undefined;
-    }
-  }
-
-  item.querySelectorAll = function (selector: string) {
-    let results: DomPath<any, any>[] = [];
-    let temp = undefined;
-    let sl: string[] = advancedSplit(selector);
-    const selectors = [""];
-    for (let str of sl) {
-      if (str != "or")
-        selectors[selectors.length - 1] += ` ${str}`;
-      else selectors.push("")
-    }
-    for (let s of selectors.filter(x => x.trim().length > 0))
-      while ((temp = this.querySelector(s, results))) {
-        results.push(temp);
-      }
-    return results;
-  }
-  item.querySelector = item.querySelector.bind(item);
-  item.querySelectorAll = item.querySelectorAll.bind(item);
+  item.___HTMLELEMENT = new HElement(item);
+  item.querySelector = item.___HTMLELEMENT.querySelector.bind(item.___HTMLELEMENT);
+  item.querySelectorAll = item.___HTMLELEMENT.querySelectorAll.bind(item.___HTMLELEMENT);
   return item;
 }
 
@@ -549,10 +365,13 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
           ref={(c) => {
             try {
               if (c) {
-                let item = assignRf((c ?? {}) as DomPath<any, any>, { ...rProps, css: this.refItem.contextValue.getCss() });
-                this.refItem.contextValue.setViews(item);
-                context?.registerView?.(item);// to parent
-                setRef(this.props.cRef, item);
+                if (reactNative.Platform.OS != "web") {
+                  let item = assignRf((c ?? {}) as DomPath<any, any>,
+                    { ...rProps, css: this.refItem.contextValue.getCss() });
+                  this.refItem.contextValue.setViews(item);
+                  context?.registerView?.(item);// to parent
+                  setRef(this.props.cRef, item);
+                } else setRef(this.props.cRef, c);
               } else setRef(this.props.cRef, null);
             } catch (e) {
               console.error(e)
