@@ -156,11 +156,12 @@ export class HElement implements ConvertedElement {
         this.attributes = {};
         this.children = [];
 
+
         const { type: CompType, props } = item;
 
         const itemProps = removeProps({ ...item._elemntsProps, ...props }, "View", "fullParentPath", "ifTrue", "themeContext");
         this.id = itemProps.id;
-        this.classList = [...(itemProps.css?.split(" ") ?? []), (itemProps.className?.split(" ") ?? [])]
+        this.classList = [...(itemProps.css?.toString().split(" ") ?? []), (itemProps.className?.toString().split(" ") ?? [])]
         this.attributes = this.extractAttribs(itemProps);
         const { children } = this.attributes;
         if (typeof children === 'string' || typeof item === 'string') {
