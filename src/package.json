@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "type": "module",
@@ -18,8 +18,7 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*",
-    "@expo/vector-icons": "*"
+    "react-native": "*"
   },
   "devDependencies": {
     "@types/node": "18.11.9",
@@ -32,9 +31,9 @@
     "./"
   ],
   "dependencies": {
-    "react-smart-state": "*",
-    "react-native-get-random-values": "*",
     "@miblanchard/react-native-slider": "*",
-    "css-select": "*"
+    "css-select": "*",
+    "react-native-get-random-values": "*",
+    "react-smart-state": "*"
   }
 }

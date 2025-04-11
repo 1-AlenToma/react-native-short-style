@@ -35,8 +35,7 @@ import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';
 import React, { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
-import { globalData } from './src/theme/ThemeContext';
+import * as icons from "@expo/vector-icons";
 import { DomPath } from './src/Typse';
 
 const themes = [
@@ -89,9 +88,9 @@ export default function App() {
       console.warn("Found item", el.current.querySelectorAll<HTMLDivElement>(".button > text:first-child"))
     }
   }, [el.current])
-  const debug = true;
+  const debug = false;
   return (
-    <ThemeContainer referers={[{
+    <ThemeContainer icons={icons} referers={[{
       id: "iconHandler",
       func: (props: any) => {
         return props;

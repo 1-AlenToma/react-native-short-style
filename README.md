@@ -54,6 +54,8 @@ this code is for the above image.
   FormItem,
   TextInput,
 } from 'react-native-short-style';
+// if you are using expo, or your use react-native-vector-icons
+import * as icons from "@expo/vector-icons";
 
 
 const themes = [
@@ -107,7 +109,7 @@ export default function App() {
     }
   }, [el.current])
   return (
-    <ThemeContainer referers={[{
+    <ThemeContainer icons={icons} referers={[{
       id: "iconHandler",
       func: (props: any) => {
         return props;

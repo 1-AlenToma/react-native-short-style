@@ -164,6 +164,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         return () => events.forEach(x => x.remove());
     }, [])
 
+
     React.useEffect(() => {
         if (props.storage)
             globalData.storage = props.storage as any;
@@ -173,6 +174,9 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         clearAllCss();
         state.selectedIndex = props.selectedIndex;
     }
+
+    if (!globalData.icons)
+        globalData.icons = props.icons ?? {} as any;
 
     return (
         <ThemeContext.Provider value={props}>

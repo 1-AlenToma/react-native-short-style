@@ -121,6 +121,12 @@ export type IThemeContext = {
      * Normally not needed, Added it just incase
      */
     storage?: Storage;
+
+    /** Components Icon use the icons here
+     * for expo simple import * as Icons from "@expo/vector-icons";
+     * icons={Icons}
+     */
+    icons?: Record<IConType, any>;
 }
 
 export type InternalThemeContext = {
@@ -158,6 +164,7 @@ export type GlobalState = {
     containerSize: Size;
     storage: CSSStorage;
     tStorage: CSSStorage;
+    icons?: Record<IConType, any>,
     appStart: () => EventListener[];
     alertViewData: {
         alert: (props: AlertViewProps | string) => void;
