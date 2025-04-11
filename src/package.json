@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "type": "module",
@@ -21,10 +21,10 @@
     "react-native": "*"
   },
   "devDependencies": {
-    "@types/node": "18.11.9",
-    "@types/react": "^18.3.11",
-    "@types/react-native": "^0.72.8",
-    "typescript": "^5.6.3"
+    "@types/node": "*",
+    "@types/react": "*",
+    "@types/react-native": "*",
+    "typescript": "*"
   },
   "files": [
     "dist",
