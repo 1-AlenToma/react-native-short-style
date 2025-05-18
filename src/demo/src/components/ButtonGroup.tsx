@@ -1,18 +1,14 @@
-import { Icon } from "./Icon";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
-import { InternalThemeContext, globalData } from "../theme/ThemeContext";
-import { useAnimate, useTimer } from "../hooks";
+import { View, Text, TouchableOpacity, FlatList } from "./ReactNativeComponents";
+import { useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
-import * as Native from "react-native";
-import { ifSelector, newId, proc, optionalStyle } from "../config";
 import * as React from "react";
-import { ButtonGroupProps, PortalProps, Size } from "../Typse";
+import { ButtonGroupProps, Size } from "../Typse";
 
 
 export const ButtonGroup = (props: ButtonGroupProps) => {
     const state = StateBuilder({
         selectedIndex: props.selectedIndex,
-        scrollView: undefined as typeof ScrollView | undefined,
+        scrollView: undefined as typeof FlatList | undefined,
         sizes: new Map<number, Size>()
     }).ignore("scrollView", "selectedIndex", "sizes").build();
     const timer = useTimer(200);
@@ -34,8 +30,8 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         timer(() => {
             if (state.scrollView && state.sizes.size > 0 && state.selectedIndex.length == 1) {
                 if (props.isVertical)
-                    state.scrollView.scrollTo({ y: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.height : 0), 0), animated: false });
-                else state.scrollView.scrollTo({ x: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.width : 0), 0), animated: false });
+                    state.scrollView.scrollToOffset({ offset: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.height : 0), 0), animated: false });
+                else state.scrollView.scrollToOffset({ offset: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.width : 0), 0), animated: false });
             }
         });
     }
@@ -51,7 +47,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
 
     const getItem = (item: string, index: number) => {
         const itemStyle = props.itemStyle?.(item, index);
-        
+
         return (
             <TouchableOpacity
                 onLayout={({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout)}
@@ -65,17 +61,36 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         )
     }
 
-    const Component = props.scrollable ? ScrollView : View;
+    const Component = props.scrollable ? FlatList : View;
     const cProps = props.scrollable ? { contentContainerStyle: { flex: 0 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }
+    let numColumns = props.numColumns;
+    if (numColumns === 0)
+        numColumns = 1;
     return (
         <View ifTrue={props.ifTrue} css={x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css)} style={props.style}>
-            <Component horizontal={!props.isVertical} {...cProps} >
+            {props.scrollable ? (
+                <FlatList
+                    ref={c => {
+                        if (c && state.scrollView != c as any)
+                            state.scrollView = c as any;
+                    }}
+                    {...cProps}
+                    numColumns={numColumns}
+                    data={props.buttons}
+                    renderItem={({ item, index }) => getItem(item, index)}
+                    horizontal={numColumns == undefined ? !props.isVertical : false}
+                    keyExtractor={(item, index) => index.toString()}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
+                />
+            ) : (<View {...cProps} >
                 <View style={props.style} css={x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css)}>
                     {
                         props.buttons.map((x, index) => getItem(x, index))
                     }
                 </View>
-            </Component>
+            </View>)}
+
         </View>
     )
 }

@@ -1,15 +1,11 @@
 import * as React from "react";
-import { AnimatedView, TouchableOpacity, View, Text, ScrollView, TextInput } from "./ReactNativeComponents";
-import { InternalThemeContext } from "../theme/ThemeContext";
-import { useAnimate } from "../hooks";
+import { TouchableOpacity, View, Text, FlatList, TextInput } from "./ReactNativeComponents";
 import StateBuilder from "react-smart-state";
-import { ViewStyle } from "react-native";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { DropdownItem, DropdownListProps, DropdownRefItem, ModalProps, Size } from "../Typse";
 import { Modal } from "./Modal";
 import { ActionSheet } from "./ActionSheet";
 import { Icon } from "./Icon";
-import * as ReactNtive from "react-native";
 import { FormItem } from "./FormGroup";
 import { TabBar, TabView } from "./TabBar";
 
@@ -47,15 +43,15 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
         refItems: {
-            scrollView: undefined as typeof ScrollView | undefined
+            scrollView: undefined as typeof FlatList | undefined
         }
     }).ignore("refItems.scrollView").build();
     const mode = props.mode ?? "Modal";
 
     state.useEffect(() => {
         if (state.refItems.scrollView) {
-            state.refItems.scrollView.scrollTo({
-                y: props.items.findIndex(x => x.value == props.selectedValue) * 30,
+            state.refItems.scrollView.scrollToIndex({
+                index: props.items.findIndex(x => x.value == props.selectedValue),
                 animated: false
             })
         }
@@ -132,11 +128,12 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                         defaultValue={state.text}
                         onChangeText={txt => state.text = txt} />
                 </FormItem>
-                <ScrollView nestedScrollEnabled={true} style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }} ref={c => state.refItems.scrollView = c as any}>
-                    {
-                        props.items.map((x, index) => (<DropDownItemController key={index} item={x} index={index} props={props} state={state} />))
-                    }
-                </ScrollView>
+                <FlatList nestedScrollEnabled={true}
+                    style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
+                    renderItem={({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />)}
+                    data={props.items}
+                    keyExtractor={(item, index) => item.value + index}
+                    ref={c => state.refItems.scrollView = c as any} />
             </Component>
         </Container>
     )

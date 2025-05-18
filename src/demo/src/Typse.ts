@@ -373,6 +373,7 @@ export type ButtonGroupProps = StyledProps & {
     }
     isVertical?: boolean;
     scrollable?: boolean;
+    numColumns?: number;
 }
 
 export type ToolTipRef = {
