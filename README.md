@@ -23,7 +23,6 @@ here is a simple code that shows how it works.
 And now simple use your components
 in addition to all the `View` props,
 you can also use css.
-this code is for the above image.
 ```tsx
  import {
   ThemeContext,
@@ -121,9 +120,9 @@ export default function App() {
 
      <View css="button bac-red fld-column" ref={el}>
         <View css={x => x.cls("button").baC("$co-blue100")}>
-          <Text viewId='txt'>test</Text>
-          <Text viewId='txt'>test</Text>
-          <Text viewId='txt2' css="tea-center bac-red wi-100%" someattr="kaskdj">test2</Text>
+          <Text id='txt'>test</Text>
+          <Text id='txt'>test</Text>
+          <Text id='txt2' css="tea-center bac-red wi-100%" someattr="kaskdj">test2</Text>
         </View>
       </View>
     </ThemeContainer >
