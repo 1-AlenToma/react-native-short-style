@@ -12,7 +12,7 @@ export const ButtonGroupView = () => {
 
     return (
         <Block style={{ width: 300 }} title='ButtonGroup'>
-            <ButtonGroup onPress={(btns) => state.selectedButtons = btns} scrollable={true} isVertical={false} buttons={["Simple", "Button", "Group"]} selectedIndex={state.selectedButtons} />
+            <ButtonGroup onPress={(btns) => state.selectedButtons = btns} scrollable={false} componentType="ScrollView" isVertical={false} buttons={["Simple", "Button", "Group"]} selectedIndex={state.selectedButtons} />
         </Block>
     )
 }

@@ -337,6 +337,7 @@ export type DropdownListProps = StyledProps & {
     enableSearch?: boolean;
     textInputPlaceHolder?: string;
     onSearch?: (items: DropdownItem, txt: string) => boolean;
+    componentType?: "FlatList" | "ScrollView"; // Default is ScrollView
 }
 
 export type CollabseProps = StyledProps & {
@@ -374,6 +375,7 @@ export type ButtonGroupProps = StyledProps & {
     isVertical?: boolean;
     scrollable?: boolean;
     numColumns?: number;
+    componentType?: "FlatList" | "ScrollView"; // Default is ScrollView
 }
 
 export type ToolTipRef = {

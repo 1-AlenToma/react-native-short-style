@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TouchableOpacity, View, Text, FlatList, TextInput } from "./ReactNativeComponents";
+import { TouchableOpacity, View, Text, FlatList, ScrollView, TextInput } from "./ReactNativeComponents";
 import StateBuilder from "react-smart-state";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { DropdownItem, DropdownListProps, DropdownRefItem, ModalProps, Size } from "../Typse";
@@ -8,14 +8,12 @@ import { ActionSheet } from "./ActionSheet";
 import { Icon } from "./Icon";
 import { FormItem } from "./FormGroup";
 import { TabBar, TabView } from "./TabBar";
+import { useTimer } from "../hooks";
 
 const DropDownItemController = ({ item, index, state, props }: { props: DropdownListProps, item: DropdownItem, index: number, state: any }) => {
     const itemState = StateBuilder({
         selected: undefined as any
-    }).ignore("selected").build();
-    if (!(state.text == "" || props.onSearch?.(item, state.text) || item.label.toLowerCase().indexOf(state.text.toLowerCase()) != -1))
-        return null
-
+    }).ignore("selected").timeout(undefined).build();
     return (
         <TouchableOpacity onPress={() => {
             state.selectedValue = item.value;
@@ -23,6 +21,17 @@ const DropDownItemController = ({ item, index, state, props }: { props: Dropdown
             state.visible = false;
         }} onMouseEnter={() => itemState.selected = index}
             onMouseLeave={() => itemState.selected = undefined}
+            key={itemState.selected ?? -1 + index + "itemKey"}
+            onLayout={({ nativeEvent }) => {
+                if (props.componentType === "FlatList") {
+                    state.itemSizes[item.value] = nativeEvent.layout;
+                } else {
+                    state.itemSizes[item.value] = {
+                        width: nativeEvent.layout.width,
+                        height: nativeEvent.layout.height
+                    };
+                }
+            }}
             css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == itemState.selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>
             {
                 props.render ? props.render(item) : (
@@ -34,7 +43,7 @@ const DropDownItemController = ({ item, index, state, props }: { props: Dropdown
 }
 
 export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>((props, ref) => {
-
+    const timer = useTimer(800);
     const state = StateBuilder({
         visible: false,
         shadow: "",
@@ -42,24 +51,45 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         index: 0,
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
+        itemSizes: {} as {
+            [key: string]: Size
+        },
+        scrollToItem: () => {
+            timer(() => {
+                if (state.refItems.scrollView && props.selectedValue != undefined && selectedIndex >= 0) {
+                    if (props.componentType === "FlatList") {
+                        (state.refItems.scrollView as typeof FlatList).scrollToIndex({
+                            index: selectedIndex,
+                            animated: false
+                        })
+                    } else {
+                        if (selectedIndex >= 0) {
+                            const offset = selectedIndex * (state.itemSizes[props.selectedValue]?.height ?? 30); // Assuming each item has a height of 35
+                            (state.refItems.scrollView as typeof ScrollView).scrollTo({ y: offset, animated: false });
+                        }
+                    }
+                }
+            });
+        },
         refItems: {
-            scrollView: undefined as typeof FlatList | undefined
+            scrollView: undefined as typeof FlatList | typeof ScrollView | undefined
         }
-    }).ignore("refItems.scrollView").build();
+    }).ignore("refItems.scrollView", "propsSize", "itemSizes", "scrollToItem").build();
+
     const mode = props.mode ?? "Modal";
 
+    const items = props.items.filter((item) => (state.text == "" || props.onSearch?.(item, state.text) || item.label.toLowerCase().indexOf(state.text.toLowerCase()) != -1))
+    let selectedIndex = items.findIndex(x => x.value == state.selectedValue);
+
     state.useEffect(() => {
-        if (state.refItems.scrollView) {
-            state.refItems.scrollView.scrollToIndex({
-                index: props.items.findIndex(x => x.value == props.selectedValue),
-                animated: false
-            })
-        }
+        state.scrollToItem();
     }, "refItems.scrollView")
 
     state.useEffect(() => {
         if (!state.visible && state.text != "")
             state.text = "";
+        if (!state.visible)
+            state.refItems.scrollView = undefined;
     }, "visible")
 
     React.useEffect(() => {
@@ -91,6 +121,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         selectedTabIndex: state.visible ? 1 : 0,
         css: props.css
     } : {};
+
 
     if (ifSelector(props.ifTrue) == false)
         return null;
@@ -128,12 +159,20 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                         defaultValue={state.text}
                         onChangeText={txt => state.text = txt} />
                 </FormItem>
-                <FlatList nestedScrollEnabled={true}
-                    style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
-                    renderItem={({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />)}
-                    data={props.items}
-                    keyExtractor={(item, index) => item.value + index}
-                    ref={c => state.refItems.scrollView = c as any} />
+                {props.componentType !== "FlatList" ? (
+                    <ScrollView nestedScrollEnabled={true}
+                        style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
+                        ref={c => state.refItems.scrollView = c as any}>
+                        {items.map((item, index) => (<DropDownItemController item={item} index={index} props={props} state={state} key={item.value + index} />))}
+                    </ScrollView>
+                ) : (
+                    <FlatList nestedScrollEnabled={true}
+                        initialNumToRender={selectedIndex >= 0 ? Math.max(selectedIndex + 1, 100) : 100}
+                        style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
+                        renderItem={({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />)}
+                        data={items}
+                        keyExtractor={(item, index) => item.value + index}
+                        ref={c => state.refItems.scrollView = c as any} />)}
             </Component>
         </Container>
     )
