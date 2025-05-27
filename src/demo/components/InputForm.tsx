@@ -268,7 +268,7 @@ export const InputForm = () => {
                 <TextInput css="fl:1" />
             </FormItem>
             <FormItem title="Country" info="Select where you are from" icon={{ type: "AntDesign", name: "flag" }}>
-                <DropdownList mode="Modal" enableSearch={true} componentType="ScrollView" css="wi:100%"
+                <DropdownList mode="Modal" enableSearch={true} css="wi:100%"
                     selectedValue={state.selectedValue} onSelect={(value) => {
                         state.selectedValue = value.value
                     }}

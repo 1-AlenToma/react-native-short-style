@@ -1,4 +1,4 @@
-import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps } from "react-native";
+import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
@@ -9,9 +9,9 @@ type TextCustomInputProps = StyledProps & TextInputProps & {
     mode: "Outlined" | "Flat" | "Normal"
 }
 
-type ViewStyle = ReactNative.StyleProp<ReactNative.ViewStyle>;
+export type ViewStyle = ReactNative.StyleProp<ReactNative.ViewStyle>;
 
-type TextStyle = ReactNative.StyleProp<ReactNative.TextStyle>;
+export type TextStyle = ReactNative.StyleProp<ReactNative.TextStyle>;
 
 export type ConvertedElement = {
     querySelector: <T>(selector: string) => DomPath<T, unknown> | undefined;
@@ -337,7 +337,6 @@ export type DropdownListProps = StyledProps & {
     enableSearch?: boolean;
     textInputPlaceHolder?: string;
     onSearch?: (items: DropdownItem, txt: string) => boolean;
-    componentType?: "FlatList" | "ScrollView"; // Default is ScrollView
 }
 
 export type CollabseProps = StyledProps & {
@@ -375,7 +374,6 @@ export type ButtonGroupProps = StyledProps & {
     isVertical?: boolean;
     scrollable?: boolean;
     numColumns?: number;
-    componentType?: "FlatList" | "ScrollView"; // Default is ScrollView
 }
 
 export type ToolTipRef = {
@@ -452,3 +450,25 @@ export type ScrollMenuProps = StyledProps & {
     onChange?: (index: number) => void;
     scrollViewProps?: Omit<ScrollViewProps, "style" | "contentContainerStyle" | "horizontal">;
 }
+
+
+export type VirtualScrollerViewRefProps = {
+    scrollToIndex: (index: number, animated?: boolean) => void;
+}
+
+export type VirtualScrollerViewProps = {
+    items: any[];
+    renderItem?: (item: { item: any, index: number }) => React.ReactNode;
+    itemCss?: CSS_String;
+    horizontal?: boolean;
+    numColumns?: number;
+    showsVerticalScrollIndicator?: boolean;
+    showsHorizontalScrollIndicator?: boolean;
+    onEndReached?: () => void;
+    onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    onEndReachedThreshold?: number; // in pixels (default: 100)
+    keyExtractor?: (item: any) => string;
+    pagingEnabled?: boolean;
+    scrollEventThrottle?: number; // default 16
+    contentSizeTimer?: number; // default is 0, this is incase the scrollview is inside an animated view,it is smart to increase this to 200 or more
+} & StyledProps;

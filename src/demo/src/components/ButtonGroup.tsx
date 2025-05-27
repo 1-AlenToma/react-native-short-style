@@ -1,17 +1,17 @@
-import { View, Text, TouchableOpacity, FlatList, ScrollView } from "./ReactNativeComponents";
+import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
 import { useTimer } from "../hooks";
 import StateBuilder from "react-smart-state";
 import * as React from "react";
-import { ButtonGroupProps, Size } from "../Typse";
+import { ButtonGroupProps, Size, VirtualScrollerViewRefProps } from "../Typse";
+import { VirtualScroller } from "./VirtualScroller";
 
 
 export const ButtonGroup = (props: ButtonGroupProps) => {
     const state = StateBuilder({
         selectedIndex: props.selectedIndex,
-        scrollView: undefined as typeof FlatList | typeof ScrollView | undefined,
+        scrollView: undefined as VirtualScrollerViewRefProps | undefined,
         sizes: new Map<number, Size>()
     }).ignore("scrollView", "selectedIndex", "sizes").build();
-    const componentType = props.componentType === "FlatList" ? "FlatList" : "ScrollView";
     const timer = useTimer(500);
 
 
@@ -30,15 +30,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
     const scrollToItem = () => {
         timer(() => {
             if (state.scrollView && state.sizes.size > 0 && state.selectedIndex.length == 1) {
-                if (componentType === "FlatList") {
-                    if (props.isVertical)
-                        (state.scrollView as typeof FlatList).scrollToOffset({ offset: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.height : 0), 0), animated: false });
-                    else (state.scrollView as typeof FlatList).scrollToOffset({ offset: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.width : 0), 0), animated: false });
-                } else if (componentType === "ScrollView") {
-                    if (props.isVertical)
-                        (state.scrollView as typeof ScrollView).scrollTo({ y: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.height : 0), 0), animated: false });
-                    else (state.scrollView as typeof ScrollView).scrollTo({ x: [...state.sizes.values()].reduce((a, b, index) => a + (index < state.selectedIndex[0] ? b.width : 0), 0), animated: false });
-                }
+                state.scrollView.scrollToIndex(state.selectedIndex[0]);
             }
         });
     }
@@ -68,7 +60,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         )
     }
 
-    const Component = props.scrollable ? FlatList : View;
+
     const cProps = props.scrollable ? { contentContainerStyle: { flex: 0, flexGrow: 1 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }
     let numColumns = props.numColumns;
     if (numColumns === 0)
@@ -76,27 +68,15 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
     return (
         <View ifTrue={props.ifTrue} css={x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css)} style={props.style}>
             {props.scrollable ? (
-                componentType === "ScrollView" ? (
-                    <ScrollView
-                        {...cProps}
-                        horizontal={numColumns == undefined ? !props.isVertical : false}
-                        showsHorizontalScrollIndicator={false}
-                        showsVerticalScrollIndicator={false}
-                    >
-
-                        {props.buttons.map((x, index) => getItem(x, index))}
-                    </ScrollView>
-                ) : (
-                    <FlatList
-                        {...cProps}
-                        numColumns={numColumns}
-                        data={props.buttons}
-                        renderItem={({ item, index }) => getItem(item, index)}
-                        horizontal={numColumns == undefined ? !props.isVertical : false}
-                        keyExtractor={(item, index) => index.toString()}
-                        showsHorizontalScrollIndicator={false}
-                        showsVerticalScrollIndicator={false}
-                    />)
+                <VirtualScroller
+                    {...cProps}
+                    numColumns={numColumns}
+                    items={props.buttons}
+                    renderItem={({ item, index }) => getItem(item, index)}
+                    horizontal={numColumns == undefined ? !props.isVertical : false}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
+                />
             ) : (<View {...cProps}>
                 <View style={props.style} css={x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css)}>
                     {
