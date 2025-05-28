@@ -37,6 +37,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
 
     React.useEffect(() => {
         state.selectedIndex = props.selectedIndex;
+        scrollToItem();
         //state.scrollView = undefined;
     }, [props.selectedIndex])
 
@@ -73,9 +74,11 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                     numColumns={numColumns}
                     items={props.buttons}
                     renderItem={({ item, index }) => getItem(item, index)}
-                    horizontal={numColumns == undefined ? !props.isVertical : false}
+                    horizontal={!props.isVertical}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
+                    ref={c => state.scrollView = c}
+                    updateOn={state.selectedIndex}
                 />
             ) : (<View {...cProps}>
                 <View style={props.style} css={x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css)}>

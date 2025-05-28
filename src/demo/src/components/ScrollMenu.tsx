@@ -12,31 +12,33 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
         size: undefined as Size | undefined,
         scrollView: undefined as typeof AnimatedScrollView | undefined,
         private: {
-            scrollEnabled:true
+            scrollEnabled: true
         },
     }).ignore("size", "scrollView", "private").build();
     const timer = useTimer(300);
     const scrollToTimer = useTimer(100);
-
     const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        let offset = event.nativeEvent.contentOffset;
-        if (!state.scrollView || !state.private.scrollEnabled)
-            return;
+        if (!state.scrollView || !state.private.scrollEnabled) return;
 
-        props.scrollViewProps?.onScroll?.(event)
+
+        props.scrollViewProps?.onScroll?.(event);
+
         timer(() => {
+            const offset = event.nativeEvent.contentOffset;
+            const containerSize = props.horizontal ? state.size.width : state.size.height;
+            if (!containerSize || containerSize <= 0) return;
 
-            let selectedIndex = props.horizontal ? parseInt((offset.x / state.size.width).toString()) : parseInt((offset.y / state.size.height).toString())
+            const rawIndex = props.horizontal ? offset.x / containerSize : offset.y / containerSize;
+            const selectedIndex = Math.round(rawIndex); // or Math.round(rawIndex) for more intuitive snapping
 
-
-            if (state.selectedIndex != selectedIndex)
+            if (state.selectedIndex !== selectedIndex) {
                 state.selectedIndex = selectedIndex;
-
+            }
         });
-    }
+    };
 
     const scrollto = (animate: boolean = true) => {
-     //   state.private.scrollEnabled = false;
+        //   state.private.scrollEnabled = false;
         scrollToTimer(() => {
             if (!state.scrollView)
                 return;

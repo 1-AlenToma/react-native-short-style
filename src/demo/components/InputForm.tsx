@@ -254,7 +254,7 @@ const countries = [
 export const InputForm = () => {
     const state = StateBuilder({
         checkBoxes: [true, false],
-        selectedValue: countries[countries.length - 1].value // Default to the last country
+        selectedValue: countries[countries.length - 100].value // Default to the last country
     }).build();
     return (
         <FormGroup css={"maw-300"} formStyle="Headless" labelPosition="Top" title='User-Form'>

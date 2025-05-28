@@ -56,16 +56,12 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         refItems: {
             scrollView: undefined as VirtualScrollerViewRefProps | undefined
         }
-    }).ignore("refItems.scrollView", "propsSize", "itemSizes", "scrollToItem").build();
+    }).ignore("refItems", "propsSize", "itemSizes", "scrollToItem").build();
 
     const mode = props.mode ?? "Modal";
 
     const items = props.items.filter((item) => (state.text == "" || props.onSearch?.(item, state.text) || item.label.toLowerCase().indexOf(state.text.toLowerCase()) != -1))
     let selectedIndex = items.findIndex(x => x.value == state.selectedValue);
-
-    state.useEffect(() => {
-        state.scrollToItem(selectedIndex);
-    }, "refItems.scrollView")
 
     state.useEffect(() => {
         if (!state.visible && state.text != "")
@@ -144,12 +140,16 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                 <VirtualScroller
                     contentSizeTimer={200}
                     horizontal={false}
-                    scrollEventThrottle={5}
+                    numColumns={undefined}
+                    scrollEventThrottle={16}
                     keyExtractor={(item) => item.value}
                     style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
                     renderItem={({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />)}
                     items={items}
-                    ref={c => state.refItems.scrollView = c as any} />
+                    ref={c => {
+                        state.refItems.scrollView = c as any;
+                        state.scrollToItem(selectedIndex);
+                    }} />
             </Component>
         </Container>
     )

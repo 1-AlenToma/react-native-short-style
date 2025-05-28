@@ -471,4 +471,5 @@ export type VirtualScrollerViewProps = {
     pagingEnabled?: boolean;
     scrollEventThrottle?: number; // default 16
     contentSizeTimer?: number; // default is 0, this is incase the scrollview is inside an animated view,it is smart to increase this to 200 or more
+    updateOn?: any[]; // refresh the scrollView when those items change
 } & StyledProps;
