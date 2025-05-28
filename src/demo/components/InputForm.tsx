@@ -2,7 +2,7 @@ import StateBuilder from "react-smart-state"
 import { CheckBox, CheckBoxList, DropdownList, FormItem, TextInput, FormGroup } from "../src"
 import { Block } from "./Block"
 
-const countries = [
+let countries = [
     { name: 'Afghanistan', code: 'AF' },
     { name: 'Åland Islands', code: 'AX' },
     { name: 'Albania', code: 'AL' },
@@ -251,6 +251,8 @@ const countries = [
     value: index
 }));
 
+//countries = Array.from({ length: 1000 }).map((x, i) => ({ label: "namn " + i, value: i }))
+
 export const InputForm = () => {
     const state = StateBuilder({
         checkBoxes: [true, false],
@@ -268,7 +270,7 @@ export const InputForm = () => {
                 <TextInput css="fl:1" />
             </FormItem>
             <FormItem title="Country" info="Select where you are from" icon={{ type: "AntDesign", name: "flag" }}>
-                <DropdownList mode="Modal" enableSearch={true} css="wi:100%"
+                <DropdownList itemSize={35} mode="Modal" enableSearch={true} css="wi:100%"
                     selectedValue={state.selectedValue} onSelect={(value) => {
                         state.selectedValue = value.value
                     }}

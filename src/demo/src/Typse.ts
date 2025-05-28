@@ -337,6 +337,8 @@ export type DropdownListProps = StyledProps & {
     enableSearch?: boolean;
     textInputPlaceHolder?: string;
     onSearch?: (items: DropdownItem, txt: string) => boolean;
+    itemSize?: number; // for bigData set itemSize for dynamic rendering, much faster
+    numColumns?: number;
 }
 
 export type CollabseProps = StyledProps & {
@@ -459,9 +461,16 @@ export type VirtualScrollerViewRefProps = {
 export type VirtualScrollerViewProps = {
     items: any[];
     renderItem?: (item: { item: any, index: number }) => React.ReactNode;
+    onItemPress?: (item: { item: any, index: number }) => void | Promise<void>;
+    onItemLayout?: (nativeEvent: ReactNative.LayoutChangeEvent, item: any) => void;
+
     itemCss?: CSS_String;
     horizontal?: boolean;
     numColumns?: number;
+    itemSize?: {
+        size: number;
+        overscanCount?: number; // default 30 this is so there is no lags 
+    }; // for bigData set itemSize for dynamic rendering, much faster
     showsVerticalScrollIndicator?: boolean;
     showsHorizontalScrollIndicator?: boolean;
     onEndReached?: () => void;

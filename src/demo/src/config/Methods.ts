@@ -7,7 +7,7 @@ import { PlatformStyleSheet } from "../theme/PlatformStyles";
 import React from "react";
 
 
-export const RemoveProps = <T extends object>(props: T, ...items:( keyof T)[]) => {
+export const RemoveProps = <T extends object>(props: T, ...items: (keyof T)[]) => {
     items.forEach(x => {
         if (x in props)
             delete props[x]
@@ -120,6 +120,8 @@ export const setRef = (ref: any, item: any) => {
         ref(item);
     else if ("current" in ref)
         ref.current = item;
+    else if (typeof ref == "object")
+        Object.keys(item).forEach(x => ref[x] = item[x]);
 }
 
 export const refCreator = function <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any) {

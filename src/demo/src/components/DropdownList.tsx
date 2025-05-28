@@ -14,23 +14,15 @@ import { VirtualScroller } from "./VirtualScroller";
 const DropDownItemController = ({ item, index, state, props }: { props: DropdownListProps, item: DropdownItem, index: number, state: any }) => {
     const [selected, setSelected] = React.useState<number | undefined>(undefined);
     return (
-        <TouchableOpacity onPress={() => {
-            state.selectedValue = item.value;
-            props.onSelect?.(item);
-            state.visible = false;
-        }} onMouseEnter={() => setSelected(index)}
+        <View onMouseEnter={() => setSelected(index)}
             onMouseLeave={() => setSelected(undefined)}
-            key={index + "itemKey"}
-            onLayout={({ nativeEvent }) => {
-                state.itemSizes[item.value] = nativeEvent.layout;
-            }}
             css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>
             {
                 props.render ? props.render(item) : (
                     <Text css={`fos-sm ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>{item.label}</Text>
                 )
             }
-        </TouchableOpacity>
+        </View>
     )
 }
 
@@ -43,20 +35,15 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         index: 0,
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
-        itemSizes: {} as {
-            [key: string]: Size
-        },
         scrollToItem: (selectedIndex: number) => {
-            timer(() => {
-                if (state.refItems.scrollView && props.selectedValue != undefined && selectedIndex >= 0) {
-                    state.refItems.scrollView.scrollToIndex(selectedIndex, false)
-                }
-            });
+            if (state.refItems.scrollView && props.selectedValue != undefined && selectedIndex >= 0) {
+                state.refItems.scrollView.scrollToIndex(selectedIndex, false)
+            }
         },
         refItems: {
             scrollView: undefined as VirtualScrollerViewRefProps | undefined
         }
-    }).ignore("refItems", "propsSize", "itemSizes", "scrollToItem").build();
+    }).ignore("refItems", "propsSize", "scrollToItem").build();
 
     const mode = props.mode ?? "Modal";
 
@@ -128,19 +115,25 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
             </Selector>
             <Component {...componentsProps}>
                 <Text css="fos-lg fow:bold co:#CCC mab:5" ifTrue={props.placeHolder != undefined}>{props.placeHolder}</Text>
-                <FormItem css="mat-10" ifTrue={props.enableSearch == true} labelPosition="Left"
-                    icon={{ type: "Ionicons", name: "search", css: "co:#CCC" }}>
+                <View css="_formItemCenter _formItemCenterLeft mat-10 maw-95% mah-40 fld-row ali-center" ifTrue={props.enableSearch == true}>
+                    <Icon type="Ionicons" name="search" css="co-#ccc fos-25" />
                     <TextInput
-                        css="mab:5 pa:5 bow:.5 boc:#CCC"
+                        css="mab:5 pa:5 bow:.5 boc:#CCC wi-90%"
                         placeholderTextColor={"#CCC"}
                         placeholder={props.textInputPlaceHolder ?? "Search here..."}
                         defaultValue={state.text}
                         onChangeText={txt => state.text = txt} />
-                </FormItem>
+                </View>
                 <VirtualScroller
                     contentSizeTimer={200}
                     horizontal={false}
-                    numColumns={undefined}
+                    onItemPress={({ item }) => {
+                        state.selectedValue = item.value;
+                        props.onSelect?.(item);
+                        state.visible = false;
+                    }}
+                    numColumns={props.numColumns}
+                    itemSize={{ size: props.itemSize }}
                     scrollEventThrottle={16}
                     keyExtractor={(item) => item.value}
                     style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
