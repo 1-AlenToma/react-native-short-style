@@ -91,7 +91,7 @@ const VirtualScrollerView = React.memo(({ startIndex }: { startIndex: number }) 
     if (!renderedItem.current)
         renderedItem.current = row.items.map((item, i) => {
             const index = startIndex + i;
-            return <Container {...containerProps} key={index}>{context.props.renderItem({ item, index })}</Container>;
+            return <Container {...containerProps} key={context.props.keyExtractor?.(item, index) ?? index}>{context.props.renderItem({ item, index })}</Container>;
         })
 
     return (

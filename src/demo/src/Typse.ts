@@ -467,7 +467,7 @@ export type VirtualScrollerViewProps = {
     onEndReached?: () => void;
     onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onEndReachedThreshold?: number; // in pixels (default: 100)
-    keyExtractor?: (item: any) => string;
+    keyExtractor?: (item: any, index: number) => string;
     pagingEnabled?: boolean;
     scrollEventThrottle?: number; // default 16
     contentSizeTimer?: number; // default is 0, this is incase the scrollview is inside an animated view,it is smart to increase this to 200 or more
