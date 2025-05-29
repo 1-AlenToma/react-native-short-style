@@ -83,11 +83,7 @@ export default function App() {
 
   let el = useRef<DomPath<typeof View, any> | undefined>()
 
-  useEffect(() => {
-    if (el.current) {
-      console.warn("Found item", el.current.querySelectorAll<HTMLDivElement>(".button > text:first-child"))
-    }
-  }, [el.current])
+
   const debug = false;
   return (
     <ThemeContainer icons={icons} referers={[{

@@ -3,7 +3,10 @@ import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
 
-
+export type VirtualItemSize = {
+    size: number | "EstimatedItemSize";
+    overscanCount?: number; // default 30 this is so there is no lags 
+};
 
 type TextCustomInputProps = StyledProps & TextInputProps & {
     mode: "Outlined" | "Flat" | "Normal"
@@ -333,11 +336,11 @@ export type DropdownListProps = StyledProps & {
     mode?: "Modal" | "ActionSheet" | "Fold",
     placeHolder?: string;
     selectedItemCss?: string;
-    size?: Percentage;
+    size?: Percentage; // for Modal or ActionSheet mode
     enableSearch?: boolean;
     textInputPlaceHolder?: string;
     onSearch?: (items: DropdownItem, txt: string) => boolean;
-    itemSize?: number; // for bigData set itemSize for dynamic rendering, much faster
+    itemSize?: VirtualItemSize; // for bigData set itemSize for dynamic rendering, much faster
     numColumns?: number;
 }
 
@@ -373,6 +376,7 @@ export type ButtonGroupProps = StyledProps & {
         text?: string | ViewStyle;
         container?: string | ViewStyle;
     }
+    itemSize?: VirtualItemSize;
     isVertical?: boolean;
     scrollable?: boolean;
     numColumns?: number;
@@ -458,19 +462,18 @@ export type VirtualScrollerViewRefProps = {
     scrollToIndex: (index: number, animated?: boolean) => void;
 }
 
+
+
 export type VirtualScrollerViewProps = {
     items: any[];
     renderItem?: (item: { item: any, index: number }) => React.ReactNode;
     onItemPress?: (item: { item: any, index: number }) => void | Promise<void>;
     onItemLayout?: (nativeEvent: ReactNative.LayoutChangeEvent, item: any) => void;
 
-    itemCss?: CSS_String;
+    itemStyle?: ViewStyle;
     horizontal?: boolean;
     numColumns?: number;
-    itemSize?: {
-        size: number;
-        overscanCount?: number; // default 30 this is so there is no lags 
-    }; // for bigData set itemSize for dynamic rendering, much faster
+    itemSize?: VirtualItemSize; // for bigData set itemSize for dynamic rendering, much faster
     showsVerticalScrollIndicator?: boolean;
     showsHorizontalScrollIndicator?: boolean;
     onEndReached?: () => void;
@@ -481,4 +484,4 @@ export type VirtualScrollerViewProps = {
     scrollEventThrottle?: number; // default 16
     contentSizeTimer?: number; // default is 0, this is incase the scrollview is inside an animated view,it is smart to increase this to 200 or more
     updateOn?: any[]; // refresh the scrollView when those items change
-} & StyledProps;
+} & Omit<StyledProps, "css">;

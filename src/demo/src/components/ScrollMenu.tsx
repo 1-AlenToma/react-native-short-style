@@ -20,11 +20,11 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
     const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (!state.scrollView || !state.private.scrollEnabled) return;
 
-
+        const { contentOffset } = event.nativeEvent;
         props.scrollViewProps?.onScroll?.(event);
 
         timer(() => {
-            const offset = event.nativeEvent.contentOffset;
+            const offset = contentOffset;
             const containerSize = props.horizontal ? state.size.width : state.size.height;
             if (!containerSize || containerSize <= 0) return;
 

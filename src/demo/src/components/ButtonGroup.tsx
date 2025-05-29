@@ -72,6 +72,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                 <VirtualScroller
                     {...cProps}
                     numColumns={numColumns}
+                    itemSize={props.itemSize}
                     items={props.buttons}
                     renderItem={({ item, index }) => getItem(item, index)}
                     horizontal={!props.isVertical}

@@ -1,4 +1,4 @@
 export * from "./useAnimate";
 export * from "./useTimer";
-export * from "./useAsyncMemo";
+export * from "./useDeferredMemo";
 export * from "./useSubscriber";

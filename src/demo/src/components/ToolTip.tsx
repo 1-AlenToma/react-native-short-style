@@ -5,7 +5,7 @@ import { AlertViewFullProps, AlertViewProps, Size, ToastProps, ToolTipProps, Too
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "react-smart-state";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
-import * as Native from "react-native"
+
 import { Blur } from "./Blur";
 import { useTimer } from "../hooks";
 
@@ -17,7 +17,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     const state = StateBuilder({
         visible: false,
         id: newId(),
-        ref: undefined as Native.TouchableOpacity | undefined,
+        ref: undefined as any | undefined,
         pos: undefined as Size | undefined,
         toolTipSize: undefined as Size | undefined
     }).ignore("ref", "pos", "toolTipSize").build();

@@ -27,7 +27,6 @@ const DropDownItemController = ({ item, index, state, props }: { props: Dropdown
 }
 
 export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>((props, ref) => {
-    const timer = useTimer(1);
     const state = StateBuilder({
         visible: false,
         shadow: "",
@@ -133,7 +132,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                         state.visible = false;
                     }}
                     numColumns={props.numColumns}
-                    itemSize={{ size: props.itemSize }}
+                    itemSize={props.itemSize}
                     scrollEventThrottle={16}
                     keyExtractor={(item) => item.value}
                     style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
