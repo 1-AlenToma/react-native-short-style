@@ -103,7 +103,7 @@ export const CheckBoxList = (props: CheckBoxListProps) => {
 }
 
 export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         id: newId(),
         checked: props.checked,
         isInit: false,
@@ -111,7 +111,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             working: false,
             prev: props.checked,
         }
-    }).ignore("refItem").build();
+    })).ignore("refItem").build();
 
     const context = React.useContext<CheckBoxListContext>(CheckBoxContext);
     const checkBoxType = context.checkBoxListProps.checkBoxType ?? props.checkBoxType ?? "CheckBox";

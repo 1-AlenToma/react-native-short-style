@@ -1,15 +1,12 @@
-import cssTranslator, { serilizeCssStyle, clearCss } from "./cssTranslator";
+import cssTranslator from "./cssTranslator";
 import NestedStyleSheet from "./NestedStyleSheet";
 import * as React from "react";
 import * as reactNative from "react-native";
-import { ifSelector, newId, currentTheme, refCreator, setRef, hasString, eqString, HElement } from "../config";
+import { ifSelector, newId, currentTheme, refCreator, setRef, HElement } from "../config";
 import { ThemeContext, globalData } from "../theme/ThemeContext";
 import { ButtonProps, DomPath, InternalStyledProps, StyledProps } from "../Typse";
 import { CSSStyle, CSSProps } from "./CSSStyle";
-import { extractProps, ValueIdentity } from "../config/CSSMethods";
-
-
-
+import { ValueIdentity } from "../config/CSSMethods";
 
 function assignRf(item: DomPath<any, InternalStyledProps>, props: InternalStyledProps): DomPath<any, any> {
   item._elemntsProps = props;

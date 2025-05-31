@@ -15,11 +15,11 @@ import { Blur } from "./Blur";
 export const Fab = (props: FabProps) => {
     let context = React.useContext(InternalThemeContext);
     const { animateY, animate, currentValue } = useAnimate();
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         visible: false,
         id: newId(),
         size: undefined as Size | undefined
-    }).ignore("size").build();
+    })).ignore("size").build();
 
     if (props.follow == "Window")
         globalData.hook("window");

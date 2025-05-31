@@ -17,12 +17,12 @@ export const ToastView = () => {
     data.position = data.position ?? "Top";
     const context = React.useContext(InternalThemeContext);
     const timer = useTimer(100);
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         size: undefined as Size,
         id: newId(),
         counter: 0,
         visible: false
-    }).ignore("id").build();
+    })).ignore("id").build();
     let fn = data.message ? context.add.bind(context) : context.remove.bind(context);
     let interpolate = [0, 1];
 

@@ -100,6 +100,9 @@ export const newId = (inc?: string): string => {
     if (ids.has(id)) {
         return (newId(id) as string);
     }
+
+    if (ids.size >= 1000)
+        ids = new Map();
     ids.set(id, id);
     return id;
 }

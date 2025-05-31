@@ -16,16 +16,16 @@ const ScrollContext = React.createContext<{
     itemSize?: number;
     props: VirtualScrollerViewProps;
     itemRows: Map<number, any[]>;
-    subscribers: {
-        scrollOffset: { listen: (validator?: (newValue: number) => boolean) => number },
-    }
 
 }>(null!);
 
 const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, children: any }) => {
     const context = React.useContext(ScrollContext);
 
-    const scrollOffset = context.subscribers.scrollOffset.listen();
+    //const scrollOffset = context.subscribers.scrollOffset.listen();
+
+    context.parentState.localBind("refItems.scrollOffset");
+    const scrollOffset = context.parentState.refItems.scrollOffset;
     const numColumns = context.props.numColumns ?? 1;
     const rowIndex = Math.floor(startIndex / numColumns);
     const isHorizontal = context.props.horizontal;
@@ -160,20 +160,17 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
     const scrollToIndexTimer = useTimer(10);
     const numColumns = props.numColumns ?? 1;
 
-    const subscribers = {
-        scrollOffset: useSubscriber(0),
-    };
-
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         containerSize: undefined as Size | undefined,
         estimatedItemSize: props.itemSize?.size != undefined && typeof props.itemSize?.size == "number" ? props.itemSize.size : 0,
         itemSizes: {} as Record<number, Size>,
         scrollSettings: {} as ScrollSettings,
         id: newId(),
         refItems: {
-            scrollView: undefined as ScrollView | undefined
+            scrollView: undefined as ScrollView | undefined,
+            scrollOffset: 0
         }
-    }).ignore("refItems", "containerSize", "scrollSettings", "itemSizes").build();
+    })).ignore("refItems", "containerSize", "scrollSettings", "itemSizes").build();
 
 
     globalData.useEffect(() => {
@@ -237,6 +234,11 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
 
 
     const rowCount = Math.ceil(props.items.length / numColumns);
+    const contentContainerStyle = React.useMemo(() => ({
+        minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
+        minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
+        flexDirection: props.horizontal ? "row" : "column",
+    } as ViewStyle), [state.estimatedItemSize, rowCount, props.horizontal]);
     if (ifSelector(props.ifTrue) == false)
         return null;
     return (
@@ -244,8 +246,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
             parentState: state,
             itemRows: itemRows?.rows ?? new Map(),
             props,
-            itemSize,
-            subscribers
+            itemSize
         }}>
             <ScrollView
                 key={state.id}
@@ -254,18 +255,13 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 horizontal={props.horizontal}
                 ref={c => state.refItems.scrollView = c as any}
                 scrollEventThrottle={props.scrollEventThrottle ?? 16}
-                contentContainerStyle={React.useMemo(() => ({
-                    minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
-                    minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
-                    flexDirection: props.horizontal ? "row" : "column",
-                }), [state.estimatedItemSize, rowCount, props.horizontal])}
+                contentContainerStyle={contentContainerStyle}
                 pagingEnabled={props.pagingEnabled}
                 onScroll={event => {
                     const { nativeEvent } = event;
                     if (state.containerSize) {
-
                         const scrollValue = props.horizontal ? nativeEvent.contentOffset.x : nativeEvent.contentOffset.y;
-                        subscribers.scrollOffset.setValue(scrollValue);
+                        state.refItems.scrollOffset = scrollValue;
                         props.onScroll?.(event);
                         const {
                             contentSize,

@@ -233,7 +233,7 @@ export const TabBar = (props: TabBarProps) => {
     const menuAnimation = useAnimate();
     const temp = {};
     temp[props.selectedTabIndex ?? 0] = true;
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         size: { width: globalData.window.width, height: globalData.window.height } as Size,
         index: props.selectedTabIndex ?? 0,
         refItem: {
@@ -247,7 +247,7 @@ export const TabBar = (props: TabBarProps) => {
             panResponse: undefined
         }
 
-    }).ignore("refItem").build();
+    })).ignore("refItem").build();
     globalData.hook("window");
     const getWidth = (index: number) => {
         let v = index * (state.size.width ?? globalData.window.width);

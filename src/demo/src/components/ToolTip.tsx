@@ -14,13 +14,13 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         return null;
     const context = React.useContext(InternalThemeContext);
     globalData.hook("window")
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         visible: false,
         id: newId(),
         ref: undefined as any | undefined,
         pos: undefined as Size | undefined,
         toolTipSize: undefined as Size | undefined
-    }).ignore("ref", "pos", "toolTipSize").build();
+    })).ignore("ref", "pos", "toolTipSize").build();
     const timer = useTimer(100)
 
     const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);

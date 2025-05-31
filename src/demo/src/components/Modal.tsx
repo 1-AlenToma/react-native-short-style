@@ -17,10 +17,10 @@ export const Modal = (props: ModalProps) => {
         speed: props.speed ?? 200,
     });
 
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         isVisible: undefined,
         id: newId()
-    }).build();
+    })).build();
 
     let toggle = async (
         show: boolean

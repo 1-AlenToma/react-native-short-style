@@ -9,9 +9,9 @@ import * as React from "react";
 import { PortalProps } from "../Typse";
 
 export const Portal = (props: PortalProps) => {
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         id: newId()
-    }).build();
+    })).build();
     const context = React.useContext(InternalThemeContext);
 
 

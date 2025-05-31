@@ -20,7 +20,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
     globalData.hook("containerSize")
     let position = props.position ?? "Bottom";
     const isVertical = ["Top", "Bottom"].includes(position);
-    const state = StateBuilder({
+    const state = StateBuilder(() => ({
         id: newId(),
         size: undefined as Size | undefined,
         refItem: {
@@ -31,7 +31,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
             interpolate: [],
             show: false
         }
-    }).ignore("refItem").build();
+    })).ignore("refItem").build();
 
 
     let getHeight = () => {
@@ -97,8 +97,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
     }
 
     let toggle = async (show: boolean) => {
-        if (animating.isAnimating)
-            return;
+        //  if (animating.isAnimating)
+        //    return;
         if (!state.refItem.isVisible && show) {
             state.refItem.isVisible = props.isVisible;
             renderUpdate();
