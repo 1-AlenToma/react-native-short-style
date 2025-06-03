@@ -20,7 +20,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         ref: undefined as any | undefined,
         pos: undefined as Size | undefined,
         toolTipSize: undefined as Size | undefined
-    })).ignore("ref", "pos", "toolTipSize").build();
+    })).timeout(100).ignore("ref", "pos", "toolTipSize").build();
     const timer = useTimer(100)
 
     const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);

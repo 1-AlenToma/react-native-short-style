@@ -47,7 +47,7 @@ const StaticView = () => {
     const context = React.useContext(InternalThemeContext);
     const state = StateBuilder({
         updater: ""
-    }).build();
+    }).timeout(10).build();
 
     context.onStaticItemsChange = () => {
         state.updater = newId();
@@ -70,7 +70,7 @@ const ThemeInternalContainer = ({ children }: any) => {
         items: new Map<string, { el: any, onchange: Function }>(),
         staticItems: new Map<string, { el: any, onchange: Function }>(),
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
-    }).ignore("items", "containerSize", "staticItems").build();
+    }).timeout(0).ignore("items", "containerSize", "staticItems").build();
 
     const contextValue = {
         add: (id: string, element: React.ReactNode, isStattic?: boolean) => {
@@ -156,7 +156,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
     const state = StateBuilder({
         selectedIndex: props.selectedIndex
-    }).build();
+    }).timeout(0).build();
     React.useEffect(() => {
         let events = globalData.appStart();
         if (props.storage)
