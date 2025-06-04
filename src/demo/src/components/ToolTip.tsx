@@ -91,7 +91,10 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     ))
     const style = optionalStyle(props.containerStyle);
     return (
-        <TouchableOpacity ref={c => state.ref = c as any} onPress={() => {
+        <TouchableOpacity ref={c => {
+            if (c !== state.ref)
+                state.ref = c
+        }} onPress={() => {
             state.visible = !state.visible;
         }} style={[style.o]} css={x => x.joinRight(style.c)}>
             {props.children}

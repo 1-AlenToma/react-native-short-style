@@ -258,7 +258,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     }
     return false
   }
-
+  myRef = null;
   constructor(props) {
     super(props);
     this.refItem = {
@@ -269,6 +269,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
       currentStyle: currentTheme(props.themeContext),
       init: false
     }
+    this.myRef = React.createRef();
   }
 
   getContext() {
@@ -360,16 +361,20 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
           viewPath={this.props.viewPath}
           {...rProps}
           ref={(c) => {
+            if (c === null)
+              return;
+            if (c === this.myRef) {
+              return;
+            }
+            this.myRef = c;
             try {
-              if (c) {
-                if (reactNative.Platform.OS != "web") {
-                  let item = assignRf((c ?? {}) as DomPath<any, any>,
-                    { ...rProps, css: this.refItem.contextValue.getCss() });
-                  this.refItem.contextValue.setViews(item);
-                  context?.registerView?.(item);// to parent
-                  setRef(this.props.cRef, item);
-                } else setRef(this.props.cRef, c);
-              } else setRef(this.props.cRef, null);
+              if (reactNative.Platform.OS != "web") {
+                let item = assignRf((c ?? {}) as DomPath<any, any>,
+                  { ...rProps, css: this.refItem.contextValue.getCss() });
+                this.refItem.contextValue.setViews(item);
+                context?.registerView?.(item);// to parent
+                setRef(this.props.cRef, item);
+              } else setRef(this.props.cRef, c);
             } catch (e) {
               console.error(e)
             }

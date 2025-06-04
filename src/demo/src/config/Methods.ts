@@ -116,11 +116,11 @@ export class AlertDialog {
 export const setRef = (ref: any, item: any) => {
     if (!ref)
         return;
-    if (typeof ref == "function")
+    if (typeof ref === "function")
         ref(item);
     else if ("current" in ref)
         ref.current = item;
-    else if (typeof ref == "object")
+    else if (ref && typeof ref === "object")
         Object.keys(item).forEach(x => ref[x] = item[x]);
 }
 
