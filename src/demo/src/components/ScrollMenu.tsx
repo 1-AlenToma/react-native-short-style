@@ -1,4 +1,4 @@
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { ScrollMenuProps, Size } from "../Typse";
 import { View, AnimatedScrollView } from "./ReactNativeComponents";
 import * as React from "react";

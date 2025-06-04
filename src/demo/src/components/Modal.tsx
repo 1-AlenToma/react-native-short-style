@@ -2,7 +2,7 @@ import * as React from "react";
 import { AnimatedView, TouchableOpacity, View } from "./ReactNativeComponents";
 import { InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { Easing, Platform, ViewStyle } from "react-native";
 import { newId, optionalStyle } from "../config";
 import { ModalProps } from "../Typse";

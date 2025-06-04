@@ -1,5 +1,5 @@
 import * as React from "react";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { CheckBoxListProps, CheckBoxProps } from "../Typse";
 import { FormGroup } from "./FormGroup";
 import { View, Text, TouchableOpacity, AnimatedView } from "./ReactNativeComponents";

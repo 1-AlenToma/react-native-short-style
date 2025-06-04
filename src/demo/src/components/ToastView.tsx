@@ -1,9 +1,8 @@
 import * as React from "react";
 import { View, Text, AnimatedView } from "./ReactNativeComponents";
-import { Button } from "./Button";
-import { AlertViewFullProps, AlertViewProps, CSS_String, Size, ToastProps } from "../Typse";
+import { CSS_String, Size, ToastProps } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { newId } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";

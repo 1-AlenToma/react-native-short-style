@@ -1,10 +1,10 @@
 
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { View, AnimatedView } from "./ReactNativeComponents";
 import * as React from "react";
 import {
     useAnimate
 } from "../hooks";
-import { ifSelector, optionalStyle, proc, readAble } from "../config";
+import { proc } from "../config";
 import { ProgressBarProps, Size } from "../Typse";
 import { Blur } from "./Blur";
 

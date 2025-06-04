@@ -1,7 +1,7 @@
-import { TouchableOpacity, Text, View } from "./ReactNativeComponents";
+import { TouchableOpacity, Text } from "./ReactNativeComponents";
 import * as React from "react";
 import { ButtonProps } from "../Typse";
-import { ifSelector, optionalStyle, RemoveProps } from "../config";
+import { ifSelector, RemoveProps } from "../config";
 import { useTimer } from "../hooks";
 
 export const Button = (props: ButtonProps) => {

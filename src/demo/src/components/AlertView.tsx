@@ -3,7 +3,7 @@ import { View, Text } from "./ReactNativeComponents";
 import { Button } from "./Button";
 import { AlertViewFullProps, AlertViewProps } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { Modal } from "./Modal";
 
 export const AlertView = () => {

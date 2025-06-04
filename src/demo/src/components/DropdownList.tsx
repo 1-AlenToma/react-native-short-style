@@ -1,14 +1,12 @@
 import * as React from "react";
-import { TouchableOpacity, View, Text, FlatList, ScrollView, TextInput } from "./ReactNativeComponents";
-import StateBuilder from "react-smart-state";
-import { ifSelector, newId, optionalStyle, setRef } from "../config";
+import { TouchableOpacity, View, Text, TextInput } from "./ReactNativeComponents";
+import StateBuilder from "../States";
+import { ifSelector, optionalStyle, setRef } from "../config";
 import { DropdownItem, DropdownListProps, DropdownRefItem, VirtualScrollerViewRefProps, Size } from "../Typse";
 import { Modal } from "./Modal";
 import { ActionSheet } from "./ActionSheet";
 import { Icon } from "./Icon";
-import { FormItem } from "./FormGroup";
 import { TabBar, TabView } from "./TabBar";
-import { useTimer } from "../hooks";
 import { VirtualScroller } from "./VirtualScroller";
 
 const DropDownItemController = ({ item, index, state, props }: { props: DropdownListProps, item: DropdownItem, index: number, state: any }) => {

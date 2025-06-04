@@ -30,7 +30,7 @@ import {
   FormItem,
   TextInput,
 } from './src';
-import buildState from "react-smart-state";
+import buildState from "./src/States";
 import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';

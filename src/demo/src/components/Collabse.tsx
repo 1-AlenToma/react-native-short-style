@@ -2,12 +2,9 @@ import * as React from "react";
 import { AnimatedView, TouchableOpacity, View, Text, ScrollView, TextInput } from "./ReactNativeComponents";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
-import StateBuilder from "react-smart-state";
-import { ViewStyle } from "react-native";
-import { ifSelector, newId, optionalStyle, setRef } from "../config";
-import { CollabseProps, DropdownItem, DropdownListProps, DropdownRefItem, ModalProps } from "../Typse";
-import { Modal } from "./Modal";
-import { ActionSheet } from "./ActionSheet";
+import StateBuilder from "../States";
+import { ifSelector, setRef } from "../config";
+import { CollabseProps, DropdownRefItem } from "../Typse";
 import { Icon } from "./Icon";
 import * as ReactNtive from "react-native";
 

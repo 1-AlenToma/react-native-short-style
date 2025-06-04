@@ -1,14 +1,13 @@
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView, Slider } from "./ReactNativeComponents";
+import { View, Text, Slider } from "./ReactNativeComponents";
 import * as React from "react";
 import {
-    useAnimate,
     useTimer
 } from "../hooks";
-import { ifSelector, optionalStyle, proc, readAble } from "../config";
-import { CSS_String, Size, StyledProps } from "../Typse";
+import { ifSelector, readAble } from "../config";
+import { CSS_String } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from './Icon';
-import StateBuilder from 'react-smart-state';
+import StateBuilder from '../States';
 import { ViewStyle } from 'react-native';
 import * as NativeSlider from '@miblanchard/react-native-slider';
 import { globalData } from "../theme/ThemeContext";

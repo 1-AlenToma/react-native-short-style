@@ -1,17 +1,15 @@
 import * as React from "react";
-import { View, Text, AnimatedView, TouchableOpacity } from "./ReactNativeComponents";
-import { Button } from "./Button";
-import { AlertViewFullProps, AlertViewProps, Size, ToastProps, ToolTipProps, ToolTipRef } from "../Typse";
+import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
+import { Size, ToolTipProps, ToolTipRef } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 
 import { Blur } from "./Blur";
 import { useTimer } from "../hooks";
 
 export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) => {
-    if (ifSelector(props.ifTrue) == false)
-        return null;
+
     const context = React.useContext(InternalThemeContext);
     globalData.hook("window")
     const state = StateBuilder(() => ({
@@ -72,6 +70,9 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         }
 
     }
+
+    if (ifSelector(props.ifTrue) == false)
+        return null;
 
     fn(state.id, (
         <View key={state.id} css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC("$co-transparent")}>

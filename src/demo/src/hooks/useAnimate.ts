@@ -2,10 +2,8 @@ import * as React from "react";
 
 import {
     Animated,
-    KeyboardAvoidingView,
     Platform,
     Easing,
-    PanResponder
 } from "react-native";
 
 export const useAnimate = ({

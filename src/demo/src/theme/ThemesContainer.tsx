@@ -1,7 +1,7 @@
 import { ThemeContext, globalData, InternalThemeContext } from "./ThemeContext";
 import * as React from "react";
 import { IThemeContext } from "../Typse";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { newId, clearAllCss } from "../config";
 import { View, AlertView, ToastView } from "../components";
 import { Platform } from "react-native";

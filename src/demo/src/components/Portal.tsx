@@ -1,10 +1,7 @@
-import { Icon } from "./Icon";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
-import { InternalThemeContext, globalData } from "../theme/ThemeContext";
-import { useAnimate, useTimer } from "../hooks";
-import StateBuilder from "react-smart-state";
-import { Platform } from "react-native";
-import { ifSelector, newId, optionalStyle, proc } from "../config";
+import { View } from "./ReactNativeComponents";
+import { InternalThemeContext } from "../theme/ThemeContext";
+import StateBuilder from "../States";
+import { ifSelector, newId, optionalStyle } from "../config";
 import * as React from "react";
 import { PortalProps } from "../Typse";
 

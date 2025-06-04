@@ -1,8 +1,8 @@
 import * as React from "react";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { Size, VirtualScrollerViewRefProps, VirtualScrollerViewProps, ViewStyle } from "../Typse";
-import { useTimer, useDeferredMemo, useSubscriber } from "../hooks";
+import { useTimer, useDeferredMemo } from "../hooks";
 import { globalData } from "../theme/ThemeContext";
 import { LayoutChangeEvent, View, ScrollView, TouchableOpacity } from "react-native";
 // Context used to share scroll state and layout handling

@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Native from "react-native";
 import { Styleable } from "../styles";
-import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps, ImageProps, TextInputProps, Animated, FlatListProps } from "react-native/types";
+import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps, ImageProps, FlatListProps } from "react-native/types";
 import { GenericViewProps, GenericView, DomPath } from "../Typse";
 import * as NativeSlider from '@miblanchard/react-native-slider';
 

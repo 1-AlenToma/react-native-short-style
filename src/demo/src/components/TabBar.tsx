@@ -1,13 +1,7 @@
 import {
-    StyleSheet,
     Animated,
-    Easing,
-    SafeAreaView,
     PanResponder,
-    ViewProps,
-    TextStyle,
-    Platform,
-    ActivityIndicator
+    Platform
 } from "react-native";
 import * as React from "react";
 
@@ -16,10 +10,10 @@ import {
     ifSelector,
     optionalStyle
 } from "../config";
-import { useAnimate, useTimer } from "../hooks";
+import { useAnimate } from "../hooks";
 
 import { MenuChildren, MenuIcon, MouseProps, Size, TabBarProps, TabItemProps, IConProps, CSS_String } from "../Typse";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import { Icon } from "./Icon";
 import { globalData } from "../theme/ThemeContext";
 import { Loader } from "./Loader";

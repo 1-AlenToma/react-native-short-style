@@ -2,7 +2,7 @@ import { View, Text } from "./ReactNativeComponents";
 import * as React from "react";
 import { setRef } from "../config";
 import { LoaderProps, LoaderRef } from "../Typse";
-import StateBuilder from 'react-smart-state';
+import StateBuilder from '../States';
 import { ActivityIndicator } from 'react-native';
 import { Blur } from './Blur';
 

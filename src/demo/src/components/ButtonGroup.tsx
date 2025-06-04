@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
 import { useTimer } from "../hooks";
-import StateBuilder from "react-smart-state";
+import StateBuilder from "../States";
 import * as React from "react";
 import { ButtonGroupProps, Size, VirtualScrollerViewRefProps } from "../Typse";
 import { VirtualScroller } from "./VirtualScroller";
