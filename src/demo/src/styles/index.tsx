@@ -286,7 +286,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     let keys = Object.keys(eventKeys);
     let data = {};
     for (let k of keys) {
-      if (k in this.props)
+      if (k in this.props && this[k])
         data[k] = this[k].bind(this);
     }
     return data;
@@ -471,7 +471,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
 
 for (let eventKey in eventKeys) {
   StyledComponent.prototype[eventKey] = function (...args: any[]) {
-    this.props?.[eventKey]?.(...args); // Or this.refItem.nextProps[eventKey], if defined
+    return this.props?.[eventKey]?.(...args); // Or this.refItem.nextProps[eventKey], if defined
   };
 }
 

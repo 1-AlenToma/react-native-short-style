@@ -260,7 +260,7 @@ export const InputForm = () => {
     return (
         <FormGroup css={"maw-300"} formStyle="Headless" labelPosition="Top" title='User-Form'>
             <FormItem title="FullName" icon={{ type: "AntDesign", name: "user" }}>
-                <TextInput css="fl:1" />
+                <TextInput css="fl:1" onChangeText={txt => console.log(txt)} />
             </FormItem>
             <FormItem title="UserName" icon={{ type: "AntDesign", name: "user" }}>
                 <TextInput css="fl:1" />
