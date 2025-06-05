@@ -213,28 +213,22 @@ const css_translator = (
 
       if (style) {
         if (style._props) {
-          style = { ...style } // this so CSS retains the props property
-          cssItem._props = { ...cssItem._props, ...style._props };
+          //  style = { ...style } // this so CSS retains the props propert
+          Object.assign(cssItem._props, style._props)
           delete style._props;
         }
 
         if (important) {
-          cssItem.important = {
-            ...cssItem.important,
-            ...style
-          }
+          Object.assign(cssItem.important, style);
         } else {
-          cssItem = {
-            ...cssItem,
-            ...style
-          };
+          Object.assign(cssItem, style)
         }
         continue;
       }
     }
 
   if (cssItem.important) {
-    cssItem = { ...cssItem, ...cssItem.important }
+    Object.assign(cssItem, cssItem.important);
     delete cssItem.important;
   }
   Storage.set(id, cssItem);

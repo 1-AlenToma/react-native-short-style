@@ -15,7 +15,7 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
         prefix: props.defaultActive ? "minus" : "plus"
     }).build();
 
-    const { animate, animateY, animateX } = useAnimate({ speed: 300, useNativeDriver: ReactNtive.Platform.OS == "web" });
+    const { animate, animateY, animateX } = useAnimate({ speed: 300, useNativeDriver: false });
     const show = () => {
         animateX(state.visible ? 1 : 0, () => {
 

@@ -132,12 +132,18 @@ export const Fab = (props: FabProps) => {
         </React.Fragment>
     )
 
+    React.useEffect(() => {
+        if (props.follow != "Parent") {
+            context.add(state.id, view, true);
+        }
+
+    })
+
+    React.useEffect(() => {
+        return () => context.remove(state.id)
+    }, [])
+
     if (props.follow == "Parent")
         return view as React.ReactNode;
-    else {
-        context.add(state.id, view, true);
-    }
-    //context.add(state.id, view, true);
-
     return null as React.ReactNode;
 }

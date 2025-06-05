@@ -170,7 +170,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
             scrollView: undefined as ScrollView | undefined,
             scrollOffset: 0
         }
-    })).timeout(2).ignore("refItems", "containerSize", "scrollSettings", "itemSizes").build();
+    })).timeout(0).ignore("refItems", "containerSize", "scrollSettings", "itemSizes").build();
 
 
     globalData.useEffect(() => {

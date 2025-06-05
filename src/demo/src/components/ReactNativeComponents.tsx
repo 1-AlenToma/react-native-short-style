@@ -12,7 +12,7 @@ export const CreateView = function <T extends object, P>(view: any, name?: strin
     name = name ?? view.displayName ?? view;
     let cacheName = view.displayName ?? name;
     let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = Styleable(view, name));
-    return View as GenericView<T, P> & ((props: GenericViewProps<T, P>) => DomPath<React.ReactElement<P>, P>);
+    return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => DomPath<React.ReactElement<P>, P>);
 }
 
 // so we could know that this item was create by react-native-short-style

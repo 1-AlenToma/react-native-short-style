@@ -34,31 +34,38 @@ export const eqString = (a: string, b: string) => {
 }
 
 export const parseKeys = (key: string) => {
-    let t = "";
+    let path = "";
     let keys: string[] = [];
+    let splitter = false;
     for (let i = 0; i < key.length; i++) {
-        let k = key[i];
+        let char = key[i];
         let nKey = key[i + 1];
-        if (k != "$") {
-            t += k;
+
+
+        if (char != "$") {
+            path += char;
             continue;
         }
 
-        if (k == "$" && nKey != "$") {
-            if (!keys.includes(t))
-                keys.push(t); // 
-            t += "."
+        if (char == "$" && nKey != "$") {
+            if (!keys.includes(path)) {
+                keys.push(path);
+            }
+            path += "."
+            splitter = false;
             continue
         }
 
-        if (k == "$" && nKey == "$") {
-            if (!keys.includes(t))
-                keys.push(t);
-            t = keys[keys.length - 2] ?? t;
+        if (char == "$" && nKey == "$") {
+            if (!keys.includes(path))
+                keys.push(path);
+            if (!splitter)
+                path = path.split(".").slice(0, -1).join(".")
+            splitter = true;
         }
     }
 
-    keys.push(t);
+    keys.push(path);
     return keys.filter(x => x && x.length > 0)
 }
 
@@ -86,6 +93,7 @@ export const extractProps = (css?: string) => {
     }
 
     result.css = css;
+
     return result;
 }
 
@@ -116,25 +124,71 @@ export const ValueIdentity = {
     keyValue: (value: string) => {
         value = value.trim();
         let parts = value.split(":");
-        if (parts.length < 2)
+
+        // Fallback to '-' if ':' is not present
+        if (parts.length < 2) {
             parts = value.split("-");
-        let item = { key: parts[0], value: parts.filter((_, i) => i > 0).join("-"), kvalue: value, isClassName: false };
-        if (item.value.startsWith("$")) {
-            item.isClassName = true;
-            item.value = value.split("$")[1];
         }
-        return item;
+
+        const key = parts[0];
+        const rest = parts.slice(1).join("-");
+
+        let isClassName = false;
+        let parsedValue = rest;
+
+        // Check for $className notation
+        if (parsedValue.startsWith("$")) {
+            isClassName = true;
+            parsedValue = parsedValue.slice(1); // remove the $
+        }
+
+        return {
+            key,
+            value: parsedValue,
+            kvalue: value,
+            isClassName
+        };
     },
     splitCss: (css: string) => {
-        if (!css || typeof css !== "string")
-            return [];
-        let k = `${css}_splitCss_Result`;
-        if (globalData.tStorage.has(k))
-            return globalData.tStorage.get(k);
-        let cssClean = css.replace(/( )?((\:)|(\-))( )?/gmi, "$2");
-        let result = cssClean.trim().match(/((\(|\)).*?(\(|\))|[^(\(|\))\s]+)+(?=\s*|\s*$)/g) ?? [];
+        if (!css || typeof css !== "string") return [];
 
-        globalData.tStorage.set(k, result);
+        const cacheKey = `${css}_splitCss_Result`;
+        if (globalData.tStorage.has(cacheKey)) {
+            return globalData.tStorage.get(cacheKey);
+        }
+
+        // Remove spaces around ':' and '-' only
+        const cleanedCss = css.replace(/\s*(:|-)\s*/g, "$1");
+
+        // Match space-separated tokens, keeping groups like 'func(arg1, arg2)' intact
+        const result: string[] = [];
+        let current = '';
+        let depth = 0;
+
+        for (let i = 0; i < cleanedCss.length; i++) {
+            const char = cleanedCss[i];
+
+            if (char === '(') {
+                depth++;
+            } else if (char === ')') {
+                depth--;
+            }
+
+            if (char === ' ' && depth === 0) {
+                if (current) {
+                    result.push(current);
+                    current = '';
+                }
+            } else {
+                current += char;
+            }
+        }
+
+        if (current) {
+            result.push(current);
+        }
+
+        globalData.tStorage.set(cacheKey, result);
         return result;
     },
     getClasses: (css: string, globalStyle: any, itemIndex?: number) => {

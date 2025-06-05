@@ -4,7 +4,7 @@ export const useTimer = (ms: number) => {
 
     let create = function (func: Function, mss?: number) {
         clearTimeout(timer.current);
-        timer.current = setTimeout(() => func(), mss || ms);
+        timer.current = setTimeout(func, mss || ms);
     };
     (create as any).clear = () => clearTimeout(timer.current);
 
@@ -13,6 +13,6 @@ export const useTimer = (ms: number) => {
     }, [])
     const func = create as any as (((func: Function, mss?: number) => void) & { clear: () => void });
 
-    
+
     return func;
 };

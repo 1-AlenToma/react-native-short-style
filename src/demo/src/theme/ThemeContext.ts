@@ -53,10 +53,15 @@ export const globalData = StateBuilder<GlobalState>({
     screen: Dimensions.get("screen"),
     window: Dimensions.get("window"),
     appStart: () => {
+        let timer = undefined;
         const $this: GlobalState = globalData as any;
         let onSizeChanged = ({ window, screen }) => {
-            $this.window = window;
-            $this.screen = screen;
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                $this.window = window;
+                $this.screen = screen;
+            }, 1);
+
         }
 
         let windowChangeEvent = Dimensions.addEventListener("change", onSizeChanged);
@@ -65,7 +70,7 @@ export const globalData = StateBuilder<GlobalState>({
             windowChangeEvent
         ]
     }
-}).ignore(
+}).timeout(undefined).ignore(
     "alertViewData.data",
     "alertViewData.toastData",
     "storage",

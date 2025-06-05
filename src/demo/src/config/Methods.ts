@@ -7,6 +7,12 @@ import { PlatformStyleSheet } from "../theme/PlatformStyles";
 import React from "react";
 
 
+export const toArray = (item: any) => {
+    if (!item) return [];
+    if (Array.isArray(item)) return item;
+    return [item];
+}
+
 export const RemoveProps = <T extends object>(props: T, ...items: (keyof T)[]) => {
     items.forEach(x => {
         if (x in props)
@@ -121,7 +127,7 @@ export const setRef = (ref: any, item: any) => {
     else if ("current" in ref)
         ref.current = item;
     else if (ref && typeof ref === "object")
-        Object.keys(item).forEach(x => ref[x] = item[x]);
+        Object.assign(ref, item);
 }
 
 export const refCreator = function <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any) {
