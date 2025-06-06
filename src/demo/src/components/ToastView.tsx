@@ -107,36 +107,42 @@ export const ToastView = () => {
             break;
     }
 
-    fn(state.id, <AnimatedView key={state.id} onLayout={({ nativeEvent }) => {
-        if (!state.size)
-            state.size = nativeEvent.layout;
-    }} style={{
-        left: state.size ? (globalData.window.width - state.size.width) / 2 : 0,
-        top: !state.size ? (data.position == "Bottom" ? "100%" : "-100%") : 0,
-        transform: [{
-            translateY: animate.y.interpolate({
-                inputRange: [0, 1],
-                outputRange: interpolate,
-                extrapolate: "clamp"
-            })
-        }]
-    }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(10000).joinRight(data.css)}>
-        <View>
-            <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
-                <TouchableOpacity onPress={() => state.visible = false}>
-                    <Icon type="AntDesign" css="co:white" name="close" size={15} />
-                </TouchableOpacity>
+    React.useEffect(() => {
+        fn(state.id, <AnimatedView key={state.id} onLayout={({ nativeEvent }) => {
+            if (!state.size)
+                state.size = nativeEvent.layout;
+        }} style={{
+            left: state.size ? (globalData.window.width - state.size.width) / 2 : 0,
+            top: !state.size ? (data.position == "Bottom" ? "100%" : "-100%") : 0,
+            transform: [{
+                translateY: animate.y.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: interpolate,
+                    extrapolate: "clamp"
+                })
+            }]
+        }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(10000).joinRight(data.css)}>
+            <View>
+                <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
+                    <TouchableOpacity onPress={() => state.visible = false}>
+                        <Icon type="AntDesign" css="co:white" name="close" size={15} />
+                    </TouchableOpacity>
+                </View>
+                <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac:transparent">
+                    {data.icon ?? typeInfo.icon}
+                </View>
+                <View css="fl:1 zi:1 bac:transparent">
+                    <Text ifTrue={data.title != undefined} css={x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css)}>{data.title}</Text>
+                    <Text css={x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css)}>{data.message}</Text>
+                </View>
             </View>
-            <View ifTrue={data.icon != undefined || typeInfo.icon != undefined} css="fl:1 maw:40 zi:1 bac:transparent">
-                {data.icon ?? typeInfo.icon}
-            </View>
-            <View css="fl:1 zi:1 bac:transparent">
-                <Text ifTrue={data.title != undefined} css={x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css)}>{data.title}</Text>
-                <Text css={x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css)}>{data.message}</Text>
-            </View>
-        </View>
-        <ProgressBar ifTrue={data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_toastProgressView" />
-    </AnimatedView>, true)
+            <ProgressBar ifTrue={data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_toastProgressView" />
+        </AnimatedView>, true)
+    });
+
+    React.useEffect(() => {
+        return () => context.remove(state.id)
+    }, [])
 
     return null;
 }

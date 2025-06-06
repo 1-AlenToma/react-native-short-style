@@ -278,7 +278,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     selectedThemeIndex: number,
     currentStyle: any,
     init: boolean,
-    nextProps: any
+    nextProps: any,
   }
 
 
@@ -290,6 +290,10 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
         data[k] = this[k].bind(this);
     }
     return data;
+  }
+
+  getNextProps() {
+    return this.refItem.nextProps ?? this.props ?? {};
   }
 
   componentDidMount() {
@@ -320,9 +324,6 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
   }
 
   validateUpdate(nextProps) {
-
-
-    let update = false;
     let props: CSSProps<InternalStyledProps> & { cRef: any, themeContext: any } = { ...nextProps }
     if (props?.themeContext != undefined) {
       if (props.themeContext.selectedIndex !== this.props.themeContext.selectedIndex) {
@@ -332,20 +333,23 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
       delete props.themeContext;
     }
 
-    if (!update)
-      if ("css" in props) {
-        if (this.update({ ...this.props, ...nextProps })) {
-          return true;
-        }
-        delete props.css;
+
+    if ("css" in props) {
+      if (this.update({ ...this.props, ...nextProps })) {
+        return true;
       }
+      delete props.css;
+    }
+
     if (this.validateProps(this.props, nextProps))
       return true;
-    Object.assign(this.refItem.nextProps, nextProps);
+    if (this.refItem.nextProps)
+      Object.assign(this.refItem.nextProps, nextProps);
+    else this.refItem.nextProps = nextProps;
     return false;
 
   }
-  myRef = null;
+
   constructor(props) {
     super(props);
     this.refItem = {
@@ -355,7 +359,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
       selectedThemeIndex: this.props.themeContext.selectedIndex,
       currentStyle: currentTheme(props.themeContext),
       init: false,
-      nextProps: props
+      nextProps: {}
     }
   }
 
@@ -379,10 +383,29 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     }
     return false;
   }
+  myRef = null;
+  cRef(c: any) {
+    if (c === null)
+      return;
+    if (c === this.myRef) {
+      return;
+    }
+    try {
+      const props = this.getNextProps();
+      if (reactNative.Platform.OS != "web") {
+        let item = assignRf((c ?? {}) as DomPath<any, any>, { ...props, css: this.refItem.contextValue.getCss() });
+        this.refItem.contextValue.setViews(item);
+        (this.context as any)?.registerView?.(item);// to parent
+        setRef(props.cRef, item);
+      } else setRef(props.cRef, c);
+    } catch (e) {
+      console.error(e)
+    } finally {
+      this.myRef = c;
+    }
+  }
 
   render() {
-
-    this.refItem.nextProps = { ...this.props };
     let context: any = this.context;
     context?.register?.(this.refItem.id);
     const isText = this.props.View.displayName && this.props.View.displayName == "Text" && reactNative.Platform.OS == "web";
@@ -431,38 +454,21 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
       }
 
     }
-
+    this.refItem.nextProps = { ...rProps };
     if (ifSelector(rProps.ifTrue) === false) {
       return null;
     }
 
+    const dataSet = __DEV__ && reactNative.Platform.OS == "web" && this.refItem.contextValue.cpyCss ? { css: "__DEV__ CSS:" + this.refItem.contextValue.cpyCss } : undefined;
+
     return (
       <CSSContext.Provider value={this.refItem.contextValue}>
         <this.props.View
-          dataSet={{ css: reactNative.Platform.OS == "web" && this.refItem.contextValue.cpyCss && __DEV__ ? "__DEV__ CSS:" + this.refItem.contextValue.cpyCss : "" }}
+          dataSet={dataSet}
           viewPath={this.props.viewPath}
           {...rProps}
           {...this.getExtraProps()}
-          ref={(c) => {
-            if (c === null)
-              return;
-            if (c === this.myRef) {
-              return;
-            }
-            try {
-              if (reactNative.Platform.OS != "web") {
-                let item = assignRf((c ?? {}) as DomPath<any, any>,
-                  { ...rProps, css: this.refItem.contextValue.getCss() });
-                this.refItem.contextValue.setViews(item);
-                context?.registerView?.(item);// to parent
-                setRef(this.props.cRef, item);
-              } else setRef(this.props.cRef, c);
-            } catch (e) {
-              console.error(e)
-            } finally {
-              this.myRef = c;
-            }
-          }}
+          ref={this.cRef.bind(this)}
         />
       </CSSContext.Provider>
     );
@@ -470,9 +476,10 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
 }
 
 for (let eventKey in eventKeys) {
-  StyledComponent.prototype[eventKey] = function (...args: any[]) {
-    return this.refItem.nextProps?.[eventKey]?.(...args); // Or this.refItem.nextProps[eventKey], if defined
-  };
+  if (eventKey !== "cRef")
+    StyledComponent.prototype[eventKey] = function (...args: any[]) {
+      return this.getNextProps()?.[eventKey]?.(...args); // Or this.refItem.nextProps[eventKey], if defined
+    };
 }
 
 export class StyledItem {
@@ -483,7 +490,6 @@ export class StyledItem {
     const View = this.view;
     const viewPath = this.viewPath;
     let themecontext = React.useContext(ThemeContext);
-    const changeId = React.useRef("");
 
     const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
     if (isText)
