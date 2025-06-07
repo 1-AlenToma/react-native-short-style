@@ -32,15 +32,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         index: 0,
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
-        scrollToItem: (selectedIndex: number) => {
-            if (state.refItems.scrollView && props.selectedValue != undefined && selectedIndex >= 0) {
-                state.refItems.scrollView.scrollToIndex(selectedIndex, false)
-            }
-        },
-        refItems: {
-            scrollView: undefined as VirtualScrollerViewRefProps | undefined
-        }
-    }).ignore("refItems", "propsSize", "scrollToItem").build();
+    }).ignore("propsSize").build();
 
     const mode = props.mode ?? "Modal";
 
@@ -50,8 +42,6 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
     state.useEffect(() => {
         if (!state.visible && state.text != "")
             state.text = "";
-        if (!state.visible)
-            state.refItems.scrollView = undefined;
     }, "visible")
 
     React.useEffect(() => {
@@ -122,6 +112,8 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                         onChangeText={txt => state.text = txt} />
                 </View>
                 <VirtualScroller
+                    updateOn={props.updateOn}
+                    initializeIndex={selectedIndex}
                     contentSizeTimer={200}
                     horizontal={false}
                     onItemPress={({ item }) => {
@@ -136,10 +128,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                     style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
                     renderItem={({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />)}
                     items={items}
-                    ref={c => {
-                        state.refItems.scrollView = c as any;
-                        state.scrollToItem(selectedIndex);
-                    }} />
+                />
             </Component>
         </Container>
     )

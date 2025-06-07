@@ -7,68 +7,8 @@ import { ThemeContext, globalData } from "../theme/ThemeContext";
 import { ButtonProps, DomPath, InternalStyledProps, StyledProps } from "../Typse";
 import { CSSStyle, CSSProps } from "./CSSStyle";
 import { ValueIdentity } from "../config/CSSMethods";
-
-const eventKeys: Record<string, boolean> = {
-  cRef: true,
-  // Touch and gesture
-  onPress: true,
-  onLongPress: true,
-  onPressIn: true,
-  onPressOut: true,
-  onStartShouldSetResponder: true,
-  onMoveShouldSetResponder: true,
-  onResponderGrant: true,
-  onResponderMove: true,
-  onResponderRelease: true,
-  onResponderTerminate: true,
-  onTouchStart: true,
-  onTouchMove: true,
-  onTouchEnd: true,
-  onTouchCancel: true,
-
-  // Layout
-  onLayout: true,
-
-  // Focus and accessibility
-  onFocus: true,
-  onBlur: true,
-  onAccessibilityTap: true,
-  onMagicTap: true,
-  onAccessibilityEscape: true,
-
-  // ScrollView / FlatList
-  onScroll: true,
-  onMomentumScrollBegin: true,
-  onMomentumScrollEnd: true,
-  onScrollBeginDrag: true,
-  onScrollEndDrag: true,
-  onContentSizeChange: true,
-
-  // Text Input
-  onChangeText: true,
-  onChange: true,
-  onEndEditing: true,
-  onSelectionChange: true,
-  onSubmitEditing: true,
-  onKeyPress: true,
-  onTextInput: true,
-
-  // Image
-  onLoad: true,
-  onLoadEnd: true,
-  onLoadStart: true,
-  onError: true,
-  onPartialLoad: true,
-  onProgress: true,
-
-  // Animation
-  onAnimationEnd: true,
-  onLayoutAnimationEnd: true,
-
-  // Keyboard (native Android/iOS or web)
-  onKeyDown: true,
-  onKeyUp: true,
-};
+import { eventKeys, stylePropsNames } from "./propNames";
+import { reactRef } from "react-smart-state";
 
 
 function assignRf(item: DomPath<any, InternalStyledProps>, props: InternalStyledProps): DomPath<any, any> {
@@ -286,7 +226,7 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     let keys = Object.keys(this.props ?? {});
     let data = {};
     for (let k of keys) {
-      if (k in eventkeys && this[k])
+      if (k in eventKeys && this[k])
         data[k] = this[k].bind(this);
     }
     return data;
@@ -300,18 +240,80 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
     this.refItem.init = true;
   }
 
+  validateChilden(a: any, b: any) {
+    if (a === b) return false;
+    let arrayA = toArray(a);
+    let arrayB = toArray(b);
+
+    if (arrayA.length !== arrayB.length) return true;
+    if (arrayA.length >= 5) return a !== b; // to many children, then skip loop
+    for (let i = 0; i < arrayA.length; i++) {
+      if (arrayA[i] !== arrayB[i])
+        return true;
+    }
+
+    return false;
+
+  }
+
+  getKeys(a, b) {
+    const aKeys = Object.keys(a ?? {});
+    const bKeys = Object.keys(b ?? {})
+    const keys = {
+      ks: aKeys,
+      hasChange: aKeys.length !== bKeys.length
+    };
+
+    return keys;
+  }
+
+  validateStyle(a, b) {
+    if (a === b) return false;
+    if (typeof a !== "object" || typeof b !== "object") return true;
+
+    const arrayA = toArray(a);
+    const arrayB = toArray(b);
+
+    if (arrayA.length !== arrayB.length) return true;
+
+    for (let i = 0; i < arrayA.length; i++) {
+      const v1 = arrayA[i];
+      const v2 = arrayB[i];
+
+      if (v1 === v2) continue;
+
+      const { hasChange, ks } = this.getKeys(v1, v2);
+      if (hasChange) return true;
+
+      for (let k = 0; k < ks.length; k++) {
+        if (v1[ks[k]] !== v2[ks[k]]) return true;
+      }
+    }
+
+    return false;
+  }
+
+
+
 
   validateProps(a: any, b: any) {
-    for (let k in a) {
+    const execludedKeys = ["themeContext", "css"]; // already validated keys
+    const keys = this.getKeys(a, b);
+    if (keys.hasChange)
+      return true;
+    for (let k of keys.ks) {
+      if (execludedKeys.includes(k) || eventKeys[k])
+        continue;
       let v1 = a[k];
       let v2 = b[k];
-      if (eventKeys[k]) {
-        // console.log("no need to check", k)
-        continue;
-      }
 
       if (v1 !== v2) {
-        return true;
+        if (k === "children") {
+          if (this.validateChilden(v1, v2))
+            return true;
+        } else if (!stylePropsNames[k] || this.validateStyle(v1, v2)) {
+          return true;
+        }
       }
     }
 
@@ -335,7 +337,8 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
 
 
     if ("css" in props) {
-      if (this.update({ ...this.props, ...nextProps })) {
+      //&& this.update({ ...this.props, ...nextProps })css is always string now
+      if (this.props.css !== nextProps.css) {
         return true;
       }
       delete props.css;
@@ -343,11 +346,11 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
 
     if (this.validateProps(this.props, nextProps))
       return true;
+
     if (this.refItem.nextProps)
       Object.assign(this.refItem.nextProps, nextProps);
     else this.refItem.nextProps = nextProps;
     return false;
-
   }
 
   constructor(props) {
@@ -486,27 +489,52 @@ export class StyledItem {
   view: any;
   viewPath: string;
 
-  render(props: CSSProps<InternalStyledProps> & ButtonProps & reactNative.TouchableOpacityProps & reactNative.ViewProps, ref: any) {
-    const View = this.view;
-    const viewPath = this.viewPath;
-    let themecontext = React.useContext(ThemeContext);
+  render(
+    props: CSSProps<InternalStyledProps> &
+      ButtonProps &
+      reactNative.TouchableOpacityProps &
+      reactNative.ViewProps,
+    ref: any
+  ) {
 
-    const isText = View.displayName && View.displayName == "Text" && reactNative.Platform.OS == "web";
-    if (isText)
-      globalData.hook("activePan")
+    const themeContext = React.useContext(ThemeContext);
 
-    if (themecontext == undefined)
-      throw "Error ThemeContext must be provided with its themes and default style";
+    if (!themeContext) {
+      throw new Error("ThemeContext must be provided with themes and a default style");
+    }
 
-    const activePan = isText ? globalData.activePan : undefined;
+    const isTextWeb = this.view.displayName === "Text" && reactNative.Platform.OS === "web";
+
+    if (isTextWeb) {
+      globalData.hook("activePan");
+    }
+
+    const css = React.useMemo(() => {
+      if (props && typeof props.css === "function") {
+        return props.css(new CSSStyle()).toString();
+      }
+      return props?.css || "";
+    }, [props?.css]);
+    const ifTrue = props && ifSelector(props.ifTrue)
+    if (ifSelector(ifTrue) === false)
+      return null;
 
 
     return (
-      <StyledComponent {...props} activePan={activePan} View={View} viewPath={viewPath} themeContext={themecontext} cRef={(c) => setRef(ref, c)} />
-    )
-
+      <StyledComponent
+        {...props}
+        css={css}
+        activePan={isTextWeb ? globalData.activePan : undefined}
+        View={this.view}
+        ifTrue={ifTrue as any}
+        viewPath={this.viewPath}
+        themeContext={themeContext}
+        cRef={(c) => setRef(ref, c)}
+      />
+    );
   }
 }
+
 
 
 

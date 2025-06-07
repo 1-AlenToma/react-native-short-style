@@ -79,7 +79,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                     ref={c => state.scrollView = c}
-                    updateOn={state.selectedIndex}
+                    updateOn={[...state.selectedIndex, ...(props.updateOn ?? [])]}
                 />
             ) : (<View {...cProps}>
                 <View style={props.style} css={x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css)}>

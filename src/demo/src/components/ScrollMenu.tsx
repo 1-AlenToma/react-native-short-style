@@ -5,6 +5,7 @@ import * as React from "react";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { useTimer } from "../hooks";
 import { globalData } from "../theme/ThemeContext";
+import { ReadyView } from "./ReadyView";
 
 export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
     const state = StateBuilder({
@@ -34,6 +35,7 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
             if (state.selectedIndex !== selectedIndex) {
                 state.selectedIndex = selectedIndex;
             }
+            scrollto();
         });
     };
 
@@ -69,7 +71,7 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
     }, "screen")
 
     return (
-        <View ifTrue={props.ifTrue}
+        <ReadyView ifTrue={props.ifTrue}
             onLayout={({ nativeEvent }) => {
                 //  if (!state.size)
                 state.size = nativeEvent.layout;
@@ -84,9 +86,6 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
                 horizontal={props.horizontal}
                 decelerationRate={.5}
                 disableIntervalMomentum={false}
-                snapToInterval={props.horizontal ? state.size?.width : state.size?.height}
-                pagingEnabled={true}
-                snapToAlignment={"start"}
                 contentContainerStyle={[{
                     height: props.horizontal ? undefined : `${(props.children.length * 100)}%`,
                     width: !props.horizontal ? undefined : `${(props.children.length * 100)}%`,
@@ -109,6 +108,6 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
                     ))
                 }
             </AnimatedScrollView>
-        </View>
+        </ReadyView>
     )
 })

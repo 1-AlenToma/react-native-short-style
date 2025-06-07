@@ -1,10 +1,11 @@
 import * as React from "react";
-import StateBuilder from "../States";
+import StateBuilder, { PrimitiveValue } from "../States";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { Size, VirtualScrollerViewRefProps, VirtualScrollerViewProps, ViewStyle } from "../Typse";
 import { useTimer, useDeferredMemo } from "../hooks";
 import { globalData } from "../theme/ThemeContext";
-import { LayoutChangeEvent, View, ScrollView, TouchableOpacity } from "react-native";
+import { LayoutChangeEvent } from "react-native";
+import { View, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 // Context used to share scroll state and layout handling
 
 type ScrollSettings = {
@@ -19,11 +20,10 @@ const ScrollContext = React.createContext<{
 
 }>(null!);
 
+
+
 const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, children: any }) => {
     const context = React.useContext(ScrollContext);
-
-    //const scrollOffset = context.subscribers.scrollOffset.listen();
-
     context.parentState.localBind("refItems.scrollOffset");
     const scrollOffset = context.parentState.refItems.scrollOffset;
     const numColumns = context.props.numColumns ?? 1;
@@ -86,14 +86,14 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
         return { visible, render };
     };
 
-    const style = useDeferredMemo(() => ([optionalStyle(context.props.itemStyle).o, {
+    const style = useDeferredMemo(() => ([{
         flexDirection: isHorizontal ? "column" : "row",
         width: isHorizontal ? itemSize : context.parentState.containerSize.width,
         height: isHorizontal ? undefined : itemSize,
         position: itemSize != undefined ? "absolute" : undefined,
         left: isHorizontal && itemSize != undefined ? itemSize * rowIndex : undefined,
         top: !isHorizontal && itemSize != undefined ? itemSize * rowIndex : undefined
-    }] as ViewStyle), [context.props.itemStyle, itemSize]);
+    }] as ViewStyle), [itemSize]);
 
     const validateTrigger = () => {
         if (!itemSizes[startIndex] && itemSize != undefined)
@@ -102,27 +102,34 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
             scrollSettings.scrollCallBack?.(startIndex);
         }
     }
-    validateTrigger();
-    const onLayout = React.useCallback(({ nativeEvent }: LayoutChangeEvent) => {
-        const size = nativeEvent.layout;
-        if (context.parentState.estimatedItemSize <= 2) {
-            context.parentState.estimatedItemSize = isHorizontal ? size.width : size.height;
 
-        }
-        itemSizes[startIndex] = size;
-        validateTrigger();
-    }, [context.itemRows, scrollSettings.scrollToIndex, ...(context.props.updateOn ?? [])]);
 
-    const state = isVisible();
 
-    if (!state.render) return null;
+    let state = isVisible();
+    React.useEffect(() => {
+        if (state.render)
+            validateTrigger();
+    })
 
-    return (state.visible || rowIndex == context.parentState.scrollToIndex || context.itemSize == undefined ? (
-        <View
-            onLayout={onLayout}
-            style={style}>
-            {children}
-        </View>) : null);
+
+    const visibility = () => {
+        return (state.render && (state.visible || rowIndex == context.parentState.scrollToIndex || context.itemSize == undefined))
+    };
+    return (<View
+        ifTrue={visibility}
+        onLayout={({ nativeEvent }: LayoutChangeEvent) => {
+            const size = nativeEvent.layout;
+            if (context.parentState.estimatedItemSize <= 2) {
+                context.parentState.estimatedItemSize = isHorizontal ? size.width : size.height;
+
+            }
+            itemSizes[startIndex] = size;
+            //  validateTrigger();
+        }}
+        css={x => x.joinLeft(context.props.itemStyle)}
+        style={style}>
+        {children}
+    </View>)
 }
 
 
@@ -165,13 +172,60 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
         estimatedItemSize: props.itemSize?.size != undefined && typeof props.itemSize?.size == "number" ? props.itemSize.size : 0,
         itemSizes: {} as Record<number, Size>,
         scrollSettings: {} as ScrollSettings,
+        items: {} as {
+            children: any[];
+            rows: Map<number, any[]>;
+        },
         id: newId(),
         refItems: {
-            scrollView: undefined as ScrollView | undefined,
-            scrollOffset: 0
-        }
-    })).timeout(0).ignore("refItems", "containerSize", "scrollSettings", "itemSizes").build();
+            scrollView: undefined as typeof ScrollView | undefined,
+            scrollOffset: 0,
+            init: false,
+            ref: {
+                scrollToIndex: (index: number, animated?: boolean) => {
+                    if (!state.refItems.scrollView || !state.containerSize || props.items.length <= index) return;
+                    const rowIndex = Math.floor(index / numColumns)
+                    state.scrollSettings = ({
+                        scrollToIndex: rowIndex,
+                        scrollCallBack: () => {
+                            state.scrollSettings = {} as any;
+                            scrollToIndexTimer(() => {
+                                const offset = Object.keys(state.itemSizes)
+                                    .map(Number)
+                                    .filter(i => Math.floor(i / numColumns) < rowIndex)
+                                    .reduce((acc, i) => {
+                                        const size = state.itemSizes[i];
+                                        return acc + (props.horizontal ? size.width : size.height);
+                                    }, 0);
 
+                                const scrollParams = props.horizontal ? { x: offset, animated: animated ?? false } : { y: offset, animated: animated ?? false };
+                                state.refItems.scrollView?.scrollTo?.(scrollParams);
+                            });
+                        }
+                    })
+                }
+            }
+        }
+    })).ignore("refItems", "containerSize", "scrollSettings", "itemSizes").build();
+
+
+    const renderTimer = useTimer(100);
+    const effectiveItems = state.estimatedItemSize === 0 ? props.items.slice(0, numColumns) : props.items;
+    const prepaireItems = async () => {
+        renderTimer(async () => {
+            const rows = { children: [], rows: new Map<number, any[]>() }
+
+            for (let i = 0; i < effectiveItems.length; i += numColumns) {
+                rows.rows.set(i, effectiveItems.slice(i, i + numColumns));
+                rows.children.push(<VirtualScrollerView key={i} startIndex={i} />);
+            }
+            state.items = rows;
+        })
+    }
+
+    React.useEffect(() => {
+        prepaireItems();
+    }, [effectiveItems])
 
     globalData.useEffect(() => {
         state.containerSize = undefined;
@@ -190,72 +244,43 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
 
 
     React.useEffect(() => {
-        if (state.estimatedItemSize > 0) {
-            setRef(ref, {
-                scrollToIndex: (index: number, animated?: boolean) => {
-                    if (!state.refItems.scrollView || !state.containerSize || props.items.length <= index) return;
-
-                    const rowIndex = Math.floor(index / numColumns)
-                    state.scrollSettings = ({
-                        scrollToIndex: rowIndex,
-                        scrollCallBack: () => {
-                            state.scrollSettings = {} as any;
-                            scrollToIndexTimer(() => {
-                                const offset = Object.keys(state.itemSizes)
-                                    .map(Number)
-                                    .filter(i => Math.floor(i / numColumns) < rowIndex)
-                                    .reduce((acc, i) => {
-                                        const size = state.itemSizes[i];
-                                        return acc + (props.horizontal ? size.width : size.height);
-                                    }, 0);
-
-                                const scrollParams = props.horizontal ? { x: offset, animated } : { y: offset, animated };
-                                state.refItems.scrollView?.scrollTo?.(scrollParams);
-                            });
-                        }
-                    })
-                }
-            });
+        if (state.estimatedItemSize > 0 && state.containerSize) {
+            setRef(ref, (state.refItems.ref = { ...state.refItems.ref }));
+            if (!state.refItems.init && props.initializeIndex != undefined)
+                state.refItems.ref.scrollToIndex(props.initializeIndex);
+            state.refItems.init = true;
         }
-    }, [state.estimatedItemSize, state.containerSize]);
+    }, [state.estimatedItemSize, state.containerSize, props.initializeIndex]);
 
-    // Slice items for measurement when we don't have an estimate yet
-    const effectiveItems = state.estimatedItemSize === 0 ? props.items.slice(0, numColumns) : props.items;
-
-    const itemRows = useDeferredMemo(() => {
-        const rows = { children: [], rows: new Map<number, any[]>() }
-
-        for (let i = 0; i < effectiveItems.length; i += numColumns) {
-            rows.rows.set(i, effectiveItems.slice(i, i + numColumns));
-            rows.children.push(<VirtualScrollerView key={i} startIndex={i} />);
+    React.useEffect(() => {
+        if (props.initializeIndex != undefined) {
+            state.refItems.ref.scrollToIndex(props.initializeIndex)
         }
-        return rows;
-    }, [effectiveItems]);
-
+    }, [props.initializeIndex])
 
     const rowCount = Math.ceil(props.items.length / numColumns);
-    const contentContainerStyle = React.useMemo(() => ({
-        minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
-        minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
-        flexDirection: props.horizontal ? "row" : "column",
-    } as ViewStyle), [state.estimatedItemSize, rowCount, props.horizontal]);
-    if (ifSelector(props.ifTrue) == false)
-        return null;
+
     return (
         <ScrollContext.Provider value={{
             parentState: state,
-            itemRows: itemRows?.rows ?? new Map(),
+            itemRows: state.items?.rows ?? new Map(),
             props,
             itemSize
         }}>
             <ScrollView
                 key={state.id}
+                ifTrue={props.ifTrue}
+                css={props.css}
                 showsVerticalScrollIndicator={props.showsVerticalScrollIndicator}
                 showsHorizontalScrollIndicator={props.showsHorizontalScrollIndicator}
                 horizontal={props.horizontal}
                 ref={c => state.refItems.scrollView = c as any}
                 scrollEventThrottle={props.scrollEventThrottle ?? 16}
-                contentContainerStyle={contentContainerStyle}
+                contentContainerStyle={{
+                    minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
+                    minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
+                    flexDirection: props.horizontal ? "row" : "column",
+                }}
                 pagingEnabled={props.pagingEnabled}
                 onScroll={event => {
                     const { nativeEvent } = event;
@@ -300,7 +325,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                     });
                 }}
             >
-                {state.containerSize && itemRows?.children}
+                {state.containerSize && state.items?.children}
             </ScrollView>
         </ScrollContext.Provider>
     );

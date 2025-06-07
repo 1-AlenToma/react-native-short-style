@@ -12,14 +12,12 @@ export const CreateView = function <T extends object, P>(view: any, name?: strin
     name = name ?? view.displayName ?? view;
     let cacheName = view.displayName ?? name;
     let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = Styleable(view, name));
+    View.displayName = `Styled(${name ?? cacheName})`
     return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => DomPath<React.ReactElement<P>, P>);
 }
 
 // so we could know that this item was create by react-native-short-style
 CreateView.prototype.CssStyleAble = CreateView.CssStyleAble = true;
-
-
-
 
 export const View = CreateView<Native.View, ViewProps>(Native.View);
 export const Slider = CreateView<NativeSlider.Slider, NativeSlider.SliderProps>(NativeSlider.Slider, "Slider");
@@ -36,3 +34,4 @@ export const AnimatedView = CreateView<Native.View, ViewProps>(Native.Animated.V
 export const AnimatedText = CreateView<Native.Text, TextProps>(Native.Animated.Text, "AnimatedText");
 export const AnimatedTouchableOpacity = CreateView<typeof Native.TouchableOpacity, TouchableOpacityProps>(AnimatedTouchable, "AnimatedTouchableOpacity");
 export const AnimatedScrollView = CreateView<Native.ScrollView, ScrollViewProps>(Native.Animated.ScrollView, "AnimatedScrollView");
+console.log(styledItems)

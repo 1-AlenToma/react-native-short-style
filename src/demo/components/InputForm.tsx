@@ -251,7 +251,7 @@ let countries = [
     value: index
 }));
 
-countries = Array.from({ length: 10000 }).map((x, i) => ({ label: "namn " + i, value: i }))
+//countries = Array.from({ length: 3000 }).map((x, i) => ({ label: "namn " + i, value: i }))
 export const InputForm = () => {
     const state = StateBuilder({
         checkBoxes: [true, false],

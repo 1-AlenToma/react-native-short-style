@@ -342,6 +342,7 @@ export type DropdownListProps = StyledProps & {
     onSearch?: (items: DropdownItem, txt: string) => boolean;
     itemSize?: VirtualItemSize; // for bigData set itemSize for dynamic rendering, much faster
     numColumns?: number;
+    updateOn?: any[]; // refresh the scrollView when those items change
 }
 
 export type CollabseProps = StyledProps & {
@@ -380,6 +381,7 @@ export type ButtonGroupProps = StyledProps & {
     isVertical?: boolean;
     scrollable?: boolean;
     numColumns?: number;
+    updateOn?: any[]; // refresh the scrollView when those items change
 }
 
 export type ToolTipRef = {
@@ -469,8 +471,8 @@ export type VirtualScrollerViewProps = {
     renderItem?: (item: { item: any, index: number }) => React.ReactNode;
     onItemPress?: (item: { item: any, index: number }) => void | Promise<void>;
     onItemLayout?: (nativeEvent: ReactNative.LayoutChangeEvent, item: any) => void;
-
-    itemStyle?: ViewStyle;
+    initializeIndex?: number,
+    itemStyle?: CSS_String | ViewStyle;
     horizontal?: boolean;
     numColumns?: number;
     itemSize?: VirtualItemSize; // for bigData set itemSize for dynamic rendering, much faster
@@ -484,4 +486,4 @@ export type VirtualScrollerViewProps = {
     scrollEventThrottle?: number; // default 16
     contentSizeTimer?: number; // default is 0, this is incase the scrollview is inside an animated view,it is smart to increase this to 200 or more
     updateOn?: any[]; // refresh the scrollView when those items change
-} & Omit<StyledProps, "css">;
+} & StyledProps;
