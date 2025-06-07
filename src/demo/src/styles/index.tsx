@@ -283,10 +283,10 @@ class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { 
 
 
   getExtraProps() {
-    let keys = Object.keys(eventKeys);
+    let keys = Object.keys(this.props ?? {});
     let data = {};
     for (let k of keys) {
-      if (k in this.props && this[k])
+      if (k in eventkeys && this[k])
         data[k] = this[k].bind(this);
     }
     return data;
