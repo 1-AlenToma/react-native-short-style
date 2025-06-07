@@ -1,4 +1,5 @@
 import * as Native from "react-native";
+import * as React from "react";
 import { View } from "./ReactNativeComponents";
 import { GenericViewProps, StyledProps, } from "../Typse";
 import createState from "../States";
