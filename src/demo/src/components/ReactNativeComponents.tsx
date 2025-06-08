@@ -34,4 +34,3 @@ export const AnimatedView = CreateView<Native.View, ViewProps>(Native.Animated.V
 export const AnimatedText = CreateView<Native.Text, TextProps>(Native.Animated.Text, "AnimatedText");
 export const AnimatedTouchableOpacity = CreateView<typeof Native.TouchableOpacity, TouchableOpacityProps>(AnimatedTouchable, "AnimatedTouchableOpacity");
 export const AnimatedScrollView = CreateView<Native.ScrollView, ScrollViewProps>(Native.Animated.ScrollView, "AnimatedScrollView");
-console.log(styledItems)
