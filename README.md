@@ -130,4 +130,23 @@ export default function App() {
 }
 
 ```
+## possible style overview 
+```js
+const userStyle = NestedStyleSheet.create({
+    header: "bac-#292e34",
+    header$Text: x => x.foS("$fos-lg").co("$co-light").foW("bold"),
+    headerLine: "bac-inherit _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1",
+    headerLine$View: "ali-center",
+    headerLine$View$Text: x => x.foS("$fos-lg").foW("bold"),
+    disabled: x => x.op(.8).baC("$co-gray400"),
+    selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
+    alertViewButtonContainer: "fld:row ali:center mah-40 wi-100% fl-1 po-relative to-5",
+    alertViewButtonContainer$TouchableOpacity: "fl-1 he-100% _center bor-0 !important",
+    alertViewButtonContainer$TouchableOpacity$Text: "tea-center fos-12 fow-bold",
+    scrollMenuItem$View: x => x.fl(1)
+})
+
+```
+
+
 Now the library is developed recently and you may find some bugs, please report those and I will try fix theme asap. 
