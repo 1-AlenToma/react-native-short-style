@@ -14,7 +14,7 @@ const android = NestedStyleSheet.create({
 let _default = NestedStyleSheet.create({
     Text: "wi:100%",
     container: "fl:1",
-    "container.Text": "fow:bold tea:center",
+    "container> Text": "fow:bold tea:center",
     default: {
         fontSize: 16,
         lineHeight: 24,
@@ -23,7 +23,7 @@ let _default = NestedStyleSheet.create({
         position: "absolute"
     },
     actionButton: "wi:100% bobw:.5 boc:gray pa:5 juc:center ali:left",
-    "actionButton.Text": "fos-xs",
+    "actionButton > Text": "fos-xs",
     defaultSemiBold: {
         fontSize: 16,
         lineHeight: 24,

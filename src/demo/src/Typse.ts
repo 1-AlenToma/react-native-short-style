@@ -48,6 +48,22 @@ export type MouseProps = {
 
 export type CSS_String = string | ((css: CSSStyle) => CSSStyle);
 
+export type Rule = { selectors: string[]; style: Record<string, any> };
+
+export type StyleContextType = {
+    rules: Rule[];
+    path: string[];
+    parent?: any;
+};
+
+export type SelectorPart = {
+    type: string;
+    pseudo?: string;
+    relation?: "descendant" | "child";
+    not?: SelectorPart[][]; // store inner selector
+    attrs?: { key: string; op?: string; value?: string }[];
+
+};
 
 export type GenericCSS<A, B = CSS_String, C = {}, D = {}, E = {}> = A | B | C | D | E;
 

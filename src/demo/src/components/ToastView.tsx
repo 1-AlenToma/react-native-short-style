@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Text, AnimatedView } from "./ReactNativeComponents";
+import { View, Text, AnimatedView, TouchableOpacity } from "./ReactNativeComponents";
 import { CSS_String, Size, ToastProps } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "../States";
@@ -7,7 +7,7 @@ import { newId } from "../config";
 import { useAnimate, useTimer } from "../hooks";
 import { ProgressBar } from "./ProgressBar";
 import { Icon } from "./Icon";
-import { Platform, StatusBar, TouchableOpacity } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 
 export const ToastView = () => {
     globalData.hook("screen", "alertViewData.toastData");
@@ -123,8 +123,8 @@ export const ToastView = () => {
             }]
         }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(10000).joinRight(data.css)}>
             <View>
-                <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).alI("flex-end").baC("$co-transparent")}>
-                    <TouchableOpacity onPress={() => state.visible = false}>
+                <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC("$co-transparent")}>
+                    <TouchableOpacity onPress={() => state.visible = false} css="wi-15">
                         <Icon type="AntDesign" css="co:white" name="close" size={15} />
                     </TouchableOpacity>
                 </View>

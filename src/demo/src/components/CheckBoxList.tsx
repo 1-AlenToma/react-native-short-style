@@ -22,8 +22,7 @@ const CheckBoxContext = React.createContext<CheckBoxListContext>({
 
 
 export const CheckBoxList = (props: CheckBoxListProps) => {
-    if (ifSelector(props.ifTrue) == false)
-        return null;
+
     const state = StateBuilder({
         ids: new Map(),
         isInit: false,
@@ -86,19 +85,23 @@ export const CheckBoxList = (props: CheckBoxListProps) => {
     }, [props.children])
 
     let items = Array.isArray(props.children) ? props.children : [props.children];
-
+    if (ifSelector(props.ifTrue) == false)
+        return null;
     return (
         <CheckBoxContext.Provider value={contextValue}>
+
             <ViewItem title={props.label} {...props}>
-                {
-                    items.map((x, i) => (
-                        <View key={i}>
-                            {x as any}
-                        </View>
-                    ))
-                }
+                <View css="CheckBoxList fl-1">
+                    {
+                        items.map((x, i) => (
+                            <View key={i}>
+                                {x as any}
+                            </View>
+                        ))
+                    }
+                </View>
             </ViewItem>
-        </CheckBoxContext.Provider>
+        </CheckBoxContext.Provider >
     )
 }
 

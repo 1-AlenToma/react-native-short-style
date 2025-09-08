@@ -135,6 +135,7 @@ export const ValueIdentity = {
 
         let isClassName = false;
         let parsedValue = rest;
+        let important = false;
 
         // Check for $className notation
         if (parsedValue.startsWith("$")) {
@@ -142,12 +143,26 @@ export const ValueIdentity = {
             parsedValue = parsedValue.slice(1); // remove the $
         }
 
+        if (/-!important/gi.test(parsedValue)){
+            parsedValue = parsedValue.replace(/-!important/gi, "");
+            important = true;
+            console.log(parsedValue)
+        }
+
         return {
             key,
             value: parsedValue,
             kvalue: value,
-            isClassName
+            isClassName,
+            important
         };
+    },
+
+    cleanCss: (css: string) => {
+        if (!css || typeof css !== "string") return "";
+        const cleanedCss = css.replace(/\s*(:|-)\s*/g, "$1");
+        return cleanedCss.replace(/(?:^|\s)(?!\w+[:\-]-?\d+(?:\.\d+)?)(\S+)/g, "").trim();
+
     },
     splitCss: (css: string) => {
         if (!css || typeof css !== "string") return [];
@@ -191,11 +206,14 @@ export const ValueIdentity = {
         globalData.tStorage.set(cacheKey, result);
         return result;
     },
-    getClasses: (css: string, globalStyle: any, itemIndex?: number) => {
+    getClasses: (css: string, globalStyle?: any, itemIndex?: number) => {
         let items = ValueIdentity.splitCss(css);
+
         let props: any = {};
         for (let item of items) {
-            if (item && !ValueIdentity.has(item) && !(item in props) && item in globalStyle) {
+            if (/!important/gi.test(item))
+                continue;
+            if (item && !ValueIdentity.has(item) && !(item in props) && (globalStyle == undefined || item in globalStyle)) {
                 props[item] = item;
             }
             if (item && itemIndex != undefined) {

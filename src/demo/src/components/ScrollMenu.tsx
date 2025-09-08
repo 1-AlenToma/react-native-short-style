@@ -75,7 +75,6 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
             onLayout={({ nativeEvent }) => {
                 //  if (!state.size)
                 state.size = nativeEvent.layout;
-
             }}
             css={x => x.joinLeft("wi-100% he-100% fl-1").joinRight(props.css)}
             style={props.style}>

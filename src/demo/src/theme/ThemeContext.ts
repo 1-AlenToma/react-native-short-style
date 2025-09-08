@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext } from "../Typse";
+import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Dimensions } from "react-native";
 
@@ -7,6 +7,12 @@ export const ThemeContext = React.createContext({
     selectedIndex: 0,
     themes: []
 } as IThemeContext);
+
+// --- Context ---
+export const StyleContext = React.createContext<StyleContextType>({
+    rules: [],
+    path: [],
+});
 
 export const InternalThemeContext = React.createContext({
     add: (id: string, element: React.ReactNode, isStattic?: boolean) => { },

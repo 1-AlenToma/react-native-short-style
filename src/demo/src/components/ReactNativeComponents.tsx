@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as Native from "react-native";
-import { Styleable } from "../styles";
+import { CMBuilder } from "../styles";
 import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps, ImageProps, FlatListProps } from "react-native/types";
 import { GenericViewProps, GenericView, DomPath } from "../Typse";
 import * as NativeSlider from '@miblanchard/react-native-slider';
@@ -11,8 +11,8 @@ const AnimatedTouchable = Native.Animated.createAnimatedComponent(Native.Touchab
 export const CreateView = function <T extends object, P>(view: any, name?: string) {
     name = name ?? view.displayName ?? view;
     let cacheName = view.displayName ?? name;
-    let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = Styleable(view, name));
-    View.displayName = `Styled(${name ?? cacheName})`
+    let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = new CMBuilder(name, view)).fn();
+    View.displayName = `Styled(${name ?? cacheName})`;
     return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => DomPath<React.ReactElement<P>, P>);
 }
 

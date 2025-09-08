@@ -154,15 +154,21 @@ export const clearAll = () => {
 const css_translator = (
   css?: string,
   styleFile?: any,
-  propStyle?: any,
   id?: string
-): object & { _props: any } => {
-  let cssItem = { _props: {}, important: {} };
+): object & { _props: any, important?: any } => {
+  let important = {};
+  let cssItem = { _props: {} };
   if (!css || css.trim().length <= 0) return cssItem;
   id = id ?? css;
 
   if (Storage.has(id))
     return { ...Storage.get(id) };
+
+  const assign = (a: any, b: any) => {
+    let important = { ...a.important ?? {} };
+    Object.assign(a, b)
+    Object.assign(a.important, important);
+  }
 
   let CSS = styleFile;
   let translatedItem = extractProps(css);
@@ -174,14 +180,18 @@ const css_translator = (
   }
 
   let items = ValueIdentity.splitCss(css);
-  if (items && items.length > 0)
+  let isImportant = /(^|[^-])!important\b/.test(css);
+  if (items && items.length > 0) {
     for (let c of items) {
-      if (!c || c.trim().length <= 0)
+      if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
         continue;
       let style = CSS[c] ?? CSS[c.toLowerCase()];
-      let important = CSS[`${c}.important`] ?? CSS[`${c.toLowerCase()}.important`];
+      let _isImportend = isImportant;
       if (style === undefined && ValueIdentity.has(c)) {
         let kValue = ValueIdentity.keyValue(c);
+        if (kValue.important) {
+          _isImportend = true;
+        }
         let k = kValue.key;
         let value = kValue.isClassName ? kValue.value : checkObject(checkNumber(kValue.value));
         if (typeof value == "string" && /(undefined)|(null)/gi.test(value))
@@ -194,11 +204,11 @@ const css_translator = (
 
 
         let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
+
         if (short) {
-          if (!propStyle || propStyle[short])
-            cssItem[short] = value;
+          (_isImportend ? important : cssItem)[short] = value;
         } else {
-          cssItem[k] = value;
+          (_isImportend ? important : cssItem)[k] = value;
           if (__DEV__)
             console.warn(kValue, "not found in react-native style props, but we will still add it")
         }
@@ -207,32 +217,26 @@ const css_translator = (
 
 
       if (style && typeof style === "string") {
-        style = css_translator(style, styleFile, propStyle);
+        style = css_translator(style, styleFile);
         CSS[c] = { ...style } // so as to not parse it again
       }
 
       if (style) {
         if (style._props) {
-          //  style = { ...style } // this so CSS retains the props propert
           Object.assign(cssItem._props, style._props)
           delete style._props;
         }
 
-        if (important) {
-          Object.assign(cssItem.important, style);
-        } else {
-          Object.assign(cssItem, style)
-        }
+        important = { ...important, ...style.important }
+        //Object.assign(important, style);
+        Object.assign(cssItem, style)
         continue;
       }
     }
-
-  if (cssItem.important) {
-    Object.assign(cssItem, cssItem.important);
-    delete cssItem.important;
   }
-  Storage.set(id, cssItem);
-  return { ...cssItem };
+
+  Storage.set(id, { ...cssItem, important: { ...important } });
+  return { ...cssItem, important: { ...important } }
 };
 
 export default css_translator;

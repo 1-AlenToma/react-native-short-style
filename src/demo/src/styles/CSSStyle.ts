@@ -13,6 +13,52 @@ type zIndex = `$zi-${keyof typeof defaultTheme.zIndex}` | (ValueType["zIndex"] &
 type BorderRadius = `$bor-${keyof typeof defaultTheme.borderRadius}` | (number & {});
 type Spacing = `$sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {});
 type SizeValue<K extends string> = `${Sizes}${K}` | number | (string & {});
+type Display =
+    // Outside-inside keywords
+    | "block"
+    | "inline"
+    | "run-in"
+    // Flow layout
+    | "flow"
+    | "flow-root"
+    // Flex layout
+    | "flex"
+    | "inline-flex"
+    // Grid layout
+    | "grid"
+    | "inline-grid"
+    // Table layout
+    | "table"
+    | "inline-table"
+    | "table-row-group"
+    | "table-header-group"
+    | "table-footer-group"
+    | "table-row"
+    | "table-cell"
+    | "table-column-group"
+    | "table-column"
+    | "table-caption"
+    // Ruby layout
+    | "ruby"
+    | "ruby-base"
+    | "ruby-text"
+    | "ruby-base-container"
+    | "ruby-text-container"
+    // Box values
+    | "contents"
+    | "none"
+    | "list-item"
+    // Legacy values
+    | "inline-block"
+    // Global values
+    | "inherit"
+    | "initial"
+    | "unset";
+
+// If you want to allow template literal "custom extension" like your example:
+type DisplayValue = Display | (string & {});
+
+
 // referer refernce to a function in the ThemeContainer.przIndexovider to handle parsing/changing props
 export type CSSProps<T extends object> = T & StyledProps & { refererId?: string; }
 
@@ -585,7 +631,7 @@ export class CSSStyle extends ExtraCssStyle {
     }
 
     /** Add display */
-    di(value?: ValueType["display"] | null) {
+    di(value?: DisplayValue | null) {
         return this.add(ShortStyles.display, value);
     }
 
@@ -1114,9 +1160,15 @@ export class CSSStyleSheetStyle extends CSSStyle {
     private eqs: { css: CSSStyleSheetStyle | string, index: string | number }[] = [];
 
     //** override all css with this */
-    important() {
-        if (this.value.indexOf("!important") == -1)
+    importantAll() {
+        if (this.value.indexOf(" !important") == -1)
             this.value += " !important";
+        return this;
+    }
+
+    // make value !important eg bac-red-!important
+    importantValue() {
+        this.value += "-!important";
         return this;
     }
 

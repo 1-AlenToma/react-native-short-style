@@ -1,8 +1,8 @@
-import { ThemeContext, globalData, InternalThemeContext } from "./ThemeContext";
+import { ThemeContext, globalData, InternalThemeContext, StyleContext } from "./ThemeContext";
 import * as React from "react";
-import { IThemeContext } from "../Typse";
+import { IThemeContext, Rule } from "../Typse";
 import StateBuilder from "../States";
-import { newId, clearAllCss } from "../config";
+import { newId, clearAllCss, currentTheme } from "../config";
 import { View, AlertView, ToastView } from "../components";
 import { Platform } from "react-native";
 
@@ -60,9 +60,15 @@ const StaticView = () => {
             </React.Fragment>
         ))
     )
-
-
 }
+
+function parseStyles(obj: Record<string, any>): Rule[] {
+    return Object.entries(obj).map(([selector, style]) => ({
+        selectors: selector.split(",").map((s) => s.trim()),
+        style,
+    }));
+}
+
 
 const ThemeInternalContainer = ({ children }: any) => {
     const state = StateBuilder({
@@ -70,6 +76,7 @@ const ThemeInternalContainer = ({ children }: any) => {
         staticItems: new Map<string, { el: any, onchange: Function }>(),
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
     }).ignore("items", "containerSize", "staticItems").build();
+
 
     const contextValue = {
         add: (id: string, element: React.ReactNode, isStattic?: boolean) => {
@@ -115,6 +122,7 @@ const ThemeInternalContainer = ({ children }: any) => {
 
 
     return (
+
         <InternalThemeContext.Provider value={contextValue}>
             <View onLayout={(event) => {
                 if (Platform.OS !== "web") {
@@ -156,13 +164,13 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     const state = StateBuilder({
         selectedIndex: props.selectedIndex
     }).build();
+
     React.useEffect(() => {
         let events = globalData.appStart();
         if (props.storage)
             globalData.storage = props.storage as any;
         return () => events.forEach(x => x.remove());
     }, [])
-
 
     React.useEffect(() => {
         if (props.storage)
@@ -177,12 +185,18 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     if (!globalData.icons)
         globalData.icons = props.icons ?? {} as any;
 
+    const theme = currentTheme(props);
+  //  console.log(theme)
+    const rules = parseStyles(theme);
+
     return (
-        <ThemeContext.Provider value={props}>
-            <ThemeInternalContainer>
-                {props.children}
-            </ThemeInternalContainer>
-        </ThemeContext.Provider>
+        <StyleContext.Provider value={{ rules, path: [], parent: undefined }}>
+            <ThemeContext.Provider value={props}>
+                <ThemeInternalContainer>
+                    {props.children}
+                </ThemeInternalContainer>
+            </ThemeContext.Provider>
+        </StyleContext.Provider>
     )
 
 }

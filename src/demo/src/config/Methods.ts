@@ -133,6 +133,6 @@ export const setRef = (ref: any, item: any) => {
 export const refCreator = function <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any) {
     name = view.displayName || name;
     (forwardRef as any).displayName = `StyledItem(${name})`;
-    (forwardRef as any).name = `StyledItem(${name})`;
+    //(forwardRef as any).name = `StyledItem(${name})`;
     return React.forwardRef(forwardRef) as T;
 }

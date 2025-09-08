@@ -1,561 +1,460 @@
-import cssTranslator from "./cssTranslator";
+import React, { useRef } from "react";
+import {
+    View as RNView,
+    Text as RNText,
+    TouchableOpacity,
+    Platform,
+} from "react-native";
+import { globalData, InternalThemeContext, StyleContext, ThemeContext } from "../theme/ThemeContext";
+import { CSSProps, CSSStyle } from "./CSSStyle";
+import { currentTheme, ifSelector, newId, refCreator, setRef, ValueIdentity } from "../config";
+import { SelectorPart, Rule, StyleContextType } from "../Typse";
 import NestedStyleSheet from "./NestedStyleSheet";
-import * as React from "react";
-import * as reactNative from "react-native";
-import { ifSelector, newId, currentTheme, refCreator, setRef, HElement, toArray } from "../config";
-import { ThemeContext, globalData } from "../theme/ThemeContext";
-import { ButtonProps, DomPath, InternalStyledProps, StyledProps } from "../Typse";
-import { CSSStyle, CSSProps } from "./CSSStyle";
-import { ValueIdentity } from "../config/CSSMethods";
-import { eventKeys, stylePropsNames } from "./propNames";
-import { reactRef } from "react-smart-state";
+import cssTranslator from "./cssTranslator";
 
+// --- Types ---
 
-function assignRf(item: DomPath<any, InternalStyledProps>, props: InternalStyledProps): DomPath<any, any> {
-  item._elemntsProps = props;
-  if (!item._elementsChildren)
-    item._elementsChildren = [];
-  item.___HTMLELEMENT = new HElement(item);
-  item.querySelector = item.___HTMLELEMENT.querySelector.bind(item.___HTMLELEMENT);
-  item.querySelectorAll = item.___HTMLELEMENT.querySelectorAll.bind(item.___HTMLELEMENT);
-  return item;
-}
+class IParent {
+    index?: number;
+    total?: number;
+    parent?: IParent;
+    childrenPaths: { type: string, index: number, typeIndex: number }[] = [];
+    classPath: string[] = [];
+    props: Record<string, any> = {};
 
-class CSS {
-  css: string;
-  styleFile: any;
-  constructor(styleFile: any, css?: string) {
-    this.css = ` ${(css || "").trim()} `;
-    this.styleFile = styleFile;
-  }
-
-  append(css: string) {
-    if (css && css.length > 0) {
-      //    console.log(css, "this", this.css)
-      this.css = this.css.replace(css, "");
+    reg(type: string, index: number) {
+        if (!this.childrenPaths.find(x => x.index == index && x.type == type))
+            this.childrenPaths.push({ type, index, typeIndex: this.childrenPaths.filter(x => x.type == type).length });
     }
-    this.add(css)
-    return this;
-  }
-
-  add(...keys: string[]) {
-    for (let k of keys) {
-      if (!k || k == "undefined")
-        continue;
-      if (k.trim().endsWith(".") || k.trim().length == 0)
-        continue;
-      k = k.trim();
-      if (this.css.indexOf(` ${k} `) === -1 && (k in this.styleFile || ValueIdentity.has(k)))
-        this.css += `${k.trim()} `;
-    }
-
-    return this;
-  }
-
-  prepend(...keys: string[]) {
-    for (let k of keys) {
-      if (!k || k == "undefined")
-        continue;
-      if (k.trim().endsWith(".") || k.trim().length == 0)
-        continue;
-      k = k.trim();
-      if (this.css.indexOf(` ${k} `) === -1 && (k in this.styleFile || ValueIdentity.has(k)))
-        this.css = `${k.trim()} ` + this.css;
-    }
-
-    return this;
-  }
-
-  classes() {
-    return ValueIdentity.getClasses(this.css, this.styleFile);
-  }
-
-  distinct() {
-    let items = new CSS(this.styleFile, "").add(
-      ...ValueIdentity.splitCss(this.css)
-    );
-    return items.css;
-  }
-
-  toString() {
-    return this.distinct();
-  }
-}
-
-
-class InternalStyledContext {
-  props: InternalStyledProps;
-  prevContext: InternalStyledContext;
-  styleFile: any;
-  elementposition: number = 0;
-  generatedStyle: any;
-  prevCSS?: string;
-  cpyCss: string;
-  cssProps: any = {};
-  items: Map<string, string> = new Map();
-  id: string = newId();
-  viewName: string;
-  css: any = undefined;
-  views: DomPath<any, any> = {
-    _elementsChildren: []
-  }
-  constructor(viewName) {
-    this.viewName = viewName;
-  }
-
-  setViews(item: DomPath<any, any>) {
-    let children = this.views._elementsChildren;
-    this.views = item;
-    this.views._elementsChildren = children;
-  }
-
-  registerView(item: DomPath<any, any>) {
-    if (!this.views._elementsChildren.includes(item))
-      this.views._elementsChildren.push(item);
-  }
-
-  register(id: string) {
-    this.items.set(id, id);
-  }
-
-  remove(id: string) {
-    this.items.delete(id);
-  }
-
-  indexOf(id: string) {
-    return [...this.items.values()].indexOf(id);
-  }
-
-  isLast(id: string) {
-    let items = [...this.items.values()];
-    return items.indexOf(id) == items.length - 1;
-  }
-
-
-  getCss() {
-    if (this.css && typeof this.css == "function")
-      return this.css(new CSSStyle()).toString();
-    return (this.css ?? "") as string;
-  }
-
-  cleanCss() {
-    return this.getCss();
-  }
-
-  update(id: string, css: any, props: InternalStyledProps, styleFile: any, prevContext?: InternalStyledContext) {
-    this.id = id;
-    this.props = props;
-    this.prevContext = prevContext;
-    this.styleFile = styleFile;
-    this.css = css;
-  }
-
-  changed() {
-    return this.getCss() !== this.prevCSS || this.prevContext.changed?.();
-  }
-
-  position() {
-    let name = this.viewPath();
-  }
-
-  viewPath() {
-    let pk = this.prevContext?.viewPath ? this.prevContext.viewPath() ?? "" : "";
-    if (pk.length > 0 && !pk.endsWith("."))
-      pk += ".";
-    pk += this.viewName ?? "";
-    return pk ?? "";
-  }
-
-  classNames() {
-    let classNames = ValueIdentity.getClasses(this.cleanCss(), this.styleFile, this.prevContext?.indexOf?.(this.id) ?? undefined);
-    return classNames;
-  }
-
-  join() {
-    if (!this.changed())
-      if (this.prevCSS != undefined)
-        return this.cpyCss;
-
-    let itemIndex = this.prevContext?.indexOf?.(this.id);
-    let isLast = this.prevContext?.isLast?.(this.id);
-    let name = this.viewName;
-    let parent = new CSS(this.styleFile, this.prevContext.join?.());
-    let cpyCss = new CSS(this.styleFile, this.cleanCss())
-    if (itemIndex != undefined)
-      for (let s of this.classNames()) {
-        cpyCss.prepend(` ${s}_${itemIndex}`);
-        if (isLast)
-          cpyCss.prepend(` ${s}_last`);
-      }
-
-    for (let s of parent.classes()) {
-      if (itemIndex != undefined)
-        cpyCss.prepend(` ${s}.${name}_${itemIndex}`);
-      cpyCss.prepend(` ${s}.${name}`);
-
-      if (isLast)
-        cpyCss.prepend(` ${s}_last`);
-    }
-
-    cpyCss.prepend(name, itemIndex != undefined ? `${name}_${itemIndex}` : "", this.viewPath()).add(this.cleanCss());
-
-    this.prevCSS = this.getCss();
-
-    return (this.cpyCss = cpyCss.toString());
-  }
 }
 
 
 
-let CSSContext = React.createContext<InternalStyledContext>({} as any);
 
-class StyledComponent extends React.Component<CSSProps<InternalStyledProps> & { cRef: any, themeContext: any, activePan?: boolean }, {}> {
-  static contextType = CSSContext;
-  refItem: {
-    id: string,
-    contextValue: InternalStyledContext,
-    style: any[],
-    selectedThemeIndex: number,
-    currentStyle: any,
-    init: boolean,
-    nextProps: any,
-  }
+// --- Selector Parser ---
+function parseSelector(selector: string): SelectorPart[] {
+    const parts: SelectorPart[] = [];
+    const regex =
+        /(\s*>\s*|\s+)?([A-Za-z0-9_.*\[\]=!'"-]+)(?::(first-child|last-child|nth\((\d+)\)|eq\((\d+)\)|not\(([^)]+)\)))?/g;
 
+    let match: RegExpExecArray | null;
 
-  getExtraProps() {
-    let keys = Object.keys(this.props ?? {});
-    let data = {};
-    for (let k of keys) {
-      if (k in eventKeys && this[k])
-        data[k] = this[k].bind(this);
-    }
-    return data;
-  }
+    while ((match = regex.exec(selector))) {
+        const [, rel, rawType, pseudo, nth, eq, notArg] = match;
+        let pseudoVal: string | undefined;
+        let notParts: SelectorPart[][] | undefined;
 
-  getNextProps() {
-    return this.refItem.nextProps ?? this.props ?? {};
-  }
-
-  componentDidMount() {
-    this.refItem.init = true;
-  }
-
-  validateChilden(a: any, b: any) {
-    if (a === b) return false;
-    let arrayA = toArray(a);
-    let arrayB = toArray(b);
-
-    if (arrayA.length !== arrayB.length) return true;
-    if (arrayA.length >= 5) return a !== b; // to many children, then skip loop
-    for (let i = 0; i < arrayA.length; i++) {
-      if (arrayA[i] !== arrayB[i])
-        return true;
-    }
-
-    return false;
-
-  }
-
-  getKeys(a, b) {
-    const aKeys = Object.keys(a ?? {});
-    const bKeys = Object.keys(b ?? {})
-    const keys = {
-      ks: aKeys,
-      hasChange: aKeys.length !== bKeys.length
-    };
-
-    return keys;
-  }
-
-  validateStyle(a, b) {
-    if (a === b) return false;
-    if (typeof a !== "object" || typeof b !== "object") return true;
-
-    const arrayA = toArray(a);
-    const arrayB = toArray(b);
-
-    if (arrayA.length !== arrayB.length) return true;
-
-    for (let i = 0; i < arrayA.length; i++) {
-      const v1 = arrayA[i];
-      const v2 = arrayB[i];
-
-      if (v1 === v2) continue;
-
-      const { hasChange, ks } = this.getKeys(v1, v2);
-      if (hasChange) return true;
-
-      for (let k = 0; k < ks.length; k++) {
-        if (v1[ks[k]] !== v2[ks[k]]) return true;
-      }
-    }
-
-    return false;
-  }
-
-
-
-
-  validateProps(a: any, b: any) {
-    const execludedKeys = ["themeContext", "css"]; // already validated keys
-    const keys = this.getKeys(a, b);
-    if (keys.hasChange)
-      return true;
-    for (let k of keys.ks) {
-      if (execludedKeys.includes(k) || eventKeys[k])
-        continue;
-      let v1 = a[k];
-      let v2 = b[k];
-
-      if (v1 !== v2) {
-        if (k === "children") {
-          if (this.validateChilden(v1, v2))
-            return true;
-        } else if (!stylePropsNames[k] || this.validateStyle(v1, v2)) {
-          return true;
+        if (pseudo === "first-child" || pseudo === "last-child") pseudoVal = pseudo;
+        else if (nth) pseudoVal = `nth(${nth})`;
+        else if (eq) pseudoVal = `eq(${eq})`;
+        else if (pseudo?.startsWith("not")) {
+            if (notArg) {
+                const selectors = notArg.split(/\s*,\s*/).map(s => s.trim()).filter(Boolean);
+                notParts = selectors.map((sel) => parseSelector(sel));
+            }
         }
-      }
-    }
 
-    return false;
-  }
-
-
-  shouldComponentUpdate(nextProps: Readonly<StyledProps & { readonly View: any; readonly viewPath: string; readonly fullParentPath?: string; readonly classNames?: string[]; } & { refererId?: string; } & { cRef: (c) => void; themeContext: any; activePan?: boolean; }>, nextState: Readonly<{}>, nextContext: any): boolean {
-    return this.validateUpdate(nextProps);
-  }
-
-  validateUpdate(nextProps) {
-    let props: CSSProps<InternalStyledProps> & { cRef: any, themeContext: any } = { ...nextProps }
-    if (props?.themeContext != undefined) {
-      if (props.themeContext.selectedIndex !== this.props.themeContext.selectedIndex) {
-        this.refItem.currentStyle = currentTheme(props.themeContext);
-        return true;
-      }
-      delete props.themeContext;
-    }
-
-
-    if ("css" in props) {
-      //&& this.update({ ...this.props, ...nextProps })css is always string now
-      if (this.props.css !== nextProps.css) {
-        return true;
-      }
-      delete props.css;
-    }
-
-    if (this.validateProps(this.props, nextProps))
-      return true;
-
-    if (this.refItem.nextProps)
-      Object.assign(this.refItem.nextProps, nextProps);
-    else this.refItem.nextProps = nextProps;
-    return false;
-  }
-
-  constructor(props) {
-    super(props);
-    this.refItem = {
-      id: newId(),
-      contextValue: new InternalStyledContext(this.props.viewPath),
-      style: undefined,
-      selectedThemeIndex: this.props.themeContext.selectedIndex,
-      currentStyle: currentTheme(props.themeContext),
-      init: false,
-      nextProps: {}
-    }
-  }
-
-  getContext() {
-    return this.context as any;
-  }
-
-  componentWillUnmount() {
-    this.refItem.init = false;
-    this.getContext().remove?.(this.refItem.id);
-  }
-
-  update(props: any) {
-    let css = props?.css ?? "";
-    this.refItem.contextValue.update(this.refItem.id, css, props, this.refItem.currentStyle, this.context as any);
-    if (this.refItem.contextValue.changed() || this.refItem.selectedThemeIndex != this.props.themeContext.selectedIndex) {
-      this.refItem.style = undefined;
-      this.refItem.contextValue.prevCSS = undefined;
-      this.refItem.selectedThemeIndex = this.props.themeContext.selectedIndex;
-      return true;
-    }
-    return false;
-  }
-  myRef = null;
-  cRef(c: any) {
-    if (c === null)
-      return;
-    if (c === this.myRef) {
-      return;
-    }
-    try {
-      const props = this.getNextProps();
-      if (reactNative.Platform.OS != "web") {
-        let item = assignRf((c ?? {}) as DomPath<any, any>, { ...props, css: this.refItem.contextValue.getCss() });
-        this.refItem.contextValue.setViews(item);
-        (this.context as any)?.registerView?.(item);// to parent
-        setRef(props.cRef, item);
-      } else setRef(props.cRef, c);
-    } catch (e) {
-      console.error(e)
-    } finally {
-      this.myRef = c;
-    }
-  }
-
-  render() {
-    let context: any = this.context;
-    context?.register?.(this.refItem.id);
-    const isText = this.props.View.displayName && this.props.View.displayName == "Text" && reactNative.Platform.OS == "web";
-    this.update(this.props);
-    if ((this.refItem.currentStyle && this.refItem.style == undefined)) {
-      let sArray = [];
-      let cpyCss = this.refItem.contextValue.join();
-      let tCss = cssTranslator(cpyCss, this.refItem.currentStyle, undefined);
-      if (tCss._props)
-        this.refItem.contextValue.cssProps = { ...tCss._props }
-      else this.refItem.contextValue.cssProps = {};
-      delete tCss._props;
-      if (tCss) sArray.push(tCss);
-      this.refItem.style = sArray;
-    }
-
-
-    let styles = [
-      isText && this.props.activePan ? { userSelect: "none" } : {},
-      ...toArray(this.refItem.style),
-      ...toArray(this.props.style),
-      ...toArray(this.refItem.contextValue.cssProps?.style)
-    ];
-
-    if (this.refItem.contextValue.cssProps?.style) {
-      delete this.refItem.contextValue.cssProps.style;
-    }
-
-    let rProps = { ...this.props, ...this.refItem.contextValue.cssProps, style: styles };
-    const refererId = this.refItem.contextValue.cssProps?.refererId ?? this.props.refererId;
-    if (refererId && this.props.themeContext.referers) {
-      let ref = this.props.themeContext.referers.find(x => x.id == refererId);
-      if (!ref) {
-        if (__DEV__)
-          console.warn("referer with id", refererId, "could not be found");
-      }
-      else {
-        if (ref.func) {
-          try {
-            rProps = ref.func(rProps);
-          } catch (e) {
-            if (__DEV__)
-              console.error(e);
-          }
+        // 🔹 Extract attributes [key=val]
+        const attrs: { key: string; op?: string; value?: string }[] = [];
+        const attrRegex = /\[([A-Za-z0-9_]+)\s*(?:(!=|=))\s*['"]?([^'"\]]+)['"]?\]/g;
+        let attrMatch: RegExpExecArray | null;
+        while (rawType && (attrMatch = attrRegex.exec(rawType))) {
+            const [, key, op, val] = attrMatch;
+            attrs.push({ key: key ?? "", op: op || undefined, value: val || undefined });
         }
-      }
 
+        const cleanType = rawType?.replace(/\[.*?\]/g, ""); // remove [attr]
+
+        parts.push({
+            type: cleanType || "*",
+            pseudo: pseudoVal,
+            relation: rel?.includes(">") ? "child" : "descendant",
+            not: notParts,
+            attrs: attrs.length > 0 ? attrs : undefined,
+        });
     }
-    this.refItem.nextProps = { ...rProps };
-    if (ifSelector(rProps.ifTrue) === false) {
-      return null;
-    }
-
-    const dataSet = __DEV__ && reactNative.Platform.OS == "web" && this.refItem.contextValue.cpyCss ? { css: "__DEV__ CSS:" + this.refItem.contextValue.cpyCss } : undefined;
-
-    return (
-      <CSSContext.Provider value={this.refItem.contextValue}>
-        <this.props.View
-          dataSet={dataSet}
-          viewPath={this.props.viewPath}
-          {...rProps}
-          {...this.getExtraProps()}
-          ref={this.cRef.bind(this)}
-        />
-      </CSSContext.Provider>
-    );
-  }
+    return parts;
 }
 
-for (let eventKey in eventKeys) {
-  if (eventKey !== "cRef")
-    StyledComponent.prototype[eventKey] = function (...args: any[]) {
-      return this.getNextProps()?.[eventKey]?.(...args); // Or this.refItem.nextProps[eventKey], if defined
+// FullPathNode now keeps classes per node
+type FullPathNode = string[];
+
+// Build fullPath hierarchy
+const expandFullPath = (parent: IParent | undefined, type: string, classPath: string[]): FullPathNode[] => {
+    const result: FullPathNode[] = [];
+    const traverse = (p?: IParent) => {
+        if (!p) return;
+        if (p.parent) traverse(p.parent);
+        result.push([...p.classPath, p.props?.type ?? "unknown"]);
     };
-}
-
-export class StyledItem {
-  view: any;
-  viewPath: string;
-
-  render(
-    props: CSSProps<InternalStyledProps> &
-      ButtonProps &
-      reactNative.TouchableOpacityProps &
-      reactNative.ViewProps,
-    ref: any
-  ) {
-
-    const themeContext = React.useContext(ThemeContext);
-
-    if (!themeContext) {
-      throw new Error("ThemeContext must be provided with themes and a default style");
-    }
-
-    const isTextWeb = this.view.displayName === "Text" && reactNative.Platform.OS === "web";
-
-    if (isTextWeb) {
-      globalData.hook("activePan");
-    }
-
-    const css = React.useMemo(() => {
-      if (props && typeof props.css === "function") {
-        return props.css(new CSSStyle()).toString();
-      }
-      return props?.css || "";
-    }, [props?.css]);
-    const ifTrue = props && ifSelector(props.ifTrue)
-    if (ifSelector(ifTrue) === false)
-      return null;
-
-
-    return (
-      <StyledComponent
-        {...props}
-        css={css}
-        activePan={isTextWeb ? globalData.activePan : undefined}
-        View={this.view}
-        ifTrue={ifTrue as any}
-        viewPath={this.viewPath}
-        themeContext={themeContext}
-        cRef={(c) => setRef(ref, c)}
-      />
-    );
-  }
-}
-
-
-
-
-const Styleable = function <T>(
-  View: T,
-  identifier: string
-) {
-  if (!identifier || identifier.trim().length <= 1)
-    throw "react-native-short-style needs an identifier"
-
-  let item = new StyledItem();
-  item.view = View;
-  item.viewPath = identifier;
-  const memView = refCreator<T & StyledProps>(item.render.bind(item), identifier, View);
-  return memView;
+    traverse(parent);
+    result.push([...classPath, type]);
+    return result;
 };
+
+// Compute indices, totals, typeIndex, totalTypes
+function buildNodeMeta(fullPath: FullPathNode[], parent: IParent | undefined, thisParent: IParent | undefined, type: string, index: number, total: number) {
+    const indices: number[] = [];
+    const totals: number[] = [];
+    const totalTypes: number[] = [];
+    const typeIndex: number[] = [];
+    const props: Record<number, Record<string, any>> = [];
+
+    let p: IParent | undefined = thisParent;
+    let i = fullPath.length - 1;
+
+    while (i >= 0) {
+        const nodeType = fullPath[i][fullPath[i].length - 1]; // last item is base type
+        indices[i] = p?.index ?? 0;
+        totals[i] = p?.total ?? 1;
+
+        const parentChildren = p?.parent?.childrenPaths ?? [];
+        typeIndex[i] = parentChildren.find(x => x.index === indices[i] && x.type === nodeType)?.typeIndex ?? 0;
+        totalTypes[i] = parentChildren.filter(x => x.type === nodeType).length;
+
+        props[i] = p?.props ?? {};
+
+        p = p?.parent;
+        i--;
+    }
+
+    // Override last node with current type/index/total
+    const lastIdx = fullPath.length - 1;
+    indices[lastIdx] = index;
+    totals[lastIdx] = total;
+    const lastParentChildren = parent?.childrenPaths ?? [];
+    typeIndex[lastIdx] = lastParentChildren.find(x => x.index === index && x.type === type)?.typeIndex ?? 0;
+    totalTypes[lastIdx] = lastParentChildren.filter(x => x.type === type).length;
+    props[lastIdx] = thisParent?.props ?? {};
+
+    return { indices, totals, totalTypes, typeIndex, props };
+}
+
+
+
+
+// --- Match selector ---
+function matchSelector(
+    fullPath: FullPathNode[],
+    selector: SelectorPart[],
+    indices: number[],
+    totals: number[],
+    totalTypes: any[],
+    typeIndex: any[],
+    props: Record<number, Record<string, any>>
+): boolean {
+
+    let p = fullPath.length - 1;
+    let s = selector.length - 1;
+
+    const checkPseudo = (sel: SelectorPart, idx: number, tot: number) => {
+        if (!sel.pseudo) return true;
+        if (sel.pseudo === "first-child") return idx === 0;
+        if (sel.pseudo === "last-child") return idx === tot - 1;
+        if (sel.pseudo.startsWith("nth(")) {
+            const nth = parseInt(sel.pseudo.match(/\d+/)?.[0] ?? "0", 10);
+            return idx + 1 === nth;
+        }
+        if (sel.pseudo.startsWith("eq(")) {
+            const eq = parseInt(sel.pseudo.match(/\d+/)?.[0] ?? "0", 10);
+            return idx === eq;
+        }
+        return true;
+    };
+
+    const checkAttrs = (sel: SelectorPart, currentPath: number): boolean => {
+        if (!sel.attrs) return true;
+        const nodeProps = props[currentPath] || {};
+        for (const { key, op, value } of sel.attrs) {
+            const actual = nodeProps[key];
+            if (op === "=" && String(actual) !== value) return false;
+            if (op === "!=" && String(actual) === value) return false;
+            if (!op && actual === undefined) return false;
+        }
+        return true;
+    };
+
+    const checkNot = (sel: SelectorPart, currentPath: number): boolean => {
+        if (!sel.not) return true;
+        for (const notGroup of sel.not) {
+            const pathSlice = fullPath.slice(0, currentPath + 1);
+            const indicesSlice = indices.slice(0, currentPath + 1);
+            const totalsSlice = totals.slice(0, currentPath + 1);
+            const totalTypesSlice = totalTypes.slice(0, currentPath + 1);
+            const typeIndexSlice = typeIndex.slice(0, currentPath + 1);
+            const propsSlice: Record<number, Record<string, any>> = {};
+            for (let i = 0; i <= currentPath; i++) propsSlice[i] = props[i] ?? {};
+            if (matchSelector(pathSlice, notGroup, indicesSlice, totalsSlice, totalTypesSlice, typeIndexSlice, propsSlice)) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    while (s >= 0) {
+        if (p < 0) return false;
+
+        const sel = selector[s];
+
+        const node = fullPath[p];
+        const typeMatches = sel.type === "*" || node.includes(sel.type);
+        if (!(typeMatches && checkPseudo(sel, typeIndex[p] ?? 0, totalTypes[p] ?? 1) && checkNot(sel, p) && checkAttrs(sel, p))) {
+            return false;
+        }
+
+        s--;
+
+        if (sel.relation === "child") {
+            p--; // must match immediate parent
+        } else if (s >= 0) {
+            const nextSel = selector[s];
+            let found = false;
+            let tempP = p - 1;
+            while (tempP >= 0) {
+                const nextNode = fullPath[tempP];
+                if (nextNode.includes(nextSel.type || "*") &&
+                    checkPseudo(nextSel, typeIndex[tempP] ?? 0, totalTypes[tempP] ?? 1) &&
+                    checkNot(nextSel, tempP) &&
+                    checkAttrs(nextSel, tempP)) {
+                    found = true;
+                    p = tempP;
+                    s--;
+                    break;
+                }
+                tempP--;
+            }
+            if (!found) return false;
+        } else {
+            p--;
+        }
+    }
+
+    return true;
+}
+
+
+// --- useStyled ---
+function useStyled(context: StyleContextType, type: string, index: number, total: number, variant?: string, thisParent?: IParent, systemTheme?: any) {
+    const current = variant ? `${type}.${variant}` : type;
+    const classNames = thisParent?.classPath ?? [];
+
+    const fullPath = expandFullPath(context.parent, current, classNames);
+
+    // Build indices, totals, typeIndex, totalTypes, props
+    const { indices, totals, typeIndex, totalTypes, props } = buildNodeMeta(fullPath, context.parent, thisParent, type, index, total);
+
+    let merged: Record<string, any> = {};
+    let important: Record<string, any> = {};
+
+    for (const rule of context.rules) {
+        for (const selStr of rule.selectors) {
+            const selectorParts = parseSelector(selStr);
+            const lastPart = selectorParts[selectorParts.length - 1];
+
+            if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
+                continue;
+
+            if (!matchSelector(fullPath, selectorParts, indices, totals, totalTypes, typeIndex, props))
+                continue;
+
+            if (typeof rule.style === "string") {
+                merged = { ...merged, ...cssTranslator(rule.style as any as string, systemTheme) };
+                if (merged.important) important = { ...important, ...merged.important };
+                merged = cleanStyle(merged);
+            } else {
+                const isWholeImportant = (rule.style as any)["!important"] === true;
+                for (const [key, value] of Object.entries(rule.style)) {
+                    if (key === "!important") continue;
+                    if (typeof value === "string" && value.endsWith("!important")) {
+                        important[key] = value.replace("!important", "").trim();
+                    } else if (isWholeImportant) {
+                        important[key] = value;
+                    } else if (!(key in important)) {
+                        merged[key] = value;
+                    }
+                }
+            }
+        }
+    }
+
+    return { ...merged, ...important };
+}
+
+
+
+
+const cleanStyle = (style: any, parse?: boolean) => {
+    if (parse)
+        style = { ...style, ...style.important };
+    if (style?.important)
+        delete style.important;
+    if (style?._props)
+        delete style?.props;
+    return style;
+}
+
+
+
+const cn = { View: RNView, Button: TouchableOpacity, Icon: RNView, Text: RNText, } as any;
+// --- StyleParent --- (simpler, no mapping)
+
+export class CMBuilder {
+    __name: string;
+    __View: any;
+    myRef: any = undefined;
+    constructor(name: string, view: any) {
+        this.__name = name;
+        this.__View = view;
+        //  console.log(view)
+    }
+
+    setRef(cRef: any, c: any) {
+        if (c === null)
+            return;
+        if (c === this.myRef) {
+            return;
+        }
+        try {
+            /* const props = this.getNextProps();
+             if (reactNative.Platform.OS != "web") {
+                 let item = assignRf((c ?? {}) as DomPath<any, any>, { ...props, css: this.refItem.contextValue.getCss() });
+                 this.refItem.contextValue.setViews(item);
+                 (this.context as any)?.registerView?.(item);// to parent
+                 setRef(props.cRef, item);
+             } else*/
+            setRef(cRef, c);
+        } catch (e) {
+            console.error(e)
+        } finally {
+            this.myRef = c;
+        }
+    }
+
+    fn() {
+        const bound: any = this.renderFirst.bind(this);
+        bound.__name = this.__name; // attach __name to the bound function
+        return refCreator(bound, this.__name, this.__View);
+    }
+
+    renderFirst(props: CSSProps<any>, ref: any) {
+        const RN = useRef<any>(this.render.bind(this)).current;
+        const css = React.useMemo(() => {
+            if (props && typeof props.css === "function") {
+                return props.css(new CSSStyle()).toString();
+            }
+            return props?.css || "";
+        }, [props?.css]);
+
+        const ifTrue = props && ifSelector(props.ifTrue)
+        if (ifSelector(ifTrue) === false)
+            return null;
+
+
+        RN.__name = this.__name;
+        return <RN {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
+    }
+
+    render({ children, __styleIndex, __styleTotal, variant, cRef, ...props }: CSSProps<any>) {
+        const context = React.useContext(StyleContext);
+        const themeContext = React.useContext(ThemeContext);
+        const systemTheme = currentTheme(themeContext);
+        //const id = useRef(newId()).current;
+        const CM = this.__View;
+        const childrenArray = React.Children.toArray(children).filter((c) => c != null);
+        const childTotal = childrenArray.length;
+        const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
+        const dataSet = __DEV__ && Platform.OS == "web" && props.css ? { css: "__DEV__ CSS:" + props.css, type: this.__name } : undefined;
+        const classNames = ValueIdentity.getClasses(props.css);
+        const className = classNames.join(" ");
+        //const css = ValueIdentity.cleanCss(props.css);
+        const css = props.css;
+
+
+        // console.log(context)
+        if (isTextWeb) {
+            globalData.hook("activePan");
+        }
+        const current = variant ? `${this.__name}.${variant}` : this.__name;
+        const fullPath = [...context.path, current];
+
+        const prt = new IParent();
+        prt.index = __styleIndex ?? 0;
+        prt.total = __styleTotal ?? context.parent?.total ?? 1;
+        prt.classPath = classNames.filter(Boolean);
+        prt.parent = context.parent;
+        prt.props = { className: classNames.join(" "), type: this.__name, ...props };
+        // console.log(prt.props)
+        context.parent?.reg(this.__name, __styleIndex ?? 0);
+        prt.classPath.forEach((x: string) => context.parent?.reg(x, __styleIndex ?? 0));
+
+        const regChild = (child: any, idx: number) => {
+            const typeName =
+                (child.type as any)?.__name ||
+                (child.type as any)?.displayName ||
+                (child.type as any)?.name ||
+                "unknown";
+
+            const classNames = ValueIdentity.getClasses(props.css);
+            classNames.forEach(x => prt.reg(x, idx))
+            prt.reg(typeName, idx);
+        }
+
+        const cloneChild = (childrens: any[]) => {
+            return React.Children.map(childrens, ((child, idx) => {
+                if (React.isValidElement(child as any) && child.type !== React.Fragment) {
+                    regChild(child, idx)
+                    return (React.cloneElement(child as any, {
+                        __styleIndex: idx,
+                        __styleTotal: childTotal,
+                    }));
+                }
+
+                if (React.isValidElement(child as any) && child.type === React.Fragment) {
+                    return (
+                        <React.Fragment key={idx}>
+                            {cloneChild(child.props.children)}
+                        </React.Fragment>
+                    );
+                }
+
+                return child;
+            }
+            ));
+        }
+
+        const mappedChildren = cloneChild(childrenArray)
+
+        let cssStyle = undefined
+        const style = useStyled(context, this.__name, __styleIndex ?? 0, __styleTotal ?? context.parent?.total ?? 1, variant, prt, systemTheme);
+
+        if (css && css.trim().length > 0)
+            cssStyle = cleanStyle(cssTranslator(css, systemTheme), true);
+
+
+
+        const styles = (Array.isArray(props.style) ? [style, cssStyle, ...props.style] : [style, cssStyle, props.style]).filter(Boolean);
+        if (isTextWeb && globalData.activePan)
+            styles.push({ userSelect: "none" });
+
+
+
+        if (childTotal === 0) return <CM dataSet={dataSet} {...props} ref={c => this.setRef(cRef, c)} style={styles} />
+
+        return (
+            <StyleContext.Provider
+                value={{
+                    rules: context.rules,
+                    path: fullPath,
+                    parent: prt,
+                }}>
+                <CM dataSet={dataSet} {...props} ref={c => this.setRef(cRef, c)} style={styles}>{mappedChildren}</CM>
+            </StyleContext.Provider>
+        );
+    };
+}
+
 
 export {
-  Styleable,
-  NestedStyleSheet,
-  cssTranslator
+    NestedStyleSheet,
+    cssTranslator
 };
-
-export * from "./CSSStyle";

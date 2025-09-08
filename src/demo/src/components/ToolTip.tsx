@@ -26,7 +26,9 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     } as ToolTipRef);
 
     const setPostion = () => {
-        if (state.ref)
+        
+        if (state.ref){
+          
             state.ref.measureInWindow((x, y, w, h) => {
                 state.pos = {
                     x: x,
@@ -37,6 +39,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
                     height: h
                 }
             });
+        }
 
     }
 
@@ -71,7 +74,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
                     top = 5
             }
 
-        }
+        } 
 
         const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);
         fn(state.id, (

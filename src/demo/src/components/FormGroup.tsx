@@ -20,7 +20,7 @@ export const FormItem = (props: FormItemProps) => {
         <View style={props.style} css={x => x.cls("_formItem", "FormItem").joinRight(props.css)}>
             <View css={x => x.flD(labelPosition == "Top" ? "column" : "row").if(labelPosition == "Top", "ali-flex-start", "ali-center juc-space-between")}>
                 <View css="fld-row">
-                    <View ifTrue={icon != undefined} css={css}>
+                    <View ifTrue={icon != undefined} css={x=> x.maW(20).joinRight(css)}>
                         {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                     </View>
                     <View ifTrue={props.title != undefined} css={css}>
