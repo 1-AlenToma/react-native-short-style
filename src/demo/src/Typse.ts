@@ -3,6 +3,20 @@ import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
 
+export class IParent {
+    index?: number;
+    total?: number;
+    parent?: IParent;
+    childrenPaths: { type: string, index: number, typeIndex: number }[] = [];
+    classPath: string[] = [];
+    props: Record<string, any> = {};
+
+    reg(type: string, index: number) {
+        if (!this.childrenPaths.find(x => x.index == index && x.type == type))
+            this.childrenPaths.push({ type, index, typeIndex: this.childrenPaths.filter(x => x.type == type).length });
+    }
+}
+
 export type VirtualItemSize = {
     size: number | "EstimatedItemSize";
     overscanCount?: number; // default 30 this is so there is no lags 

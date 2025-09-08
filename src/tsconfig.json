@@ -24,10 +24,10 @@
   "include": [
     "./**/*",
     "./test/*",
-    "./demo/src/*"
+    "./demo/*"
   ],
   "exclude": [
     "node_modules",
-    "demo"
+    "demo/node_modules"
   ]
 }
