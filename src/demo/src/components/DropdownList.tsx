@@ -2,7 +2,7 @@ import * as React from "react";
 import { TouchableOpacity, View, Text, TextInput } from "./ReactNativeComponents";
 import StateBuilder from "../States";
 import { ifSelector, optionalStyle, setRef } from "../config";
-import { DropdownItem, DropdownListProps, DropdownRefItem, VirtualScrollerViewRefProps, Size } from "../Typse";
+import { DropdownItem, DropdownListProps, DropdownRefItem, Size } from "../Typse";
 import { Modal } from "./Modal";
 import { ActionSheet } from "./ActionSheet";
 import { Icon } from "./Icon";
@@ -14,10 +14,10 @@ const DropDownItemController = ({ item, index, state, props }: { props: Dropdown
     return (
         <View onMouseEnter={() => setSelected(index)}
             onMouseLeave={() => setSelected(undefined)}
-            css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>
+            css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "selectedValue" : ""}`}>
             {
                 props.render ? props.render(item) : (
-                    <Text css={`fos-sm ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "_selectedValue" : ""}`}>{item.label}</Text>
+                    <Text css={`fos-sm ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "selectedValue" : ""}`}>{item.label}</Text>
                 )
             }
         </View>

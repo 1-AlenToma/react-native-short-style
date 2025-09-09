@@ -11,7 +11,7 @@ import { currentTheme, ifSelector, newId, refCreator, setRef, ValueIdentity } fr
 import NestedStyleSheet from "./NestedStyleSheet";
 import cssTranslator from "./cssTranslator";
 import { IParent } from "../Typse";
-import { cleanStyle, useStyled } from "../hooks";
+import { cleanStyle, useStyled, positionContext } from "../hooks";
 
 export class CMBuilder {
     __name: string;
@@ -48,6 +48,7 @@ export class CMBuilder {
     fn() {
         const bound: any = this.renderFirst.bind(this);
         bound.__name = this.__name; // attach __name to the bound function
+
         return refCreator(bound, this.__name, this.__View);
     }
 
@@ -66,94 +67,122 @@ export class CMBuilder {
 
 
         RN.__name = this.__name;
+        RN.displayName = `Styled(${this.__name})`;
         return <RN {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
     }
 
-    render({ children, __styleIndex, __styleTotal, variant, cRef, ...props }: CSSProps<any>) {
+    render({ children, variant, cRef, ...props }: CSSProps<any>) {
         const context = React.useContext(StyleContext);
         const themeContext = React.useContext(ThemeContext);
-        const systemTheme = currentTheme(themeContext);
-        //const id = useRef(newId()).current;
+        const posContext = React.useContext(positionContext);
+
         const CM = this.__View;
-        const childrenArray = React.Children.toArray(children).filter((c) => c != null);
+        const childrenArray = React.Children.toArray(children).filter(Boolean);
         const childTotal = childrenArray.length;
         const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
-        const dataSet = __DEV__ && Platform.OS == "web" && props.css ? { css: "__DEV__ CSS:" + props.css, type: this.__name } : undefined;
-        const classNames = ValueIdentity.getClasses(props.css);
-        const className = classNames.join(" ");
-        //const css = ValueIdentity.cleanCss(props.css);
+
+        // Memoized values
+        const classNames = React.useMemo(() => ValueIdentity.getClasses(props.css)?.filter(Boolean), [props.css]);
+        const className = React.useMemo(() => classNames.join(" "), [classNames]);
         const css = props.css;
+        const dataSet =
+            __DEV__ && Platform.OS === "web" && css
+                ? { css: "__DEV__ CSS:" + css, type: this.__name, classNames: className }
+                : undefined;
 
-
-        // console.log(context)
         if (isTextWeb) {
             globalData.hook("activePan");
         }
-        const current = variant ? `${this.__name}.${variant}` : this.__name;
-        const fullPath = [...context.path, current];
 
+        const current = variant ? `${this.__name}.${variant}` : this.__name;
+        const fullPath = React.useMemo(() => [...context.path, current], [context.path, current]);
+
+        // Parent info
         const prt = new IParent();
-        prt.index = __styleIndex ?? 0;
-        prt.total = __styleTotal ?? context.parent?.total ?? 1;
-        prt.classPath = classNames.filter(Boolean);
+        prt.index = posContext.index ?? 0;
+        prt.total = posContext.total ?? context.parent?.total ?? 1;
+        prt.classPath = classNames;
+        prt.type = this.__name;
         prt.parent = context.parent;
-        prt.props = { className: classNames.join(" "), type: this.__name, ...props };
-        // console.log(prt.props)
-        context.parent?.reg(this.__name, __styleIndex ?? 0);
-        prt.classPath.forEach((x: string) => context.parent?.reg(x, __styleIndex ?? 0));
+        prt.props = { className, type: this.__name, ...props };
+
+        context.parent?.reg(this.__name, prt.index);
+        prt.classPath.forEach((x: string) => context.parent?.reg(x, prt.index));
+
+
 
         const regChild = (child: any, idx: number) => {
-            const typeName =
+            let typeName: string =
                 (child.type as any)?.__name ||
                 (child.type as any)?.displayName ||
                 (child.type as any)?.name ||
                 "unknown";
 
-            const classNames = ValueIdentity.getClasses(props.css);
-            classNames.forEach(x => prt.reg(x, idx))
+            if (typeName.startsWith("Styled(")) {
+                typeName = typeName.replace(/((Styled)|(\()|(\)))/gi, "");
+            }
+
+            classNames.forEach((x) => prt.reg(x, idx));
             prt.reg(typeName, idx);
-        }
+        };
 
-        const cloneChild = (childrens: any[]) => {
-            return React.Children.map(childrens, ((child, idx) => {
-                if (React.isValidElement(child as any) && child.type !== React.Fragment) {
-                    regChild(child, idx)
-                    return (React.cloneElement(child as any, {
-                        __styleIndex: idx,
-                        __styleTotal: childTotal,
-                    }));
-                }
-
-                if (React.isValidElement(child as any) && child.type === React.Fragment) {
+        const cloneChild = (childrens: any[]) =>
+            React.Children.map(childrens, (child, idx) => {
+                if (React.isValidElement(child as any)) {
+                    if (child.type === React.Fragment) {
+                        return cloneChild(child.props.children);
+                    }
+                    regChild(child, idx);
+                    const posValue = { index: idx, total: childTotal };
                     return (
-                        <React.Fragment key={idx}>
-                            {cloneChild(child.props.children)}
-                        </React.Fragment>
+                        <positionContext.Provider key={idx} value={posValue}>
+                            {child}
+                        </positionContext.Provider>
                     );
                 }
-
                 return child;
-            }
-            ));
+            });
+
+        const mappedChildren = cloneChild(childrenArray);
+
+        const style = useStyled(
+            context,
+            this.__name,
+            prt.index,
+            prt.total,
+            variant,
+            prt,
+            themeContext.systemThemes
+        );
+
+        let cssStyle = React.useMemo(() => {
+            if (!css || css.trim().length === 0) return undefined;
+            return cssTranslator(css, themeContext.systemThemes);
+        }, [css, themeContext.systemThemes]);
+
+        //**
+        // style.important override cssStyle and cssStyle.important override the style.important
+        // and style tag override all */
+        if (style && style.important)
+            cssStyle = { ...cssStyle, ...style.important };
+        if (cssStyle.important)
+            cssStyle = { ...cssStyle, ...cssStyle.important };
+
+        const styles = (Array.isArray(props.style)
+            ? [style, cssStyle, ...props.style]
+            : [style, cssStyle, props.style]
+        ).filter(Boolean);
+
+        //  if (classNames.includes("virtualItemSelector"))
+        //    console.log(style)
+
+        if (isTextWeb && globalData.activePan) {
+            styles.push({ userSelect: "none" });
         }
 
-        const mappedChildren = cloneChild(childrenArray)
-
-        let cssStyle = undefined
-        const style = useStyled(context, this.__name, __styleIndex ?? 0, __styleTotal ?? context.parent?.total ?? 1, variant, prt, systemTheme);
-
-        if (css && css.trim().length > 0)
-            cssStyle = cleanStyle(cssTranslator(css, systemTheme), true);
-
-
-
-        const styles = (Array.isArray(props.style) ? [style, cssStyle, ...props.style] : [style, cssStyle, props.style]).filter(Boolean);
-        if (isTextWeb && globalData.activePan)
-            styles.push({ userSelect: "none" });
-
-
-
-        if (childTotal === 0) return <CM dataSet={dataSet} {...props} ref={c => this.setRef(cRef, c)} style={styles} />
+        if (childTotal === 0) {
+            return <CM dataSet={dataSet} {...props} ref={(c) => this.setRef(cRef, c)} style={styles} />;
+        }
 
         return (
             <StyleContext.Provider
@@ -161,11 +190,20 @@ export class CMBuilder {
                     rules: context.rules,
                     path: fullPath,
                     parent: prt,
-                }}>
-                <CM dataSet={dataSet} {...props} ref={c => this.setRef(cRef, c)} style={styles}>{mappedChildren}</CM>
+                }}
+            >
+                <CM
+                    dataSet={dataSet}
+                    {...props}
+                    ref={(c) => this.setRef(cRef, c)}
+                    style={styles}
+                >
+                    {mappedChildren}
+                </CM>
             </StyleContext.Provider>
         );
-    };
+    }
+
 }
 
 

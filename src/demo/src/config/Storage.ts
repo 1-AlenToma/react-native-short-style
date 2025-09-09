@@ -1,4 +1,3 @@
-import { Platform } from "react-native";
 import { globalData } from "../theme/ThemeContext";
 
 class TempStorage {

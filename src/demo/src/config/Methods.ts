@@ -54,12 +54,15 @@ export const renderCss = (css: string, style: any) => {
 }
 
 export const currentTheme = (context: IThemeContext) => {
-    let thisTheme = themeStyle();
-    let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
-    return {
-        ...thisTheme, ...selectedTheme, ...ComponentsStyles
+    const themes = React.useRef({}).current;
+    if (!themes[context.selectedIndex] && context.themes.length > 0 && context.defaultTheme) {
+        let thisTheme = themeStyle();
+        let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
+        themes[context.selectedIndex] = {
+            ...thisTheme, ...selectedTheme, ...ComponentsStyles
+        }
     }
-
+    return themes[context.selectedIndex];
 }
 
 export const clearAllCss = () => {

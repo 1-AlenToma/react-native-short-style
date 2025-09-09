@@ -10,11 +10,17 @@ export class IParent {
     childrenPaths: { type: string, index: number, typeIndex: number }[] = [];
     classPath: string[] = [];
     props: Record<string, any> = {};
+    type: string = "";
 
     reg(type: string, index: number) {
         if (!this.childrenPaths.find(x => x.index == index && x.type == type))
             this.childrenPaths.push({ type, index, typeIndex: this.childrenPaths.filter(x => x.type == type).length });
     }
+}
+
+export type PositionContext = {
+    index?: number;
+    total?: number;
 }
 
 export type VirtualItemSize = {
@@ -62,7 +68,11 @@ export type MouseProps = {
 
 export type CSS_String = string | ((css: CSSStyle) => CSSStyle);
 
-export type Rule = { selectors: string[]; style: Record<string, any> };
+export type Rule = {
+    selectors: string[];
+    style: Record<string, any>,
+    parsedSelector: SelectorPart[][]
+};
 
 export type StyleContextType = {
     rules: Rule[];
@@ -72,11 +82,9 @@ export type StyleContextType = {
 
 export type SelectorPart = {
     type: string;
-    pseudo?: string;
+    pseudos?: { name: string; arg?: string | SelectorPart[][]; }[];
     relation?: "descendant" | "child";
-    not?: SelectorPart[][]; // store inner selector
     attrs?: { key: string; op?: string; value?: string }[];
-
 };
 
 export type GenericCSS<A, B = CSS_String, C = {}, D = {}, E = {}> = A | B | C | D | E;
@@ -128,10 +136,6 @@ export type ButtonProps = {
     whilePressedDelay?: number;
 } & StyledProps & Omit<TouchableOpacityProps, "children"> & MouseProps;
 
-type Referer = {
-    id: string;
-    func: <T extends object>(props: T) => T;
-}
 
 export type IThemeContext = {
     /** selectedThemeIndex */
@@ -146,13 +150,6 @@ export type IThemeContext = {
      * referer refernce to a function in the ThemeContainer.provider to handle parsing/changing props
      * this could be refer from NestedStyleSheet style in x=> x.props({refererId:${the id}})
      */
-    referers?: Referer[];
-    /** Save the parsed css to a storage so as to make it faster at parsing.
-     * This is not needed on android and ios so use it only for web as it cant be saved locally
-     * when the web refreshed
-     * use it only if you see that the parsing is to slow.
-     * Normally not needed, Added it just incase
-     */
     storage?: Storage;
 
     /** Components Icon use the icons here
@@ -160,6 +157,9 @@ export type IThemeContext = {
      * icons={Icons}
      */
     icons?: Record<IConType, any>;
+
+    /** Used by the parser only */
+    readonly systemThemes?: Record<string, any>;
 }
 
 export type InternalThemeContext = {

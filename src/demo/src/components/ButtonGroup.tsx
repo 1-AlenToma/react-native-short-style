@@ -55,7 +55,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                 style={[props.scrollable ? { height: "auto" } : { flex: 1 }]} key={index}
                 css={x => x.cls("_buttonGroupButton", "ButtonGroupButton").if(props.isVertical == true, c => c.wi("100%")).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle)).joinRight(itemStyle?.container)}>
                 {
-                    props.render ? props.render(item, index) : <Text css={x => x.joinRight(itemStyle?.text).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle))}>{item}</Text>
+                    props.render ? props.render(item, index) : <Text css={x => x.joinRight(itemStyle?.text).if(state.selectedIndex.includes(index), c => c.joinRight(props.selectedStyle))}>{item}</Text>
                 }
             </TouchableOpacity>
         )

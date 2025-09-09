@@ -54,7 +54,8 @@ const themes = [
     },
     Icon: {
       color: "#000"
-    }
+    },
+    "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
   }),
   NestedStyleSheet.create({
     AnimatedView: {
@@ -70,7 +71,8 @@ const themes = [
       color: "#fff"
     },
     Icon: x => x.co("$co-light"),
-    header: "bac:red"
+    header: "bac:red",
+    "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
   })
 ]
 
@@ -81,29 +83,13 @@ export default function App() {
     el: undefined as DomPath<typeof View, any> | undefined
   }).ignore("el").build();
 
-  let el = useRef<DomPath<typeof View, any> | undefined>()
-
-
-  state.useEffect(() => {
-    if (state.el)
-      console.log("data", state.el.querySelector<HTMLElement>("#txt").innerHTML)
-  }, "el")
-
 
 
   const debug = false;
 
 
   return (
-    <ThemeContainer icons={icons} referers={[{
-      id: "iconHandler",
-      func: (props: any) => {
-        return props;
-        // edit the props
-        props.ifTrue = true;
-        return props;
-      }
-    }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+    <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
       <View css="bac-red !important" ref={c => state.el = c as any}>
         <View css={x => x.cls("button").baC("$co-blue100")}>

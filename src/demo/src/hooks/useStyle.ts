@@ -1,50 +1,13 @@
+import { parseSelector } from "../config/CssSelectorParser";
 import cssTranslator from "../styles/cssTranslator";
-import { IParent, SelectorPart, StyleContextType } from "../Typse";
+import { IParent, SelectorPart, StyleContextType, PositionContext } from "../Typse";
+import * as React from "react";
 
-// --- Selector Parser ---
-export function parseSelector(selector: string): SelectorPart[] {
-    const parts: SelectorPart[] = [];
-    const regex =
-        /(\s*>\s*|\s+)?([A-Za-z0-9_.*\[\]=!'"-]+)(?::(first-child|last-child|nth\((\d+)\)|eq\((\d+)\)|not\(([^)]+)\)))?/g;
+export const positionContext = React.createContext<PositionContext>({ index: 0, total: 0 })
 
-    let match: RegExpExecArray | null;
 
-    while ((match = regex.exec(selector))) {
-        const [, rel, rawType, pseudo, nth, eq, notArg] = match;
-        let pseudoVal: string | undefined;
-        let notParts: SelectorPart[][] | undefined;
 
-        if (pseudo === "first-child" || pseudo === "last-child") pseudoVal = pseudo;
-        else if (nth) pseudoVal = `nth(${nth})`;
-        else if (eq) pseudoVal = `eq(${eq})`;
-        else if (pseudo?.startsWith("not")) {
-            if (notArg) {
-                const selectors = notArg.split(/\s*,\s*/).map(s => s.trim()).filter(Boolean);
-                notParts = selectors.map((sel) => parseSelector(sel));
-            }
-        }
 
-        // 🔹 Extract attributes [key=val]
-        const attrs: { key: string; op?: string; value?: string }[] = [];
-        const attrRegex = /\[([A-Za-z0-9_]+)\s*(?:(!=|=))\s*['"]?([^'"\]]+)['"]?\]/g;
-        let attrMatch: RegExpExecArray | null;
-        while (rawType && (attrMatch = attrRegex.exec(rawType))) {
-            const [, key, op, val] = attrMatch;
-            attrs.push({ key: key ?? "", op: op || undefined, value: val || undefined });
-        }
-
-        const cleanType = rawType?.replace(/\[.*?\]/g, ""); // remove [attr]
-
-        parts.push({
-            type: cleanType || "*",
-            pseudo: pseudoVal,
-            relation: rel?.includes(">") ? "child" : "descendant",
-            not: notParts,
-            attrs: attrs.length > 0 ? attrs : undefined,
-        });
-    }
-    return parts;
-}
 
 // FullPathNode now keeps classes per node
 type FullPathNode = string[];
@@ -55,7 +18,7 @@ const expandFullPath = (parent: IParent | undefined, type: string, classPath: st
     const traverse = (p?: IParent) => {
         if (!p) return;
         if (p.parent) traverse(p.parent);
-        result.push([...p.classPath, p.props?.type ?? "unknown"]);
+        result.push([...p.classPath, p?.type ?? "unknown"]);
     };
     traverse(parent);
     result.push([...classPath, type]);
@@ -104,6 +67,7 @@ function buildNodeMeta(fullPath: FullPathNode[], parent: IParent | undefined, th
 
 
 // --- Match selector ---
+// --- Match selector ---
 function matchSelector(
     fullPath: FullPathNode[],
     selector: SelectorPart[],
@@ -111,95 +75,150 @@ function matchSelector(
     totals: number[],
     totalTypes: any[],
     typeIndex: any[],
-    props: Record<number, Record<string, any>>
+    props: Record<number, Record<string, any>>,
+    pathIndex: number = -1
 ): boolean {
 
-    let p = fullPath.length - 1;
-    let s = selector.length - 1;
+    if (pathIndex === -1) pathIndex = fullPath.length - 1;
+    let selectorIndex = selector.length - 1;
 
-    const checkPseudo = (sel: SelectorPart, idx: number, tot: number) => {
-        if (!sel.pseudo) return true;
-        if (sel.pseudo === "first-child") return idx === 0;
-        if (sel.pseudo === "last-child") return idx === tot - 1;
-        if (sel.pseudo.startsWith("nth(")) {
-            const nth = parseInt(sel.pseudo.match(/\d+/)?.[0] ?? "0", 10);
-            return idx + 1 === nth;
+    // --- Check pseudos ---
+    function checkPseudos(sel: SelectorPart, currentPath: number): boolean {
+        if (!sel.pseudos || sel.pseudos.length === 0) return true;
+
+        const tot = totals[currentPath] ?? 1;
+        const idx = indices[currentPath] ?? 0;
+        const typeIdx = typeIndex[currentPath] ?? 0;
+        const typeTot = totalTypes[currentPath] ?? 1;
+
+        for (const pseudo of sel.pseudos) {
+            const name = pseudo.name.toLowerCase();
+
+            switch (name) {
+                // --- Structural ---
+                case "first-child": if (idx !== 0) return false; break;
+                case "last-child": if (idx !== tot - 1) return false; break;
+                case "only-child": if (tot !== 1) return false; break;
+                case "first-of-type": if (typeIdx !== 0) return false; break;
+                case "last-of-type": if (typeIdx !== typeTot - 1) return false; break;
+                case "only-of-type": if (typeTot !== 1) return false; break;
+
+                // --- nth variants ---
+                case "nth": {
+                    const value = String(pseudo.arg ?? "").trim();
+                    if (/even/i.test(value)) { if (idx % 2 !== 0) return false; }
+                    else if (/odd/i.test(value)) { if (idx % 2 !== 1) return false; }
+                    else { const nth = parseInt(value, 10); if (idx + 1 !== nth) return false; }
+                    break;
+                }
+                case "nth-of-type": {
+                    const value = String(pseudo.arg ?? "").trim();
+                    if (/even/i.test(value)) { if (typeIdx % 2 !== 0) return false; }
+                    else if (/odd/i.test(value)) { if (typeIdx % 2 !== 1) return false; }
+                    else { const nth = parseInt(value, 10); if (typeIdx + 1 !== nth) return false; }
+                    break;
+                }
+
+                // --- eq shortcuts ---
+                case "eq": { const eq = parseInt(String(pseudo.arg ?? "0"), 10); if (idx !== eq) return false; break; }
+                case "eq-of-type": { const eq = parseInt(String(pseudo.arg ?? "0"), 10); if (typeIdx !== eq) return false; break; }
+
+                // --- :not(...) ---
+                case "not": {
+                    if (Array.isArray(pseudo.arg)) {
+                        for (const group of pseudo.arg) {
+                            // check descendants for match
+                            for (let d = currentPath; d < fullPath.length; d++) {
+                                if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, d)) {
+                                    return false; // excluded because descendant matches
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                // --- :has(...) ---
+                case "has": {
+                    if (!Array.isArray(pseudo.arg)) break;
+                    for (const group of pseudo.arg) {
+                        let found = false;
+                        for (let d = currentPath + 1; d < fullPath.length; d++) {
+                            if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, d)) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) return false; // required descendant missing
+                    }
+                    break;
+                }
+
+                default:
+                    break; // ignore unknown pseudos
+            }
         }
-        if (sel.pseudo.startsWith("eq(")) {
-            const eq = parseInt(sel.pseudo.match(/\d+/)?.[0] ?? "0", 10);
-            return idx === eq;
-        }
+
         return true;
-    };
+    }
 
-    const checkAttrs = (sel: SelectorPart, currentPath: number): boolean => {
-        if (!sel.attrs) return true;
-        const nodeProps = props[currentPath] || {};
+    // --- Check attributes ---
+    function checkAttrs(sel: SelectorPart, currentPath: number): boolean {
+        if (!sel.attrs || sel.attrs.length === 0) return true;
+        const nodeProps = props[currentPath] ?? {};
         for (const { key, op, value } of sel.attrs) {
             const actual = nodeProps[key];
-            if (op === "=" && String(actual) !== value) return false;
-            if (op === "!=" && String(actual) === value) return false;
-            if (!op && actual === undefined) return false;
-        }
-        return true;
-    };
-
-    const checkNot = (sel: SelectorPart, currentPath: number): boolean => {
-        if (!sel.not) return true;
-        for (const notGroup of sel.not) {
-            const pathSlice = fullPath.slice(0, currentPath + 1);
-            const indicesSlice = indices.slice(0, currentPath + 1);
-            const totalsSlice = totals.slice(0, currentPath + 1);
-            const totalTypesSlice = totalTypes.slice(0, currentPath + 1);
-            const typeIndexSlice = typeIndex.slice(0, currentPath + 1);
-            const propsSlice: Record<number, Record<string, any>> = {};
-            for (let i = 0; i <= currentPath; i++) propsSlice[i] = props[i] ?? {};
-            if (matchSelector(pathSlice, notGroup, indicesSlice, totalsSlice, totalTypesSlice, typeIndexSlice, propsSlice)) {
-                return false;
+            switch (op) {
+                case "=": if (String(actual) !== value) return false; break;
+                case "!=": if (String(actual) === value) return false; break;
+                case "^=": if (typeof actual !== "string" || !actual.startsWith(value)) return false; break;
+                case "$=": if (typeof actual !== "string" || !actual.endsWith(value)) return false; break;
+                case "*=": if (typeof actual !== "string" || !actual.includes(value)) return false; break;
+                case "~=": if (typeof actual !== "string" || !actual.split(/\s+/).includes(value)) return false; break;
+                case "|=": if (typeof actual !== "string" || (actual !== value && !actual.startsWith(value + "-"))) return false; break;
+                default: if (actual === undefined) return false;
             }
         }
         return true;
-    };
+    }
 
-    while (s >= 0) {
-        if (p < 0) return false;
+    // --- Main matching loop ---
+    while (pathIndex >= 0 && selectorIndex >= 0) {
+        const node = fullPath[pathIndex];
+        const sel = selector[selectorIndex];
 
-        const sel = selector[s];
-
-        const node = fullPath[p];
         const typeMatches = sel.type === "*" || node.includes(sel.type);
-        if (!(typeMatches && checkPseudo(sel, typeIndex[p] ?? 0, totalTypes[p] ?? 1) && checkNot(sel, p) && checkAttrs(sel, p))) {
+
+        if (!(typeMatches && checkPseudos(sel, pathIndex) && checkAttrs(sel, pathIndex))) {
             return false;
         }
 
-        s--;
+        selectorIndex--;
 
         if (sel.relation === "child") {
-            p--; // must match immediate parent
-        } else if (s >= 0) {
-            const nextSel = selector[s];
+            pathIndex--; // must match immediate parent
+        } else if (selectorIndex >= 0) {
+            // descendant relation
+            const nextSel = selector[selectorIndex];
             let found = false;
-            let tempP = p - 1;
-            while (tempP >= 0) {
+            for (let tempP = pathIndex - 1; tempP >= 0; tempP--) {
                 const nextNode = fullPath[tempP];
                 if (nextNode.includes(nextSel.type || "*") &&
-                    checkPseudo(nextSel, typeIndex[tempP] ?? 0, totalTypes[tempP] ?? 1) &&
-                    checkNot(nextSel, tempP) &&
+                    checkPseudos(nextSel, tempP) &&
                     checkAttrs(nextSel, tempP)) {
                     found = true;
-                    p = tempP;
-                    s--;
+                    pathIndex = tempP;
+                    selectorIndex--;
                     break;
                 }
-                tempP--;
             }
             if (!found) return false;
         } else {
-            p--;
+            pathIndex--;
         }
     }
 
-    return true;
+    return selectorIndex < 0; // all selector parts matched
 }
 
 
@@ -209,6 +228,7 @@ export function useStyled(context: StyleContextType, type: string, index: number
     const classNames = thisParent?.classPath ?? [];
 
     const fullPath = expandFullPath(context.parent, current, classNames);
+    //console.log(fullPath)
 
     // Build indices, totals, typeIndex, totalTypes, props
     const { indices, totals, typeIndex, totalTypes, props } = buildNodeMeta(fullPath, context.parent, thisParent, type, index, total);
@@ -217,37 +237,46 @@ export function useStyled(context: StyleContextType, type: string, index: number
     let important: Record<string, any> = {};
 
     for (const rule of context.rules) {
-        for (const selStr of rule.selectors) {
-            const selectorParts = parseSelector(selStr);
-            const lastPart = selectorParts[selectorParts.length - 1];
+        for (const item of rule.parsedSelector) {
+            //const selectorParts = parseSelector(selStr);
+            //  const selectorParts = selStr.
+            const lastPart = item[item.length - 1];
 
             if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
                 continue;
 
-            if (!matchSelector(fullPath, selectorParts, indices, totals, totalTypes, typeIndex, props))
-                continue;
+            /*  if (rule.selectors.find(x => x.indexOf("virtualItemSelector:nth") !== -1) && fullPath.find(x => x.indexOf("virtualItemSelector") != -1)) {
+                  console.log(rule)
+      
+              }*/
 
-            if (typeof rule.style === "string") {
-                merged = { ...merged, ...cssTranslator(rule.style as any as string, systemTheme) };
-                if (merged.important) important = { ...important, ...merged.important };
-                merged = cleanStyle(merged);
-            } else {
-                const isWholeImportant = (rule.style as any)["!important"] === true;
-                for (const [key, value] of Object.entries(rule.style)) {
-                    if (key === "!important") continue;
-                    if (typeof value === "string" && value.endsWith("!important")) {
-                        important[key] = value.replace("!important", "").trim();
-                    } else if (isWholeImportant) {
-                        important[key] = value;
-                    } else if (!(key in important)) {
-                        merged[key] = value;
+            if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
+                continue;
+           // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
+             //   console.log("here")
+
+
+                if (typeof rule.style === "string") {
+                    merged = { ...merged, ...cssTranslator(rule.style as any as string, systemTheme) };
+                    if (merged.important) important = { ...important, ...merged.important };
+                    merged = cleanStyle(merged);
+                } else {
+                    const isWholeImportant = (rule.style as any)["!important"] === true;
+                    for (const [key, value] of Object.entries(rule.style)) {
+                        if (key === "!important") continue;
+                        if (typeof value === "string" && value.endsWith("!important")) {
+                            important[key] = value.replace(/(\-)?!important/gi, "").trim();
+                        } else if (isWholeImportant) {
+                            important[key] = value;
+                        } else if (!(key in important)) {
+                            merged[key] = value;
+                        }
                     }
                 }
-            }
         }
     }
 
-    return { ...merged, ...important };
+    return { ...merged, important } as Record<string, any> & { important: typeof important };
 }
 
 

@@ -59,18 +59,6 @@ const buildShortCss = () => {
   return shortCss;
 };
 
-const splitSafe = (
-  item: string,
-  char: string,
-  index: number
-) => {
-  let vs = item.split(char);
-  if (vs.length > index) return vs[index].trim();
-  return "";
-};
-const has = (s: string, char: string) => {
-  return (s && char && s.toString().toUpperCase().indexOf(char.toString().toUpperCase()) !== -1);
-};
 
 const checkNumber = (value: string): any => {
   if (/^(-?)((\d)|((\d)?\.\d))+$/.test(value)) {
@@ -87,19 +75,6 @@ const checkObject = (value: string) => {
     }
   } catch (e) { }
   return value;
-};
-
-const cleanStyle = (
-  style: any,
-  propStyle: any
-) => {
-  let item = { ...style };
-  for (let k in style) {
-    if (k.trim().startsWith("$") || k.indexOf(".") != -1 || (propStyle && !propStyle[k])) {
-      delete item[k];
-    }
-  }
-  return item;
 };
 
 const cleanKey = (k: string) => {
@@ -163,12 +138,6 @@ const css_translator = (
 
   if (Storage.has(id))
     return { ...Storage.get(id) };
-
-  const assign = (a: any, b: any) => {
-    let important = { ...a.important ?? {} };
-    Object.assign(a, b)
-    Object.assign(a.important, important);
-  }
 
   let CSS = styleFile;
   let translatedItem = extractProps(css);

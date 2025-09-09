@@ -1172,19 +1172,6 @@ export class CSSStyleSheetStyle extends CSSStyle {
         return this;
     }
 
-    child(indexOrClassOrViewName: (number | "last" | (string & {})), css: ((x: CSSStyleSheetStyle) => CSSStyleSheetStyle) | string) {
-        if (!css)
-            throw "CSSStyleSheetStyle.view must containes css style";
-        let value: { css: CSSStyleSheetStyle, index: string | number } = {
-            index: indexOrClassOrViewName,
-            css: {} as any
-        }
-        if (typeof css == "function")
-            value.css = css(new CSSStyleSheetStyle()) as CSSStyleSheetStyle;
-        this.eqs.push(value);
-        return this;
-    }
-
     /** Used in NestedStyleSheet */
     getEqs(parentKey, item?: CSSStyleSheetStyle) {
         let items: { key: string, css: string }[] = [];
@@ -1203,27 +1190,6 @@ export class CSSStyleSheetStyle extends CSSStyle {
         }
 
         return items;
-    }
-
-    props<T extends object>(props: Omit<CSSProps<T>, "ref">) {
-        if (!props)
-            return this;
-        if (Array.isArray(props)) {
-            throw "CSSStyle props only accept json object";
-        }
-        let json = JSON.stringify(props, (k, v) => {
-            if (v instanceof Function) {
-                {
-                    if (k != "css")
-                        console.warn("CSSStyle props dose not accept Functions props other then function for css", "so", k, "will be ignored")
-                    else return (v(new CSSStyleSheetStyle()) as CSSStyle).toString();
-                }
-            }
-
-            return v;
-        });
-        this.add("props:", json);
-        return this;
     }
 }
 

@@ -5,6 +5,7 @@ import StateBuilder from "../States";
 import { newId, clearAllCss, currentTheme } from "../config";
 import { View, AlertView, ToastView } from "../components";
 import { Platform } from "react-native";
+import { parseSelector } from "../config/CssSelectorParser";
 
 
 const StaticItem = ({ onMounted, id, item }: any) => {
@@ -62,11 +63,16 @@ const StaticView = () => {
     )
 }
 
-function parseStyles(obj: Record<string, any>): Rule[] {
-    return Object.entries(obj).map(([selector, style]) => ({
-        selectors: selector.split(",").map((s) => s.trim()),
-        style,
-    }));
+function parseStyles(obj: Record<string, any>, selectedIndex: number): Rule[] {
+    const parsedTheme = React.useRef({}).current;
+    if (!parsedTheme[selectedIndex] && obj)
+        parsedTheme[selectedIndex] = Object.entries(obj).map(([selector, style]) => ({
+            selectors: selector.split(",").map((s) => s.trim()),
+            parsedSelector: selector.split(",").map(x => parseSelector(x.trim())),
+            style,
+        }));
+
+    return parsedTheme[selectedIndex];
 }
 
 
@@ -161,15 +167,14 @@ const ThemeInternalContainer = ({ children }: any) => {
 
 export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
-    const state = StateBuilder({
-        selectedIndex: props.selectedIndex
-    }).build();
+
+    const selectedIndex = React.useRef(props.selectedIndex);
 
     React.useEffect(() => {
         let events = globalData.appStart();
         if (props.storage)
             globalData.storage = props.storage as any;
-        return () => events.forEach(x => x.remove());
+        return () => events.forEach(x => x?.remove?.());
     }, [])
 
     React.useEffect(() => {
@@ -177,21 +182,22 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
             globalData.storage = props.storage as any;
     }, [props.storage])
 
-    if (state.selectedIndex != props.selectedIndex) {
+    if (selectedIndex.current != props.selectedIndex) {
         clearAllCss();
-        state.selectedIndex = props.selectedIndex;
+        selectedIndex.current = props.selectedIndex;
     }
 
     if (!globalData.icons)
         globalData.icons = props.icons ?? {} as any;
 
     const theme = currentTheme(props);
-  //  console.log(theme)
-    const rules = parseStyles(theme);
-
+     // console.log(theme)
+    const rules = parseStyles(theme, props.selectedIndex);
+   // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));
+    //  console.log(rules.length)
     return (
-        <StyleContext.Provider value={{ rules, path: [], parent: undefined }}>
-            <ThemeContext.Provider value={props}>
+        <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>
+            <ThemeContext.Provider value={{ ...props, systemThemes: theme }}>
                 <ThemeInternalContainer>
                     {props.children}
                 </ThemeInternalContainer>

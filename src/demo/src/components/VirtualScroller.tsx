@@ -126,7 +126,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
             itemSizes[startIndex] = size;
             //  validateTrigger();
         }}
-        css={x => x.joinLeft(context.props.itemStyle)}
+        css={x => x.joinLeft(context.props.itemStyle).cls("virtualItemSelector")}
         style={style}>
         {children}
     </View>)
@@ -143,7 +143,7 @@ const VirtualScrollerView = React.memo(({ startIndex }: { startIndex: number }) 
     const renderedItems = useDeferredMemo(() => {
         const isView = context.props.onItemLayout || (context.props.numColumns && context.props.numColumns > 1 && !isHorizontal);
         const Container: any = onItemPress ? TouchableOpacity : (isView ? View : React.Fragment);
-        const containerProps: any = isView || onItemPress ? { style: { flex: 1, backgroundColor: "transparent" } as ViewStyle } : undefined;
+        const containerProps: any = isView || onItemPress ? ({ style: { flex: 1, backgroundColor: "transparent" } as ViewStyle })  : undefined;
         const rows = context.itemRows.get(startIndex)
         return rows.map((item, i) => {
             const index = startIndex + i;
