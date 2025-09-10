@@ -86,12 +86,7 @@ const newId = () => Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math
 
 
 export const serilizeCssStyle = (style: any) => {
-  let key = "styleId" in style ? style["styleId"] : (style["styleId"] = newId())
-  key += Object.keys(style).length;
 
-  if (Storage.has(key)) {
-    return Storage.get(key);
-  }
 
   let sItem = {};
   let fn = (s: any, parentKey: string) => {
@@ -113,7 +108,7 @@ export const serilizeCssStyle = (style: any) => {
     let ck = cleanKey(k);
     sItem[ck] = fn(style[k], ck);
   }
-  Storage.set(key, sItem);
+
   return sItem;
 };
 
@@ -134,12 +129,11 @@ const css_translator = (
   let important = {};
   let cssItem = { _props: {} };
   if (!css || css.trim().length <= 0) return cssItem;
-  id = id ?? css;
 
-  if (Storage.has(id))
+  if (id !== undefined && Storage.has(id))
     return { ...Storage.get(id) };
 
-  let CSS = styleFile;
+  let CSS = styleFile ?? {};
   let translatedItem = extractProps(css);
   if (translatedItem._hasValue) {
     css = translatedItem.css;
@@ -154,9 +148,8 @@ const css_translator = (
     for (let c of items) {
       if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
         continue;
-      if (ValueIdentity.isClass(c))
-      {
-     //   console.log(c)
+      if (ValueIdentity.isClass(c)) {
+        //   console.log(c)
         c = c.trim().substring(1);
       }
       let style = CSS[c] ?? CSS[c.toLowerCase()];
@@ -208,8 +201,8 @@ const css_translator = (
       }
     }
   }
-
-  Storage.set(id, { ...cssItem, important: { ...important } });
+  if (id !== undefined)
+    Storage.set(id, { ...cssItem, important: { ...important } });
   return { ...cssItem, important: { ...important } }
 };
 

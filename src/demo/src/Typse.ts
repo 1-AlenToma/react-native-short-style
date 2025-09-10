@@ -3,6 +3,8 @@ import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
 
+export const StyledKey = "StyledKey";
+
 export class IParent {
     index?: number;
     total?: number;
@@ -189,6 +191,7 @@ export type GlobalState = {
     containerSize: Size;
     storage: CSSStorage;
     tStorage: CSSStorage;
+    themeIndex: number;
     icons?: Record<IConType, any>,
     appStart: () => EventListener[];
     alertViewData: {

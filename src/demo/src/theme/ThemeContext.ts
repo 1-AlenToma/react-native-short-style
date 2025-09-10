@@ -1,7 +1,8 @@
 import * as React from "react";
-import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType, CSSStorage } from "../Typse";
+import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType, CSSStorage, StyledKey } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Dimensions, Platform } from "react-native";
+
 
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
@@ -20,10 +21,26 @@ export const InternalThemeContext = React.createContext({
     totalItems: () => 1
 } as internalThemeContext)
 
+
+// detect hard reload of the web
+const detectHardReload = () => {
+
+    if (window.performance) {
+        if (String((window.performance.getEntriesByType("navigation")[0] as any)?.type ?? "") === "reload") {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+// load and clear the cach if needed
 const getWebStorage = () => {
     try {
-        if (Platform.OS == "web" && typeof window !== "undefined" && window.localStorage) {
-            let storage = window.localStorage;
+
+        if (!__DEV__ && Platform.OS == "web" && typeof window !== "undefined" && window.sessionStorage) {
+            let storage = window.sessionStorage;
             let item: CSSStorage = {
                 delete: (key: string) => storage.removeItem(key),
                 get: (key: string) => JSON.parse(storage.getItem(key)),
@@ -31,12 +48,16 @@ const getWebStorage = () => {
                 clear: () => storage.clear(),
                 has: (key: string) => storage.getItem(key) !== null
             }
-
+            if (detectHardReload())
+                Object.keys(storage).filter(x => {
+                    if (x.startsWith(StyledKey))
+                        storage.removeItem(x);
+                })
             return item;
         }
         return new Map();
     } catch (e) {
-        console.warn("Platform Web detected, localStorage could not be loaded from window. will be using local object(map) instead", e);
+        console.warn("Platform Web detected, sessionStorage could not be loaded from window. will be using local object(map) instead", e);
         return new Map();
     }
 }
@@ -49,6 +70,7 @@ export const globalData = StateBuilder<GlobalState>({
     activePan: false,
     panEnabled: true,
     icons: undefined,
+    themeIndex: 0,
     containerSize: { height: 0, width: 0 },
     alertViewData: {
         data: undefined,

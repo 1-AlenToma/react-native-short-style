@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
     View as RNView,
     Text as RNText,
@@ -7,11 +7,11 @@ import {
 } from "react-native";
 import { globalData, StyleContext, ThemeContext } from "../theme/ThemeContext";
 import { CSSProps, CSSStyle } from "./CSSStyle";
-import { currentTheme, ifSelector, newId, refCreator, setRef, ValueIdentity } from "../config";
+import { ifSelector, newId, refCreator, setRef, ValueIdentity } from "../config";
 import NestedStyleSheet from "./NestedStyleSheet";
-import cssTranslator from "./cssTranslator";
+import cssTranslator, { clearCss } from "./cssTranslator";
 import { IParent } from "../Typse";
-import { cleanStyle, useStyled, positionContext } from "../hooks";
+import { cleanStyle, useStyled, positionContext, useLocalRef } from "../hooks";
 
 export class CMBuilder {
     __name: string;
@@ -65,6 +65,7 @@ export class CMBuilder {
     }
 
     render({ children, variant, cRef, ...props }: CSSProps<any>) {
+        const id = useLocalRef(newId)
         const context = React.useContext(StyleContext);
         const themeContext = React.useContext(ThemeContext);
         const posContext = React.useContext(positionContext);
@@ -152,6 +153,7 @@ export class CMBuilder {
         const mappedChildren = cloneChild(childrenArray);
 
         const style = useStyled(
+            id,
             context,
             this.__name,
             prt.index,
@@ -185,6 +187,10 @@ export class CMBuilder {
         if (isTextWeb && globalData.activePan) {
             styles.push({ userSelect: "none" });
         }
+
+        useEffect(() => {
+            return () => clearCss(id);
+        }, [])
 
         if (childTotal === 0) {
             return <CM dataSet={dataSet} {...props} ref={(c) => this.setRef(cRef, c)} style={styles} />;

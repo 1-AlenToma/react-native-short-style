@@ -1,5 +1,9 @@
 import { globalData } from "../theme/ThemeContext";
-import { CSSStorage } from "../Typse"
+import { CSSStorage } from "../Typse";
+
+const getKey = (key: string) => {
+    return `CSSStyled_${key.replace(/[ ]/g, "")}_${globalData.themeIndex}`;
+}
 
 class TempStorage implements CSSStorage {
     data: Map<string, any> = new Map();
@@ -19,7 +23,7 @@ class TempStorage implements CSSStorage {
     }
 
     getKey(key: string) {
-        return `CSSStyled_${key}`;
+        return getKey(key);
     }
 
     set(key: string, item: any) {
@@ -47,7 +51,7 @@ class TempStorage implements CSSStorage {
 
 class LocalStorage implements CSSStorage {
     getKey(key: string) {
-        return `CSSStyled_${key}`;
+        return getKey(key);
     }
     set(key: string, item: any) {
         globalData.storage.set(this.getKey(key), item);

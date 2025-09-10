@@ -168,8 +168,6 @@ const ThemeInternalContainer = ({ children }: any) => {
 export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
 
-    const selectedIndex = React.useRef(props.selectedIndex);
-
     React.useEffect(() => {
         let events = globalData.appStart();
         if (props.storage)
@@ -180,18 +178,14 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     if (props.storage && globalData.storage !== props.storage)
         globalData.storage = props.storage;
 
-
-    if (selectedIndex.current != props.selectedIndex) {
-        clearAllCss();
-        selectedIndex.current = props.selectedIndex;
-
-    }
+    if (globalData.themeIndex !== props.selectedIndex)
+        globalData.themeIndex = props.selectedIndex;
 
     if (!globalData.icons)
         globalData.icons = props.icons ?? {} as any;
 
     const theme = currentTheme(props);
-   // console.log(theme)
+    // console.log(theme)
     const rules = parseStyles(theme, props.selectedIndex);
     // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));
     //  console.log(rules.length)

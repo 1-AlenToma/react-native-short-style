@@ -1,5 +1,5 @@
 import { parseSelector } from "../config/CssSelectorParser";
-import cssTranslator from "../styles/cssTranslator";
+import cssTranslator, { clearCss } from "../styles/cssTranslator";
 import { IParent, SelectorPart, StyleContextType, PositionContext } from "../Typse";
 import * as React from "react";
 
@@ -234,9 +234,14 @@ function matchSelector(
 
 
 // --- useStyled ---
-export function useStyled(context: StyleContextType, type: string, index: number, total: number, variant?: string, thisParent?: IParent, systemTheme?: any) {
+export function useStyled(parentId: string, context: StyleContextType, type: string, index: number, total: number, variant?: string, thisParent?: IParent, systemTheme?: any) {
+    const id = `${parentId}_useStyled`;
     const current = variant ? `${type}.${variant}` : type;
     const classNames = thisParent?.classPath ?? [];
+
+    React.useEffect(() => {
+        return () => clearCss(id);
+    })
 
     const fullPath = expandFullPath(context.parent, current, classNames);
     //console.log(fullPath)

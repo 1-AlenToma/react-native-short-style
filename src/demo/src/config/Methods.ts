@@ -1,7 +1,7 @@
 import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTranslator";
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
-import { AlertViewAlertProps, AlertViewProps, IThemeContext, ToastProps } from "../Typse";
+import { AlertViewAlertProps, AlertViewProps, IThemeContext, StyledKey, ToastProps } from "../Typse";
 import { CSSStyle } from "../styles/CSSStyle"
 import { PlatformStyleSheet } from "../theme/PlatformStyles";
 import React from "react";
@@ -53,16 +53,23 @@ export const renderCss = (css: string, style: any) => {
     return css_translator(css, style);
 }
 
+
+
 export const currentTheme = (context: IThemeContext) => {
+    const key = `${StyledKey}${context.selectedIndex}`;
     const themes = React.useRef({}).current;
-    if (!themes[context.selectedIndex] && context.themes.length > 0 && context.defaultTheme) {
-        let thisTheme = themeStyle();
-        let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
-        themes[context.selectedIndex] = {
-            ...thisTheme, ...selectedTheme, ...ComponentsStyles
+    if (__DEV__ || !globalData.storage.has(key)) {
+        if (!themes[context.selectedIndex] && context.themes.length > 0 && context.defaultTheme) {
+            let thisTheme = themeStyle();
+            let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
+            themes[context.selectedIndex] = {
+                ...thisTheme, ...selectedTheme, ...ComponentsStyles
+            }
         }
+
+        globalData.storage.set(key, themes[context.selectedIndex])
     }
-    return themes[context.selectedIndex];
+    return globalData.storage.get(key);
 }
 
 export const clearAllCss = () => {
