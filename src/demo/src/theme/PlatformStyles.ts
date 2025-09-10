@@ -20,7 +20,7 @@ const userStyle = NestedStyleSheet.create({
 
 export const PlatformStyleSheet = () => {
     return cachedCss[Platform.OS] ?? (cachedCss[Platform.OS] = Platform.OS == "web" ? NestedStyleSheet.create({
-        _formItem: x => x.cls("_overflow").maH(200).boBC(".co-gray300").boBW(.8).paR(5).di("block"),
+        _formItem: x => x.cls("_overflow").miH(50).boBC(".co-gray300").boBW(.8).paR(5).di("block"),
         "_formItem>View": x => x.maH("95%").cls("_overflow").flD("row").alI("center").pa(5),
         "_formItem >View>View>View>Icon": "mar-0",
         _formItemCenter: x => x.miH(40).flG(1).flD(null).alI("flex-end").juC("flex-end"),
@@ -60,7 +60,7 @@ export const PlatformStyleSheet = () => {
         ...userStyle
 
     }) : NestedStyleSheet.create({
-        _formItem: x => x.cls("_overflow").maH(100).boBC(".co-gray300").boBW(.8),
+        _formItem: x => x.cls("_overflow").miH(50).boBC(".co-gray300").boBW(.8),
         "_formItem>View": x => x.wi("100%").maH("95%").cls("_overflow").flD("row").juC("space-between").alI("center").pa(5),
         _formItemCenter: x => x.miH(40).cls("_center").flG(1).alI("flex-end"),
         "_formItemCenterTop>TextInput": x => x.add("outlineStyle", null),
@@ -83,7 +83,7 @@ export const PlatformStyleSheet = () => {
         _toast: x => x.zI(1).wi("80%").maW("80%").boR(".bor-sm").boC(".co-gray400").cls("_overflow _abc sh-sm").pa(5).maW("80%").miH(30),
         _toastProgressView: "_abc bo:0 he:8 zi:2 wi:105%",
         // Style for its child at position 0
-        "_toast>View:eq(0)": x => x.fl(1).fillView().flD("row").cls("_center").baC("transparent"),
+        "_toast>View:eq-of-type(0)": x => x.fl(1).fillView().flD("row").cls("_center").baC("transparent").importantValue(),
         _error: x => x.co(".co-light").baC(".co-error"),
         _info: x => x.co(".co-light").baC(".co-info"),
         _warning: x => x.co(".co-dark").baC(".co-warning"),
@@ -92,7 +92,7 @@ export const PlatformStyleSheet = () => {
         _fab: x => x.cls("_abc").zI(".zi-md").baC(".co-transparent"),
         _fabCenter: x => x.baC(".co-transparent").zI(2).boR(".bor-circle").size(50, 50).pa(8).cls("_center"),
         _formGroup: "fl-1 flg-1 maw:90% ali-center mab-25",
-        "_formGroup>View:eq(1)": "bor:5 bow:.5 boc:gray _center ma:5 fld-row _overflow wi-100% he-100%",
+        "_formGroup>View:eq-of-type(1)": "bor:5 bow:.5 boc:gray _center ma:5 fld-row _overflow wi-100% he-100% pat-20",
         "_formGroup>View>View": "fl-1 flg-1 wi-100%",
         ...userStyle
     }))

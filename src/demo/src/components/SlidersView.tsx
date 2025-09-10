@@ -8,7 +8,7 @@ import { CSS_String } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from './Icon';
 import StateBuilder from '../States';
-import { ViewStyle } from 'react-native';
+import { Platform, ViewStyle } from 'react-native';
 import * as NativeSlider from '@miblanchard/react-native-slider';
 import { globalData } from "../theme/ThemeContext";
 
@@ -31,15 +31,17 @@ export const SliderView = (props: NativeSlider.SliderProps & {
 
     const onChange = (value: any, index?: number) => {
         state.value = btnValue = value;
-        timer(() => {
-            state.sliding = false;
-        });
+
         (props.onSlidingComplete || props.onValueChange)?.(typeof value == "number" ? [value] : value, index ?? 0)
     }
 
     React.useEffect(() => {
         if (props.value !== state.value)
             state.value = props.value;
+        timer(() => {
+            state.sliding = false;
+        });
+        state.sliding = true;
     }, [props.value])
 
     const minus = () => {
@@ -83,7 +85,7 @@ export const SliderView = (props: NativeSlider.SliderProps & {
                     globalData.panEnabled = true;
                 }}
                 value={state.value}
-                containerStyle={{ ...props.containerStyle, flex: 1, width: "100%", overflow: props.enableButtons ? "hidden" : undefined, maxWidth: props.enableButtons ? "50%" : undefined }}
+                containerStyle={{ ...props.containerStyle, flex: 1, width: "100%", overflow: props.enableButtons ? "hidden" : undefined, maxWidth: props.enableButtons ? (Platform.OS == "web" ? "50%" : "75%") : undefined }}
                 onSlidingComplete={onChange} />
             <Button css={x => x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}

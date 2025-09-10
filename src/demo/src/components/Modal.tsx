@@ -15,6 +15,7 @@ export const Modal = (props: ModalProps) => {
     const context = React.useContext(InternalThemeContext);
     const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
+        easing: Easing.bounce
     });
 
     const state = StateBuilder(() => ({

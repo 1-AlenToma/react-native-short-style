@@ -60,7 +60,7 @@ export const FormGroup = (props: FormGroupProps & { children: (React.ReactElemen
                     <View css="bac-transparent">
                         <View ifTrue={props.title != undefined && props.formStyle != "Headless"}
                             css="wi-100% fl-0 flg-1 pa-5 header bac-transparent">
-                            <Text numberOfLines={1}>{props.title}</Text>
+                            <Text css="bac-transparent" numberOfLines={1}>{props.title}</Text>
                         </View>
                         <View css={x => x.maT(8).fillView().flG(1).paL(5).paR(5).baC(".co-transparent")}>
                             {
