@@ -4,9 +4,8 @@ import { Size, ToolTipProps, ToolTipRef } from "../Typse";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import StateBuilder from "../States";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
-
 import { Blur } from "./Blur";
-import { useTimer } from "../hooks";
+import { ReadyView } from "./ReadyView";
 
 export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) => {
 
@@ -28,7 +27,6 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     const setPostion = () => {
         
         if (state.ref){
-          
             state.ref.measureInWindow((x, y, w, h) => {
                 state.pos = {
                     x: x,
@@ -78,20 +76,20 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
 
         const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);
         fn(state.id, (
-            <View key={state.id} css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC("$co-transparent")}>
+            <ReadyView key={state.id} css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent")}>
                 <Blur css="zi:1 bac:transparent" onPress={() => state.visible = false} />
                 <View onLayout={({ nativeEvent }) => {
                     state.toolTipSize = nativeEvent.layout;
                     show();
                 }} style={[{
                     left: left,
-                    top: top
+                    top: top,
                 }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip")}>
                     {
-                        typeof props.text == "string" ? <Text selectable={true} css="fos-sm">{props.text}</Text> : props.text
+                        typeof props.text == "string" ? <Text selectable={true} css=".fos-sm">{props.text}</Text> : props.text
                     }
                 </View>
-            </View>
+            </ReadyView>
         ))
 
     }

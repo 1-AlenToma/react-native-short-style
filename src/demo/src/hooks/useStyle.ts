@@ -127,11 +127,16 @@ function matchSelector(
                 case "not": {
                     if (Array.isArray(pseudo.arg)) {
                         for (const group of pseudo.arg) {
+                            let startIndex = currentPath + 1; // start after current node
+                            const firstRelation = group[0]?.relation || "descendant";
                             // check descendants for match
-                            for (let d = currentPath; d < fullPath.length; d++) {
-                                if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, d)) {
+                            while (startIndex < fullPath.length) {
+                                if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, startIndex)) {
                                     return false; // excluded because descendant matches
                                 }
+
+                                if (firstRelation === "child") break; // only check immediate child
+                                startIndex++;
                             }
                         }
                     }
@@ -143,11 +148,17 @@ function matchSelector(
                     if (!Array.isArray(pseudo.arg)) break;
                     for (const group of pseudo.arg) {
                         let found = false;
-                        for (let d = currentPath + 1; d < fullPath.length; d++) {
-                            if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, d)) {
+                        let startIndex = currentPath + 1; // start after current node
+                        const firstRelation = group[0]?.relation || "descendant";
+                        while (startIndex < fullPath.length) {
+                            if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, startIndex)) {
                                 found = true;
                                 break;
                             }
+
+
+                            if (firstRelation === "child") break; // only check immediate child
+                            startIndex++;
                         }
                         if (!found) return false; // required descendant missing
                     }
@@ -252,27 +263,27 @@ export function useStyled(context: StyleContextType, type: string, index: number
 
             if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
                 continue;
-           // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
-             //   console.log("here")
+            // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
+            //   console.log("here")
 
 
-                if (typeof rule.style === "string") {
-                    merged = { ...merged, ...cssTranslator(rule.style as any as string, systemTheme) };
-                    if (merged.important) important = { ...important, ...merged.important };
-                    merged = cleanStyle(merged);
-                } else {
-                    const isWholeImportant = (rule.style as any)["!important"] === true;
-                    for (const [key, value] of Object.entries(rule.style)) {
-                        if (key === "!important") continue;
-                        if (typeof value === "string" && value.endsWith("!important")) {
-                            important[key] = value.replace(/(\-)?!important/gi, "").trim();
-                        } else if (isWholeImportant) {
-                            important[key] = value;
-                        } else if (!(key in important)) {
-                            merged[key] = value;
-                        }
+            if (typeof rule.style === "string") {
+                merged = { ...merged, ...cssTranslator(rule.style as any as string, systemTheme) };
+                if (merged.important) important = { ...important, ...merged.important };
+                merged = cleanStyle(merged);
+            } else {
+                const isWholeImportant = (rule.style as any)["!important"] === true;
+                for (const [key, value] of Object.entries(rule.style)) {
+                    if (key === "!important") continue;
+                    if (typeof value === "string" && value.endsWith("!important")) {
+                        important[key] = value.replace(/(\-)?!important/gi, "").trim();
+                    } else if (isWholeImportant) {
+                        important[key] = value;
+                    } else if (!(key in important)) {
+                        merged[key] = value;
                     }
                 }
+            }
         }
     }
 

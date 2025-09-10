@@ -24,7 +24,7 @@ export const FormItem = (props: FormItemProps) => {
                         {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                     </View>
                     <View ifTrue={props.title != undefined} css={css}>
-                        {props.title && typeof props.title == "string" ? <Text css="fos-sm fow:bold">{props.title}</Text> : props.title}
+                        {props.title && typeof props.title == "string" ? <Text css=".fos-sm fow:bold">{props.title}</Text> : props.title}
                     </View>
                     <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={props.info != undefined && labelPosition == "Top"} text={props.info}>
                         <Icon type="AntDesign" name="infocirlce" size={15} />
@@ -62,7 +62,7 @@ export const FormGroup = (props: FormGroupProps & { children: (React.ReactElemen
                             css="wi-100% fl-0 flg-1 pa-5 header bac-transparent">
                             <Text numberOfLines={1}>{props.title}</Text>
                         </View>
-                        <View css={x => x.maT(8).fillView().flG(1).paL(5).paR(5).baC("$co-transparent")}>
+                        <View css={x => x.maT(8).fillView().flG(1).paL(5).paR(5).baC(".co-transparent")}>
                             {
                                 props.children
                             }

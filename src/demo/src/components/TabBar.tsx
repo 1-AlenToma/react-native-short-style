@@ -169,7 +169,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         textTransform: "uppercase",
     }
     return (
-        <View css={x => x.cls("_tabBarMenu").if(position == "Bottom", x => x.boTC("$co-gray300").boTW(.5), x => x.boBC("$co-gray300").boBW(.5)).joinRight(header.style.c)} style={[header.style.o]}>
+        <View css={x => x.cls("_tabBarMenu").if(position == "Bottom", x => x.boTC(".co-gray300").boTW(.5), x => x.boBC(".co-gray300").boBW(.5)).joinRight(header.style.c)} style={[header.style.o]}>
             {position != "Top" ? border : null}
             <View css="_tabBarContainerView bac-transparent">
                 {menuItems.map((x, i) => (

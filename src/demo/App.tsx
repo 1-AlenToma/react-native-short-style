@@ -10,12 +10,6 @@ import {
   Button,
   Icon,
   NestedStyleSheet,
-  Modal,
-  ActionSheet,
-  TouchableOpacity,
-  AlertDialog,
-  CheckBox,
-  CheckBoxList,
   TabBar,
   TabView,
   ProgressBar,
@@ -29,14 +23,16 @@ import {
   ToolTip,
   FormItem,
   TextInput,
+  CSSStorage,
+  useLoader
 } from './src';
 import buildState from "./src/States";
 import GlobalStyles from './components/GlobalStyles';
-import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, ProgressView, ScrollMenuView } from './components';
+import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, MovingBall, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';
 import React, { useEffect, useRef } from 'react';
 import * as icons from "@expo/vector-icons";
-import { DomPath } from './src/Typse';
+
 
 const themes = [
   NestedStyleSheet.create({
@@ -55,7 +51,8 @@ const themes = [
     Icon: {
       color: "#000"
     },
-    "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
+    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+    // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
   }),
   NestedStyleSheet.create({
     AnimatedView: {
@@ -70,9 +67,9 @@ const themes = [
     TextInput: {
       color: "#fff"
     },
-    Icon: x => x.co("$co-light"),
+    Icon: x => x.co(".co-light"),
     header: "bac:red",
-    "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
   })
 ]
 
@@ -80,24 +77,29 @@ export default function App() {
   const state = buildState({
     id: newId(),
     selectedTheme: 0,
-    el: undefined as DomPath<typeof View, any> | undefined
-  }).ignore("el").build();
+    loading: false
+  }).build();
 
 
 
   const debug = false;
 
+  useEffect(() => {
+  /*  (async () => {
+      const keys = (await AsyncStorage.getAllKeys()).filter(x => x.startsWith("CSSStyled_"));
+      const datas = await AsyncStorage.multiGet(keys);
+      datas.forEach(x => tempData.set(x[0], x[1]))
+      //console.log(tempData)
+      state.loading = false;
+    })();*/
+  }, [])
+
+  if (state.loading)
+      return null;
+
 
   return (
-    <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
-
-      <View css="bac-red !important" ref={c => state.el = c as any}>
-        <View css={x => x.cls("button").baC("$co-blue100")}>
-          <Text id='txt'>test</Text>
-          <Text id='txt'>test</Text>
-          <Text id='txt2'>test2</Text>
-        </View>
-      </View>
+    <ThemeContainer  icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       {debug ? null : (
         <TabBar ifTrue={false} position='Bottom' header={{
           selectedIconStyle: "color:red",
@@ -109,7 +111,7 @@ export default function App() {
         }}>
           <TabView title='Themes' icon={{ type: "AntDesign", name: "home", size: 20, css: "co:#000" }}>
             <Fab follow="Window" style={{ bottom: 50 }} position="RightBottom"
-              prefixContainerStyle={x => x.baC("$co-dark")} blureScreen={true} prefix={<Icon type="AntDesign" size={30} css={x => x.co("$co-light")} name='plus' />}>
+              prefixContainerStyle={x => x.baC(".co-dark")} blureScreen={true} prefix={<Icon type="AntDesign" size={30} css={x => x.co(".co-light")} name='plus' />}>
               <Button text='btn 1'></Button>
               <Button text='btn 1'></Button>
             </Fab>
@@ -154,6 +156,9 @@ export default function App() {
           <TabView title='Modal & Alert'>
             <ModalView />
             <StatusBar style="auto" />
+          </TabView>
+          <TabView disableScrolling={true} title="Moving Ball">
+            <MovingBall />
           </TabView>
           <TabView disableScrolling={true} title="ScrollMenu">
             <ScrollMenuView />

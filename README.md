@@ -88,7 +88,7 @@ const themes = [
     TextInput: {
       color: "#fff"
     },
-    Icon: x => x.props({ refererId: "iconHandler" }).co("$co-light"),
+    Icon: x => x.props({ refererId: "iconHandler" }).co(".co-light"),
     header: "bac:red"
   })
 ]
@@ -119,7 +119,7 @@ export default function App() {
     }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
      <View css="button bac-red fld-column" ref={el}>
-        <View css={x => x.cls("button").baC("$co-blue100")}>
+        <View css={x => x.cls("button").baC(".co-blue100")}>
           <Text id='txt'>test</Text>
           <Text id='txt'>test</Text>
           <Text id='txt2' css="tea-center bac-red wi-100%" someattr="kaskdj">test2</Text>
@@ -134,11 +134,11 @@ export default function App() {
 ```js
 const userStyle = NestedStyleSheet.create({
     header: "bac-#292e34",
-    header$Text: x => x.foS("$fos-lg").co("$co-light").foW("bold"),
+    header$Text: x => x.foS(".fos-lg").co(".co-light").foW("bold"),
     headerLine: "bac-inherit _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1",
     headerLine$View: "ali-center",
-    headerLine$View$Text: x => x.foS("$fos-lg").foW("bold"),
-    disabled: x => x.op(.8).baC("$co-gray400"),
+    headerLine$View$Text: x => x.foS(".fos-lg").foW("bold"),
+    disabled: x => x.op(.8).baC(".co-gray400"),
     selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
     alertViewButtonContainer: "fld:row ali:center mah-40 wi-100% fl-1 po-relative to-5",
     alertViewButtonContainer$TouchableOpacity: "fl-1 he-100% _center bor-0 !important",

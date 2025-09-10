@@ -30,13 +30,6 @@ export class CMBuilder {
             return;
         }
         try {
-            /* const props = this.getNextProps();
-             if (reactNative.Platform.OS != "web") {
-                 let item = assignRf((c ?? {}) as DomPath<any, any>, { ...props, css: this.refItem.contextValue.getCss() });
-                 this.refItem.contextValue.setViews(item);
-                 (this.context as any)?.registerView?.(item);// to parent
-                 setRef(props.cRef, item);
-             } else*/
             setRef(cRef, c);
         } catch (e) {
             console.error(e)
@@ -82,7 +75,12 @@ export class CMBuilder {
         const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
 
         // Memoized values
-        const classNames = React.useMemo(() => ValueIdentity.getClasses(props.css)?.filter(Boolean), [props.css]);
+        const classNames = React.useMemo(() => {
+            const cls = ValueIdentity.getClasses(props.css, themeContext.systemThemes);
+            // if (cls.length > 0)
+            //   console.log(cls.join(","));
+            return cls;
+        }, [props.css]);
         const className = React.useMemo(() => classNames.join(" "), [classNames]);
         const css = props.css;
         const dataSet =
@@ -126,22 +124,30 @@ export class CMBuilder {
             prt.reg(typeName, idx);
         };
 
-        const cloneChild = (childrens: any[]) =>
-            React.Children.map(childrens, (child, idx) => {
-                if (React.isValidElement(child as any)) {
-                    if (child.type === React.Fragment) {
-                        return cloneChild(child.props.children);
-                    }
-                    regChild(child, idx);
-                    const posValue = { index: idx, total: childTotal };
-                    return (
-                        <positionContext.Provider key={idx} value={posValue}>
-                            {child}
-                        </positionContext.Provider>
-                    );
+        const cloneChild = (childrens: any[]) => {
+            let chlds = React.Children.toArray(childrens);
+            let idx = 0;
+            let result: any[] = [];
+            while (chlds.length > 0) {
+                let child: any = chlds.shift();
+                if (child) {
+                    if (React.isValidElement(child as any)) {
+                        if (child.type === React.Fragment) {
+                            chlds.push(...React.Children.toArray(child.props.children))
+                        } else {
+                            regChild(child, idx);
+                            const posValue = { index: idx, total: childTotal };
+                            result.push((<positionContext.Provider key={idx} value={posValue}>
+                                {child}
+                            </positionContext.Provider>));
+                        }
+                        idx++;
+                    } else result.push(child);
                 }
-                return child;
-            });
+            }
+
+            return result;
+        }
 
         const mappedChildren = cloneChild(childrenArray);
 

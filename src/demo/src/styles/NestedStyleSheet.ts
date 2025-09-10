@@ -3,6 +3,11 @@ import { CSSStyle, CSSStyleSheetStyle } from "./CSSStyle";
 
 type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.TextStyle | ReactNative.ImageStyle | string | ((x: CSSStyleSheetStyle) => CSSStyle) };
 
+const validKeys = (key: string) => {
+  if (key.startsWith("."))
+    throw `style key(${key}) cannot start with .`;
+}
+
 class NestedStyleSheet {
   static create<T extends NamedStyles<T> | NamedStyles<any>>(obj: T & NamedStyles<any>): { [key: string]: number } {
     let keysItems = Object.keys(obj);
@@ -10,15 +15,24 @@ class NestedStyleSheet {
 
     while (keysItems.length > 0) {
       let key = keysItems.shift();
+      validKeys(key);
+      let value = oItem[key];
+      delete oItem[key];
+      key = key.replace(/((( )?)+)?([>:,*|!^~=\[\]])((( )?)+)/g, (_, __, ___, g1: any, g2: any, g3: any) => {
+        //console.log(g1, g2, g3)
+        return `${(g1?.length ?? 0) >= 0 && [">", "*"].includes(g2) ? " " : ""}${g2}${(g3?.length ?? 0) >= 0 && [">", "*"].includes(g2) ? " " : ""}`
+      }).trim()// clean key, remove space etc when needed
 
-      let value = obj[key];
+      if (value && typeof value == "string")
+        value = value.trim();
+      oItem[key] = value;
       if (value && typeof value == "function") {
         value = value(new CSSStyleSheetStyle()) as any;
       }
 
       if (value && value instanceof CSSStyleSheetStyle) {
         let eqs = value.getEqs(key);
-        oItem[key] = value = value.toString();
+        oItem[key] = value = value.toString().trim();
         for (let v of eqs) {
           if (!oItem[v.key]) {
             oItem[v.key] = v.css;
@@ -31,7 +45,7 @@ class NestedStyleSheet {
 
 
       if (value && typeof value == "function") {
-        oItem[key] = value = value(new CSSStyleSheetStyle()).toString();
+        oItem[key] = value = value(new CSSStyleSheetStyle()).toString().trim();
       }
 
 

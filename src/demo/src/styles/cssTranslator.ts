@@ -78,7 +78,7 @@ const checkObject = (value: string) => {
 };
 
 const cleanKey = (k: string) => {
-  return (k ?? "").indexOf("$") != -1 ? k.substring(1) : k;
+  return (k ?? "").indexOf(".") != -1 ? k.substring(1) : k;
 }
 
 const newId = () => Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
@@ -154,9 +154,14 @@ const css_translator = (
     for (let c of items) {
       if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
         continue;
+      if (ValueIdentity.isClass(c))
+      {
+     //   console.log(c)
+        c = c.trim().substring(1);
+      }
       let style = CSS[c] ?? CSS[c.toLowerCase()];
       let _isImportend = isImportant;
-      if (style === undefined && ValueIdentity.has(c)) {
+      if (style === undefined && (ValueIdentity.has(c))) {
         let kValue = ValueIdentity.keyValue(c);
         if (kValue.important) {
           _isImportend = true;

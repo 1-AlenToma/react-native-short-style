@@ -121,9 +121,15 @@ export const ValueIdentity = {
     has: (value: any) => {
         return value && typeof value == "string" && ValueIdentity.chars.find(x => value.indexOf(x) !== -1)
     },
+    isClass: (value: any) => {
+        return value && typeof value == "string" && (value.trim().startsWith("."))
+    },
     keyValue: (value: string) => {
+
         value = value.trim();
+        let isClassName = false;
         let parts = value.split(":");
+
 
         // Fallback to '-' if ':' is not present
         if (parts.length < 2) {
@@ -133,20 +139,24 @@ export const ValueIdentity = {
         const key = parts[0];
         const rest = parts.slice(1).join("-");
 
-        let isClassName = false;
+
         let parsedValue = rest;
         let important = false;
 
+
+
         // Check for $className notation
-        if (parsedValue.startsWith("$")) {
+        if (!(/^(\.( +)?(\d))/g.test(parsedValue.trim())) && parsedValue.trim().startsWith(".")) {
+          //  console.log(parsedValue)
             isClassName = true;
-            parsedValue = parsedValue.slice(1); // remove the $
+            parsedValue = parsedValue.slice(1); // remove the .
+            // value = value.slice(1);
         }
 
-        if (/-!important/gi.test(parsedValue)){
+        if (/-!important/gi.test(parsedValue)) {
             parsedValue = parsedValue.replace(/-!important/gi, "");
             important = true;
-            console.log(parsedValue)
+            //console.log(parsedValue)
         }
 
         return {
@@ -180,8 +190,7 @@ export const ValueIdentity = {
         let current = '';
         let depth = 0;
 
-        for (let i = 0; i < cleanedCss.length; i++) {
-            const char = cleanedCss[i];
+        for (let char of cleanedCss) {
 
             if (char === '(') {
                 depth++;
@@ -202,7 +211,6 @@ export const ValueIdentity = {
         if (current) {
             result.push(current);
         }
-
         globalData.tStorage.set(cacheKey, result);
         return result;
     },
@@ -211,9 +219,12 @@ export const ValueIdentity = {
 
         let props: any = {};
         for (let item of items) {
-            if (/!important/gi.test(item))
+            if (/!important/gi.test(item) || item === null)
                 continue;
-            if (item && !ValueIdentity.has(item) && !(item in props) && (globalStyle == undefined || item in globalStyle)) {
+            const isClass = ValueIdentity.isClass(item);
+            if (isClass)
+                item = item.trim().substring(1);
+            if (item && (!ValueIdentity.has(item) || isClass || (globalStyle == undefined || item in globalStyle)) && !(item in props)) {
                 props[item] = item;
             }
             if (item && itemIndex != undefined) {
@@ -222,6 +233,6 @@ export const ValueIdentity = {
                     props[item] = item;
             }
         }
-        return Object.keys(props)
+        return Object.keys(props).filter(x => x && x !== null && x.length > 0)
     }
 }

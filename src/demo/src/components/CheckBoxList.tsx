@@ -188,7 +188,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
                 }}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
                 <View style={{ backgroundColor: color(state.checked) }} css={`_checkBox_${labelPostion}`} >
-                    <Icon ifTrue={state.checked} type="AntDesign" css={x => x.co("$co-light")} name="check" size={24} />
+                    <Icon ifTrue={state.checked} type="AntDesign" css={x => x.co(".co-light")} name="check" size={24} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>

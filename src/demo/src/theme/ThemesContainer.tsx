@@ -31,7 +31,7 @@ const StaticFullView = () => {
     const items = [...context.items().items.entries()]
 
     return (
-        <View css={x => x.cls("_topPostion").zI("$zi-lg")} ifTrue={items.length > 0}>
+        <View css={x => x.cls("_topPostion").zI(".zi-lg")} ifTrue={items.length > 0}>
             {
                 items.map(([key, value], i) => (
                     <React.Fragment key={key}>
@@ -177,23 +177,23 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         return () => events.forEach(x => x?.remove?.());
     }, [])
 
-    React.useEffect(() => {
-        if (props.storage)
-            globalData.storage = props.storage as any;
-    }, [props.storage])
+    if (props.storage && globalData.storage !== props.storage)
+        globalData.storage = props.storage;
+
 
     if (selectedIndex.current != props.selectedIndex) {
         clearAllCss();
         selectedIndex.current = props.selectedIndex;
+
     }
 
     if (!globalData.icons)
         globalData.icons = props.icons ?? {} as any;
 
     const theme = currentTheme(props);
-     // console.log(theme)
+   // console.log(theme)
     const rules = parseStyles(theme, props.selectedIndex);
-   // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));
+    // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));
     //  console.log(rules.length)
     return (
         <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>

@@ -5,15 +5,20 @@ import { GenericViewProps, StyledProps, } from "../Typse";
 import createState from "../States";
 export const ReadyView = (props: Omit<Native.ViewProps, "ref"> & { timeout?: number } & StyledProps) => {
     const state = createState(() => ({
-        width: 0
-    })).timeout(props.timeout ?? 100).build();
+        size: undefined as any
+    })).ignore("size").timeout(props.timeout ?? 100).build();
+
+    React.useEffect(()=> {
+
+    }, [state.size])
 
 
-    return (<View {...props} css={x => x.fl(1).joinRight(props.css)} onLayout={(event) => {
-        state.width = event.nativeEvent.layout.width + event.nativeEvent.layout.height;
+    return (<View {...props} css={x => x.fl(1).joinRight(props.css)} 
+    onLayout={(event) => {
+        state.size = event.nativeEvent.layout;
         props.onLayout?.(event);
     }}>
-        {state.width > 0 ? props.children : null}
+        {state.size  ? props.children : null}
     </View>)
 }
 

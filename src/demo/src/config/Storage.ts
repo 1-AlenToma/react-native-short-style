@@ -1,6 +1,7 @@
 import { globalData } from "../theme/ThemeContext";
+import { CSSStorage } from "../Typse"
 
-class TempStorage {
+class TempStorage implements CSSStorage {
     data: Map<string, any> = new Map();
     lastSave: number = parseInt((new Date().getTime() / 1000).toString());
     private validate() {
@@ -44,7 +45,7 @@ class TempStorage {
     }
 }
 
-class LocalStorage {
+class LocalStorage implements CSSStorage {
     getKey(key: string) {
         return `CSSStyled_${key}`;
     }

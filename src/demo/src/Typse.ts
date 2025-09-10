@@ -36,23 +36,10 @@ export type ViewStyle = ReactNative.StyleProp<ReactNative.ViewStyle>;
 
 export type TextStyle = ReactNative.StyleProp<ReactNative.TextStyle>;
 
-export type ConvertedElement = {
-    querySelector: <T>(selector: string) => DomPath<T, unknown> | undefined;
-    querySelectorAll: <T>(selected: string) => DomPath<T, unknown>[];
-}
-
 export type ICSS = {
     props: string[]; // .button etc
 }
 
-export type DomPath<O, P> = O & {
-    querySelector: <T>(selector: string) => DomPath<T, unknown> | undefined;
-    querySelectorAll: <T>(selected: string) => DomPath<T, unknown>[];
-    _elementsChildren: DomPath<O, P>[],
-    _elemntsProps: P & InternalStyledProps;
-    ___HTMLELEMENT: ConvertedElement;
-    ___parent: DomPath<any, unknown> | undefined;
-}
 
 export type InternalStyledProps = StyledProps & {
     readonly View: any;
@@ -62,9 +49,14 @@ export type InternalStyledProps = StyledProps & {
 }
 
 export type MouseProps = {
-    onMouseEnter?: (event: any) => void;
-    onMouseLeave?: (event: any) => void;
-}
+    onMouseEnter?: (event: React.MouseEvent<any>) => void;
+    onMouseLeave?: (event: React.MouseEvent<any>) => void;
+    onMouseMove?: (event: React.MouseEvent<any>) => void;
+    onMouseDown?: (event: React.MouseEvent<any>) => void;
+    onMouseUp?: (event: React.MouseEvent<any>) => void;
+    onContextMenu?: (event: React.MouseEvent<any>) => void;
+};
+
 
 export type CSS_String = string | ((css: CSSStyle) => CSSStyle);
 
@@ -147,10 +139,10 @@ export type IThemeContext = {
      */
     defaultTheme: { [key: string]: number };
     /**
-     * referer refernce to a function in the ThemeContainer.provider to handle parsing/changing props
-     * this could be refer from NestedStyleSheet style in x=> x.props({refererId:${the id}})
+        cache the parsed style, right now its cached on start, on web its smater to use somthing like 
+        @react-native-async-storage/async-storage to save and retrieve the parsed styles
      */
-    storage?: Storage;
+    storage?: CSSStorage;
 
     /** Components Icon use the icons here
      * for expo simple import * as Icons from "@expo/vector-icons";
@@ -441,7 +433,7 @@ export type FormGroupProps = StyledProps & {
 }
 
 export type GenericViewProps<T, P> = P & StyledProps & MouseProps & {
-    ref?: React.Ref<DomPath<T, P>>
+    ref?: React.Ref<T>
     [key: string]: any;
 }
 export type GenericView<T, P> = Omit<T, "props" | "ref"> & {

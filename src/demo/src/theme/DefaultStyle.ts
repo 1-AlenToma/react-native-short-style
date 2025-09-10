@@ -275,8 +275,8 @@ export const defaultTheme = {
 };
 
 export const ComponentsStyles = NestedStyleSheet.create({
-  "_blur": x => x.cls("_topPostion").fl(1).cls("_center").baC("$co-black").op(.5),
-  "_topPostion": x => x.po("absolute").to(0).le(0).fillView().baC("$co-transparent").zI("$zi-sm"),
+  "_blur": x => x.cls("_topPostion").fl(1).cls("_center").baC(".co-black").op(.5),
+  "_topPostion": x => x.po("absolute").to(0).le(0).fillView().baC(".co-transparent").zI(".zi-sm"),
   "_modalDefaultStyle": x => x.pa(10).zI(2).wi("80%").he("20%").boR(5).boW(1).boC("gray"),
   "_abc": x => x.po("absolute"),
   "_overflow": x => x.ov("hidden"),
@@ -291,10 +291,10 @@ export const ComponentsStyles = NestedStyleSheet.create({
   "_actionSheet_Top": x => x.maH("90%").wi("99%").boBW(.5).boBLR(15).boBRR(15),
   "_actionSheet_Left": x => x.maH("99%").maW("90%").to(".5%").le(0).boTW(.5).boBW(.5).boTRR(15).boBRR(15),
   "_actionSheet_Right": "mah:99% maw:80% to:.5% le:0 ri:0 botw-.5 boblR:15 botlr:15",
-  "_actionSheet_vertical_handle": "mah:10 zi:1 flg:1 _overflow",
-  "_actionSheet_horizontal_handle": "he:100% wi:10 _overflow",
-  "_actionSheet_vertical_handle_Button": "_center bor:5 zi:1 to:0 wi:40 he:10 bac:gray _overflow _abc le:45%",
-  "_actionSheet_horizontal_handle_Button": "_center _abc bor:5 to:50% ri:0 he:40 wi:10 bac:gray",
+  "_actionSheet_vertical_handle": "he:15 wi-100% zi:6 flg:1 ._overflow _abc le-0 juc-center ali-center",
+  "_actionSheet_horizontal_handle": "he:100% wi:15 ._overflow _abc juc-center ali-center zi-6",
+  "_actionSheet_vertical_handle_Button": "_center bor:5 zi:1 to:0 wi:40 he:15 bac:gray _overflow _abc le:45%",
+  "_actionSheet_horizontal_handle_Button": "_abc bor:5 he:40 wi:15 bac:gray",
   "_menuItem": x => x.classNames("_center").fl(1).he(40),
   "_menuItemText": x => x.tt("uppercase").alS("center"),
   "_tabBarContainer": "wi:100% he:100% fl:1 fld:row po:relative bac:transparent",
@@ -303,4 +303,8 @@ export const ComponentsStyles = NestedStyleSheet.create({
   "_progressBar": "fl:1 wi:100% he:20 zi:5 juc:center _overflow ali:center bor:5 bow:0 boc:#000 bac:transparent",
   "_progressBarAnimatedView": x => x.zI(2).cls("_abc").to(0).le("-100%").fillView().op(.8),
   "_selectedValue": x => x.baC("#007fff").co("#FFFFFF"),
+  _loader: "_abc zi-5 fl-1 to:0 le:0 wi-100% he-100% zi:9999 juc:center ali:center",
+  "_loader > View": "wi-100% he-100% _blur _abc zi:1",
+  "_loader Text": "fos-12 fow-bold co-#FFFFFF !important",
+  "_loader _title": "fos:18 zi:3 !important"
 })

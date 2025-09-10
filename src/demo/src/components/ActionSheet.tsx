@@ -105,11 +105,11 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
         setSize();
         const fn = !isVertical ? animateX : animateY;
-
+        blurAnimation.animateX(show ? 1 : 0, undefined, 100)
         fn(
             firstValue(show),
             () => {
-                blurAnimation.animateX(show ? 1 : 0, undefined, 1)
+
                 state.refItem.panResponse = undefined;
                 state.refItem.show = show;
                 state.refItem.isVisible = props.isVisible;
@@ -153,6 +153,15 @@ export const ActionSheet = (props: ActionSheetProps) => {
         };
     }, []);
 
+    const handleStyle: any = {};
+    if (!isVertical && position == "Left")
+        handleStyle.right = 8;
+    if (!isVertical && position == "Right")
+        handleStyle.left = 8;
+    if (isVertical && position == "Top")
+        handleStyle.bottom = 8;
+    if (isVertical && position == "Bottom")
+        handleStyle.top = 8;
 
     const renderUpdate = () => {
         let Handle = Platform.OS == "web" ? TouchableOpacity : View;
@@ -161,7 +170,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
             onPressIn={() => state.refItem.isTouched = true}
             onPressOut={() => state.refItem.isTouched = false}
             style={{
-                backgroundColor: "transparent"
+                backgroundColor: "transparent",
+                ...handleStyle
             }}
             css={!isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle"}
             onTouchStart={(e) => {
@@ -286,7 +296,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         css="wi:100% he:100% pa:10 flex:1">
                         {position == "Bottom" || position == "Right" ? handle : null}
                         <View ifTrue={state.refItem.show || !props.lazyLoading}
-                            style={[optionalStyle(props.css).o, (props.size != "content" ? {
+                            css={x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue()}
+                            style={[(props.size != "content" ? {
                                 flex: 1,
                                 flexGrow: 1
                             } : undefined)]} onLayout={({ nativeEvent }) => {
@@ -295,7 +306,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                                     state.size.height += 50 as any;
                                     state.size.width += 50 as any;
                                 }
-                            }} css={`zi:5 maw:99% _overflow mat:5 bac-transparent ${optionalStyle(props.css).c}`}>
+                            }}>
                             {props.children}
                         </View>
                         {position == "Top" || position == "Left" ? handle : null}

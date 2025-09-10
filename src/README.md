@@ -89,7 +89,7 @@ const themes = [
     TextInput: {
       color: "#fff"
     },
-    Icon: x => x.props({ refererId: "iconHandler" }).co("$co-light"),
+    Icon: x => x.props({ refererId: "iconHandler" }).co(".co-light"),
     header: "bac:red"
   })
 ]
@@ -120,7 +120,7 @@ export default function App() {
     }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
      <View css="button bac-red fld-column" ref={el}>
-        <View css={x => x.cls("button").baC("$co-blue100")}>
+        <View css={x => x.cls("button").baC(".co-blue100")}>
           <Text viewId='txt'>test</Text>
           <Text viewId='txt'>test</Text>
           <Text viewId='txt2' css="tea-center bac-red wi-100%" someattr="kaskdj">test2</Text>

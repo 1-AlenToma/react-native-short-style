@@ -80,14 +80,14 @@ export const Modal = (props: ModalProps) => {
                             opacity: transform.opacity ? transform.opacity : undefined
                         }
                         ]}>
-                        <View ifTrue={props.addCloser == true} css={x => x.cls("_modalClose").baC("$co-transparent")}>
+                        <View ifTrue={props.addCloser == true} css={x => x.cls("_modalClose").baC(".co-transparent")}>
                             <Button
                                 onPress={() => toggle(false)}
                                 css={
-                                    x => x.cls("sh-none", "_center").size(25, 25).baC("$co-transparent").juC("flex-end").pa(0).paL(1).boW(0)
+                                    x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0)
                                 } icon={<Icon type="AntDesign" name="close" size={15} />} />
                         </View>
-                        <View css={x => x.fillView().zI(1).baC("$co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>
+                        <View css={x => x.fillView().zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>
                             {props.children}
                         </View>
                     </AnimatedView>

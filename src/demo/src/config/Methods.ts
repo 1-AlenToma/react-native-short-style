@@ -22,12 +22,12 @@ export const RemoveProps = <T extends object>(props: T, ...items: (keyof T)[]) =
     return props;
 }
 
-export const readAble = function (nr: number | string, total?: number) {
+export const readAble = function (nr: number | string, total: number = 2) {
     if (Array.isArray(nr))
         nr = nr[0];
     let nrs = nr?.toString().split(".") ?? [];
     if (nrs.length <= 1) return nr;
-    return parseFloat((nr as any)?.toFixed(total ?? 2));
+    return parseFloat((nr as any)?.toFixed(total));
 };
 
 export const optionalStyle = (style: any) => {

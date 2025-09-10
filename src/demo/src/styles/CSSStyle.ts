@@ -8,10 +8,10 @@ import { CSS_String, StyledProps } from "../Typse";
 type ValueType = ViewStyle & TextStyle & ImageStyle;
 type Sizes = 5 | 10 | 20 | 30 | 40 | 60 | 70 | 80 | 90 | 100;
 type Colors<K extends string> = `${K}-${keyof typeof defaultTheme.color}` | (string & {})
-type FontSizes = `$fos-${keyof typeof defaultTheme.fontSize}` | (ValueType["fontSize"] & {}) | (string & {})
-type zIndex = `$zi-${keyof typeof defaultTheme.zIndex}` | (ValueType["zIndex"] & {}) | (string & {})
-type BorderRadius = `$bor-${keyof typeof defaultTheme.borderRadius}` | (number & {});
-type Spacing = `$sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {});
+type FontSizes = `.fos-${keyof typeof defaultTheme.fontSize}` | (ValueType["fontSize"] & {}) | (string & {})
+type zIndex = `.zi-${keyof typeof defaultTheme.zIndex}` | (ValueType["zIndex"] & {}) | (string & {})
+type BorderRadius = `.bor-${keyof typeof defaultTheme.borderRadius}` | (number & {});
+type Spacing = `.sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {});
 type SizeValue<K extends string> = `${Sizes}${K}` | number | (string & {});
 type Display =
     // Outside-inside keywords
@@ -66,7 +66,7 @@ export type CSSProps<T extends object> = T & StyledProps & { refererId?: string;
 
 //let test: SizeValue<"%"> | SizeValue<"vh"> | SizeValue<"vw"> = ""
 
-type classNames = (`sh-${keyof typeof defaultTheme.shadow}` | `sp-${keyof typeof defaultTheme.spacing}`) | (string & {})
+type classNames = (`.sh-${keyof typeof defaultTheme.shadow}` | `.sp-${keyof typeof defaultTheme.spacing}`) | (string & {})
 
 export abstract class ExtraCssStyle {
     value: string = "";
@@ -78,7 +78,7 @@ export abstract class ExtraCssStyle {
     classNames(...cls: classNames[]) {
         cls.forEach(x => {
             if (x)
-                this.value += ` ${x}`;
+                this.value += ` ${x.trim().startsWith(".") ? "" : "."}${x}`;
         });
 
         return this;
@@ -89,7 +89,7 @@ export abstract class ExtraCssStyle {
 
         cls.forEach(x => {
             if (x)
-                this.value += ` ${x}`;
+                this.value += ` ${x.trim().startsWith(".") ? "" : "."}${x}`;
         });
 
         return this;
@@ -444,21 +444,21 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.backfaceVisibility, value);
     }
 
-    backgroundColor(value?: Colors<"$co"> | null) {
+    backgroundColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.backgroundColor, value);
     }
 
     /** Add backgroundColor */
-    baC(value?: Colors<"$co"> | null) {
+    baC(value?: Colors<".co"> | null) {
         return this.backgroundColor(value);
     }
 
-    borderBottomColor(value?: Colors<"$co"> | null) {
+    borderBottomColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.borderBottomColor, value);
     }
 
     /** Add borderBottomColor */
-    boBC(value?: Colors<"$co"> | null) {
+    boBC(value?: Colors<".co"> | null) {
         return this.borderBottomColor(value)
     }
 
@@ -489,21 +489,21 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.borderBottomWidth, value);
     }
 
-    borderColor(value?: Colors<"$co"> | null) {
+    borderColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.borderColor, value);
     }
 
     /** Add borderColor */
-    boC(value?: Colors<"$co"> | null) {
+    boC(value?: Colors<".co"> | null) {
         return this.borderColor(value)
     }
 
-    borderLeftColor(value?: Colors<"$co"> | null) {
+    borderLeftColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.borderLeftColor, value);
     }
 
     /** Add borderLeftColor */
-    boLC(value?: Colors<"$co"> | null) {
+    boLC(value?: Colors<".co"> | null) {
         return this.borderLeftColor(value)
     }
 
@@ -517,7 +517,7 @@ export class CSSStyle extends ExtraCssStyle {
     }
 
     borderRadius(value?: BorderRadius | null) {
-        if (value && typeof value == "string" && value.startsWith("$"))
+        if (value && typeof value == "string" && value.startsWith("."))
             return this.classNames(value.substring(1))
         return this.add(ShortStyles.borderRadius, value);
     }
@@ -527,12 +527,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.borderRadius(value);
     }
 
-    borderRightColor(value?: Colors<"$co"> | null) {
+    borderRightColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.borderRightColor, value);
     }
 
     /** Add borderRightColor */
-    boRC(value?: Colors<"$co"> | null) {
+    boRC(value?: Colors<".co"> | null) {
         return this.borderRightColor(value)
     }
 
@@ -554,12 +554,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.borderStyle, value);
     }
 
-    borderTopColor(value?: Colors<"$co"> | null) {
+    borderTopColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.borderTopColor, value);
     }
 
     /** Add borderTopColor */
-    boTC(value?: Colors<"$co"> | null) {
+    boTC(value?: Colors<".co"> | null) {
         return this.borderTopColor(value)
     }
 
@@ -608,12 +608,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.bottom, value);
     }
 
-    color(value?: Colors<"$co"> | null) {
+    color(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.color, value);
     }
 
     /** Add color */
-    co(value?: Colors<"$co"> | null) {
+    co(value?: Colors<".co"> | null) {
         return this.color(value);
     }
 
@@ -708,7 +708,7 @@ export class CSSStyle extends ExtraCssStyle {
     }
 
     fontSize(value?: FontSizes | null) {
-        if (typeof value == "string" && value.startsWith("$"))
+        if (typeof value == "string" && value.startsWith("."))
             return this.classNames(value.substring(1))
         return this.add(ShortStyles.fontSize, value);
     }
@@ -777,7 +777,7 @@ export class CSSStyle extends ExtraCssStyle {
     }
 
     letterSpacing(value?: Spacing | null) {
-        if (typeof value == "string" && value.startsWith("$"))
+        if (typeof value == "string" && value.startsWith("."))
             return this.classNames(value.substring(1))
         return this.add(ShortStyles.letterSpacing, value);
     }
@@ -904,12 +904,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.overflow, value);
     }
 
-    overlayColor(value?: Colors<"$co"> | null) {
+    overlayColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.overlayColor, value);
     }
 
     /** Add overlayColor */
-    ovC(value?: Colors<"$co"> | null) {
+    ovC(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.overlayColor, value);
     }
 
@@ -994,12 +994,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.right, value);
     }
 
-    shadowColor(value?: Colors<"$co"> | null) {
+    shadowColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.shadowColor, value);
     }
 
     /** Add shadowColor */
-    shC(value?: Colors<"$co"> | null) {
+    shC(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.shadowColor, value);
     }
 
@@ -1043,12 +1043,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.textAlignVertical, value);
     }
 
-    textDecorationColor(value?: Colors<"$co"> | null) {
+    textDecorationColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.textDecorationColor, value);
     }
 
     /** Add textDecorationColor */
-    teDC(value?: Colors<"$co"> | null) {
+    teDC(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.textDecorationColor, value);
     }
 
@@ -1070,12 +1070,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.textDecorationStyle, value);
     }
 
-    textShadowColor(value?: Colors<"$co"> | null) {
+    textShadowColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.textShadowColor, value);
     }
 
     /** Add textShadowColor */
-    teSC(value?: Colors<"$co"> | null) {
+    teSC(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.textShadowColor, value);
     }
 
@@ -1099,12 +1099,12 @@ export class CSSStyle extends ExtraCssStyle {
         return this.add(ShortStyles.textShadowRadius, value);
     }
 
-    tintColor(value?: Colors<"$co"> | null) {
+    tintColor(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.tintColor, value);
     }
 
     /** Add tintColor */
-    tiC(value?: Colors<"$co"> | null) {
+    tiC(value?: Colors<".co"> | null) {
         return this.tintColor(value)
     }
 
@@ -1153,13 +1153,26 @@ export class CSSStyle extends ExtraCssStyle {
     zI(value?: zIndex | null) {
         return this.add(ShortStyles.zIndex, value);
     }
+
+    //** override all css with this class styles*/
+    importantAll() {
+        if (this.value.indexOf(" !important") == -1)
+            this.value += " !important";
+        return this;
+    }
+
+    // make value !important eg bac-red-!important
+    importantValue() {
+        this.value += "-!important";
+        return this;
+    }
 }
 
 // specific only for nested StyleSheet
 export class CSSStyleSheetStyle extends CSSStyle {
     private eqs: { css: CSSStyleSheetStyle | string, index: string | number }[] = [];
 
-    //** override all css with this */
+    //** override all css with this class styles*/
     importantAll() {
         if (this.value.indexOf(" !important") == -1)
             this.value += " !important";
@@ -1178,7 +1191,7 @@ export class CSSStyleSheetStyle extends CSSStyle {
         for (let value of (item ?? this).eqs) {
             let k = `${parentKey}_${value.index}`;
             if (typeof value.index == "string" && value.index != "last")
-                k = `${parentKey}$${value.index}`;
+                k = `${parentKey} > ${value.index}`;
 
             let css: any = value.css;
             if (value.css instanceof CSSStyleSheetStyle) {

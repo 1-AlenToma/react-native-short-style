@@ -123,7 +123,7 @@ export const ToastView = () => {
             }]
         }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(10000).joinRight(data.css)}>
             <View>
-                <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC("$co-transparent")}>
+                <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC(".co-transparent")}>
                     <TouchableOpacity onPress={() => state.visible = false} css="wi-15">
                         <Icon type="AntDesign" css="co:white" name="close" size={15} />
                     </TouchableOpacity>

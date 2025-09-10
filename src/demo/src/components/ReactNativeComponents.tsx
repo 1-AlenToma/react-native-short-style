@@ -2,7 +2,7 @@ import * as React from "react";
 import * as Native from "react-native";
 import { CMBuilder } from "../styles";
 import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps, ImageProps, FlatListProps } from "react-native/types";
-import { GenericViewProps, GenericView, DomPath } from "../Typse";
+import { GenericViewProps, GenericView } from "../Typse";
 import * as NativeSlider from '@miblanchard/react-native-slider';
 
 
@@ -13,7 +13,7 @@ export const CreateView = function <T extends object, P>(view: any, name?: strin
     let cacheName = view.displayName ?? name;
     let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = new CMBuilder(name, view)).fn();
     View.displayName = `Styled(${name ?? cacheName})`;
-    return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => DomPath<React.ReactElement<P>, P>);
+    return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => React.ReactElement<P>);
 }
 
 // so we could know that this item was create by react-native-short-style

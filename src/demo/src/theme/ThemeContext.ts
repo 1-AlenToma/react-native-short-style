@@ -1,7 +1,7 @@
 import * as React from "react";
-import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType } from "../Typse";
+import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType, CSSStorage } from "../Typse";
 import StateBuilder from "react-smart-state";
-import { Dimensions } from "react-native";
+import { Dimensions, Platform } from "react-native";
 
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
@@ -20,9 +20,31 @@ export const InternalThemeContext = React.createContext({
     totalItems: () => 1
 } as internalThemeContext)
 
+const getWebStorage = () => {
+    try {
+        if (Platform.OS == "web" && typeof window !== "undefined" && window.localStorage) {
+            let storage = window.localStorage;
+            let item: CSSStorage = {
+                delete: (key: string) => storage.removeItem(key),
+                get: (key: string) => JSON.parse(storage.getItem(key)),
+                set: (key: string, item: any) => storage.setItem(key, JSON.stringify(item)),
+                clear: () => storage.clear(),
+                has: (key: string) => storage.getItem(key) !== null
+            }
+
+            return item;
+        }
+        return new Map();
+    } catch (e) {
+        console.warn("Platform Web detected, localStorage could not be loaded from window. will be using local object(map) instead", e);
+        return new Map();
+    }
+}
+
+
 
 export const globalData = StateBuilder<GlobalState>({
-    storage: new Map() as any,
+    storage: getWebStorage(),
     tStorage: new Map() as any,
     activePan: false,
     panEnabled: true,
