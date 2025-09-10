@@ -19,8 +19,7 @@ export const SliderView = (props: NativeSlider.SliderProps & {
     style?: ViewStyle,
     css?: string
 }) => {
-    if (ifSelector(props.ifTrue) == false)
-        return null;
+
     const state = StateBuilder({
         value: props.value,
         sliding: false
@@ -60,7 +59,7 @@ export const SliderView = (props: NativeSlider.SliderProps & {
 
 
     return (
-        <View css={x => x.cls("_slider juc:space-between").joinRight(props.css)} style={props.style}>
+        <View ifTrue={props.ifTrue} css={x => x.cls("_slider juc:space-between").joinRight(props.css)} style={props.style}>
             <Button css={x => x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="minus" />}
                 ifTrue={props.enableButtons && btnValue != undefined}
@@ -71,7 +70,7 @@ export const SliderView = (props: NativeSlider.SliderProps & {
                 onStartShouldSetResponder={event =>
                     false
                 }
-                renderAboveThumbComponent={!state.sliding ? undefined : () => <Text css="_sliderThump">{`${readAble(btnValue as number, 1)}/${props.maximumValue}`}</Text>}
+                renderAboveThumbComponent={() => <Text style={{ display: !state.sliding ? "none" : "flex" }} css="_sliderThump">{`${readAble(btnValue as number, 1)}/${props.maximumValue}`}</Text>}
                 {...props}
                 onSlidingStart={(event, index: number) => {
                     props.onSlidingStart?.(event, index);
@@ -84,7 +83,7 @@ export const SliderView = (props: NativeSlider.SliderProps & {
                     globalData.panEnabled = true;
                 }}
                 value={state.value}
-                containerStyle={{ ...props.containerStyle, flex: 1, width: "100%" }}
+                containerStyle={{ ...props.containerStyle, flex: 1, width: "100%", overflow: props.enableButtons ? "hidden" : undefined, maxWidth: props.enableButtons ? "50%" : undefined }}
                 onSlidingComplete={onChange} />
             <Button css={x => x.cls("_sliderButton").joinRight(props.buttonCss)}
                 icon={<Icon type="AntDesign" size={15} color="white" name="plus" />}
