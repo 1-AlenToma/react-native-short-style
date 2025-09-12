@@ -131,34 +131,40 @@ export class CMBuilder {
             classNames.forEach((x) => prt.reg(x, idx));
             prt.reg(typeName, idx);
         };
-
-        const cloneChild = (childrens: any[]) => {
-            let chlds = React.Children.toArray(childrens);
+        const cloneChild = (children: React.ReactNode): React.ReactNode[] => {
+            const queue = React.Children.toArray(children);
+            const result: React.ReactNode[] = [];
             let idx = 0;
-            let result: any[] = [];
-            while (chlds.length > 0) {
-                let child: any = chlds.shift();
-                if (child) {
-                    if (React.isValidElement(child as any)) {
-                        if (child.type === React.Fragment) {
-                          
-                            chlds.splice(idx +1,0, ...React.Children.toArray(child.props.children));
-                        } else {
-                            regChild(child, idx);
-                            const posValue = { index: idx, total: childTotal };
-                            result.push((
-                                <positionContext.Provider key={idx} value={posValue}>
-                                    {child}
-                                </positionContext.Provider>));
-                        }
 
-                    } else result.push(child);
-                    idx++;
+            while (queue.length > 0) {
+                const child = queue.shift();
+
+                if (React.isValidElement(child)) {
+                    if (child.type === React.Fragment) {
+                        const fragmentChildren = React.Children.toArray(child.props.children);
+                        queue.unshift(...fragmentChildren); // insert at front to preserve order
+                        
+                        idx += fragmentChildren.length;
+                       // continue;
+                    }
+
+                    regChild(child, idx);
+                    const posValue = { index: idx, total: childTotal };
+
+                    result[idx] = (
+                        <positionContext.Provider key={`wrapper-${idx}`} value={posValue}>
+                            {child}
+                        </positionContext.Provider>
+                    );
+                } else {
+                    result[idx] = child; // non-element nodes
                 }
+
+                idx++;
             }
 
             return result;
-        }
+        };
 
         const mappedChildren = cloneChild(childrenArray);
 

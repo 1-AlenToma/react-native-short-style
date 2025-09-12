@@ -79,12 +79,10 @@ export const ModalView = () => {
                     state.actionSheet.position = "Right";
                     state.actionSheet.visible = true
                 }} text="ActionSheet Right" />
-                <Modal css="he-80% wi-80% dialogtest" isVisible={state.actionSheet.childVis} onHide={() => state.actionSheet.childVis = false}>
-                    <Text>this is a test</Text>
-                </Modal>
+
                 <ActionSheet position={state.actionSheet.position} size={Platform.OS == "web" ? "30%" : "50%"} isVisible={state.actionSheet.visible} onHide={() => state.actionSheet.visible = false}>
                     <View css="fl-1">
-
+                    
                         <ScrollView style={{ maxHeight: "95%" }}>
                             {
 
@@ -102,6 +100,9 @@ export const ModalView = () => {
                     </View>
                 </ActionSheet>
             </Block>
+                <Modal css="he-80% wi-80% dialogtest" isVisible={state.actionSheet.childVis} onHide={() => state.actionSheet.childVis = false}>
+                            <Text>this is a test</Text>
+                        </Modal>
             <Block title="AlertDiaLog">
                 <Button onPress={Alert} text="Show alert" />
             </Block>
