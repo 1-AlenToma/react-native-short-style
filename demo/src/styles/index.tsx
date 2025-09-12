@@ -135,29 +135,36 @@ export class CMBuilder {
             const queue = React.Children.toArray(children);
             const result: React.ReactNode[] = [];
             let idx = 0;
+            let fragmentDatas = [] as { key: any, childs: any[] }[];
 
-            while (queue.length > 0) {
-                const child = queue.shift();
+            while (queue.length > 0 || fragmentDatas.length > 0) {
+                const frag = fragmentDatas[fragmentDatas.length - 1];
+                const child = frag ? frag.childs.shift() : queue.shift();
+                if (frag && frag.childs.length === 0) {
+                    fragmentDatas.pop();
+                }
+
 
                 if (React.isValidElement(child)) {
                     if (child.type === React.Fragment) {
-                        const fragmentChildren = React.Children.toArray(child.props.children);
-                        queue.unshift(...fragmentChildren); // insert at front to preserve order
-                        
-                        idx += fragmentChildren.length;
-                       // continue;
+                        const fragmentChildren = React.Children.toArray((child.props as any).children);
+                        if (child.key)
+                            fragmentDatas.push({ key: child.key, childs: fragmentChildren });
+                        else
+                            queue.unshift(...fragmentChildren); // insert at front to preserve order
+                        continue;
                     }
 
                     regChild(child, idx);
                     const posValue = { index: idx, total: childTotal };
-
-                    result[idx] = (
-                        <positionContext.Provider key={`wrapper-${idx}`} value={posValue}>
+                    const childKey = `styled-child-${frag?.key ?? ''}:${child.key ?? idx}`;
+                    result.push(
+                        <positionContext.Provider key={`styled-wrapper-${childKey}`} value={posValue}>
                             {child}
                         </positionContext.Provider>
                     );
                 } else {
-                    result[idx] = child; // non-element nodes
+                    result.push(child); // non-element nodes
                 }
 
                 idx++;

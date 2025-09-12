@@ -16,7 +16,7 @@ export const Modal = (props: ModalProps) => {
     const transform = React.useRef<any>({}).current;
     const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
-        easing: props.easing
+        easing: props.easing ?? Easing.bounce
     });
 
     const state = StateBuilder(() => ({
