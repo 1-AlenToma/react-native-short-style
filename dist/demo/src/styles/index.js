@@ -116,24 +116,33 @@ export class CMBuilder {
             prt.reg(typeName, idx);
         };
         const cloneChild = (children) => {
+            var _a, _b;
             const queue = React.Children.toArray(children);
             const result = [];
             let idx = 0;
-            while (queue.length > 0) {
-                const child = queue.shift();
+            let fragmentDatas = [];
+            while (queue.length > 0 || fragmentDatas.length > 0) {
+                const frag = fragmentDatas[fragmentDatas.length - 1];
+                const child = frag ? frag.childs.shift() : queue.shift();
+                if (frag && frag.childs.length === 0) {
+                    fragmentDatas.pop();
+                }
                 if (React.isValidElement(child)) {
                     if (child.type === React.Fragment) {
                         const fragmentChildren = React.Children.toArray(child.props.children);
-                        queue.unshift(...fragmentChildren); // insert at front to preserve order
-                        idx += fragmentChildren.length;
-                        // continue;
+                        if (child.key)
+                            fragmentDatas.push({ key: child.key, childs: fragmentChildren });
+                        else
+                            queue.unshift(...fragmentChildren); // insert at front to preserve order
+                        continue;
                     }
                     regChild(child, idx);
                     const posValue = { index: idx, total: childTotal };
-                    result[idx] = (_jsx(positionContext.Provider, { value: posValue, children: child }, `wrapper-${idx}`));
+                    const childKey = `styled-child-${(_a = frag === null || frag === void 0 ? void 0 : frag.key) !== null && _a !== void 0 ? _a : ''}:${(_b = child.key) !== null && _b !== void 0 ? _b : idx}`;
+                    result.push(_jsx(positionContext.Provider, { value: posValue, children: child }, `styled-wrapper-${childKey}`));
                 }
                 else {
-                    result[idx] = child; // non-element nodes
+                    result.push(child); // non-element nodes
                 }
                 idx++;
             }

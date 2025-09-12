@@ -13,18 +13,18 @@ import { AnimatedView, View } from "./ReactNativeComponents";
 import { InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate } from "../hooks";
 import StateBuilder from "../States";
-import { Platform } from "react-native";
+import { Easing, Platform } from "react-native";
 import { newId } from "../config";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { Blur } from "./Blur";
 export const Modal = (props) => {
-    var _a;
+    var _a, _b;
     const context = React.useContext(InternalThemeContext);
     const transform = React.useRef({}).current;
     const { animate, animateX, animateY } = useAnimate({
         speed: (_a = props.speed) !== null && _a !== void 0 ? _a : 200,
-        easing: props.easing
+        easing: (_b = props.easing) !== null && _b !== void 0 ? _b : Easing.bounce
     });
     const state = StateBuilder(() => ({
         isVisible: undefined,
