@@ -10,6 +10,8 @@ class TempStorage {
             this.data = new Map();
             this.lastSave = parseInt((new Date().getTime() / 1000).toString());
         }
+        else if (this.data.size > 2000)
+            this.data = new Map();
     }
     constructor() {
         this.data = new Map();

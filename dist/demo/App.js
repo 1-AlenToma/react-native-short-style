@@ -1,50 +1,40 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-get-random-values';
-import { ThemeContainer, Text, Button, Icon, NestedStyleSheet, TabBar, TabView, Fab, Collabse, Loader, ToolTip } from './src';
+import { ThemeContainer, Text, View, Button, Icon, NestedStyleSheet, TabBar, TabView, Fab, Collabse, Loader, ToolTip } from './src';
 import buildState from "./src/States";
 import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, MovingBall, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';
 import { useEffect } from 'react';
 import * as icons from "@expo/vector-icons";
+const userDefined = {
+    "texto, texto >Text": "bac-green co-red",
+    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+};
 const themes = [
-    NestedStyleSheet.create({
-        AnimatedView: {
+    NestedStyleSheet.create(Object.assign({ AnimatedView: {
             backgroundColor: "#fff"
-        },
-        View: {
+        }, View: {
             backgroundColor: "#fff"
-        },
-        Text: {
+        }, Text: {
             color: "#000"
-        },
-        TextInput: {
+        }, TextInput: {
             color: "#000"
-        },
-        Icon: {
+        }, Icon: {
             color: "#000"
-        },
-        "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
-        // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
-    }),
-    NestedStyleSheet.create({
-        AnimatedView: {
+        } }, userDefined
+    // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
+    )),
+    NestedStyleSheet.create(Object.assign({ AnimatedView: {
             backgroundColor: "rgb(70 70 70)"
-        },
-        View: {
+        }, View: {
             backgroundColor: "rgb(70 70 70)"
-        },
-        Text: {
+        }, Text: {
             color: "#fff"
-        },
-        TextInput: {
+        }, TextInput: {
             color: "#fff"
-        },
-        Icon: x => x.co(".co-light"),
-        header: "bac:red",
-        "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
-    })
+        }, Icon: x => x.co(".co-light"), header: "bac:red" }, userDefined))
 ];
 export default function App() {
     const state = buildState({
@@ -64,7 +54,7 @@ export default function App() {
     }, []);
     if (state.loading)
         return null;
-    return (_jsx(ThemeContainer, { icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? null : (_jsxs(TabBar, { ifTrue: false, position: 'Bottom', header: {
+    return (_jsx(ThemeContainer, { icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? (_jsx(View, { css: "texto-!important", children: _jsx(Text, { children: "jhgasdgasd" }) })) : (_jsxs(TabBar, { ifTrue: false, position: 'Bottom', header: {
                 selectedIconStyle: "color:red",
                 style: x => x.baC("#ffffff"),
                 textStyle: x => x.co("#000"),

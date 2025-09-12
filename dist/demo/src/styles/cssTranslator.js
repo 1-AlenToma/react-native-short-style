@@ -1,5 +1,5 @@
 import { extractProps } from "../config/CSSMethods";
-import { Storage } from "../config/Storage";
+import { Storage, TStorage } from "../config/Storage";
 import { StylesAttributes, ShortCSS } from "./validStyles";
 import { ValueIdentity } from "../config/CSSMethods";
 let styleKeys = [...StylesAttributes];
@@ -110,6 +110,8 @@ const css_translator = (css, styleFile, id) => {
         return cssItem;
     if (id !== undefined && Storage.has(id))
         return Object.assign({}, Storage.get(id));
+    else if (TStorage.has(id !== null && id !== void 0 ? id : css))
+        return Object.assign({}, TStorage.get(id !== null && id !== void 0 ? id : css));
     let CSS = styleFile !== null && styleFile !== void 0 ? styleFile : {};
     let translatedItem = extractProps(css);
     if (translatedItem._hasValue) {
@@ -143,6 +145,8 @@ const css_translator = (css, styleFile, id) => {
                     if (value in CSS || value.toLowerCase() in CSS) {
                         value = Object.values((_b = CSS[value]) !== null && _b !== void 0 ? _b : CSS[value.toLowerCase()])[0];
                     }
+                    else
+                        continue; // its a class that is not used in this context
                 }
                 let short = ((_c = ShortCSS[k]) !== null && _c !== void 0 ? _c : ShortCSS[k.toLowerCase()]);
                 if (short) {
@@ -151,7 +155,7 @@ const css_translator = (css, styleFile, id) => {
                 else {
                     (_isImportend ? important : cssItem)[k] = value;
                     if (__DEV__)
-                        console.warn(kValue, "not found in react-native style props, but we will still add it");
+                        console.warn(kValue, value, "not found in react-native style props, but we will still add it");
                 }
                 continue;
             }
@@ -173,6 +177,8 @@ const css_translator = (css, styleFile, id) => {
     }
     if (id !== undefined)
         Storage.set(id, Object.assign(Object.assign({}, cssItem), { important: Object.assign({}, important) }));
+    else
+        TStorage.set(css, Object.assign(Object.assign({}, cssItem), { important: Object.assign({}, important) }));
     return Object.assign(Object.assign({}, cssItem), { important: Object.assign({}, important) });
 };
 export default css_translator;

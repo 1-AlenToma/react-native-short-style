@@ -130,6 +130,11 @@ export const ValueIdentity = {
             important = true;
             //console.log(parsedValue)
         }
+        else if (parsedValue == "!important") {
+            important = true;
+            isClassName = true;
+            parsedValue = key;
+        }
         return {
             key,
             value: parsedValue,
@@ -184,7 +189,11 @@ export const ValueIdentity = {
         let items = ValueIdentity.splitCss(css);
         let props = {};
         for (let item of items) {
-            if (/!important/gi.test(item) || item === null)
+            if (item === null)
+                continue;
+            if (/\-!important/gi.test(item))
+                item = item.replace(/\-!important/g, "");
+            if (/!important/gi.test(item))
                 continue;
             const isClass = ValueIdentity.isClass(item);
             if (isClass)
