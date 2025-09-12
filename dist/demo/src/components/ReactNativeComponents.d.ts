@@ -3,7 +3,7 @@ import * as Native from "react-native";
 import { GenericViewProps, GenericView } from "../Typse";
 import * as NativeSlider from '@miblanchard/react-native-slider';
 export declare const CreateView: {
-    <T extends object, P>(view: any, name?: string): GenericView<T, P> & ((props: GenericViewProps<T, P>) => React.ReactElement<P>);
+    <T extends object, P>(view: any, name?: string, override?: boolean): GenericView<T, P> & ((props: GenericViewProps<T, P>) => React.ReactElement<P>);
     CssStyleAble: boolean;
 };
 export declare const View: Omit<Native.View, "props" | "ref"> & {

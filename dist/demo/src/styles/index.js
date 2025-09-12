@@ -10,7 +10,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 import { jsx as _jsx } from "react/jsx-runtime";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Platform, } from "react-native";
 import { globalData, StyleContext, ThemeContext } from "../theme/ThemeContext";
 import { CSSStyle } from "./CSSStyle";
@@ -48,7 +48,12 @@ export class CMBuilder {
         return refCreator(bound, this.__name, this.__View);
     }
     renderFirst(props, ref) {
-        const RN = useRef(this.render.bind(this)).current;
+        const RN = useLocalRef(() => {
+            let item = this.render.bind(this);
+            item.__name = this.__name;
+            item.displayName = `Styled(${this.__name})`;
+            return item;
+        });
         const css = React.useMemo(() => {
             if (props && typeof props.css === "function") {
                 return props.css(new CSSStyle()).toString();
@@ -58,8 +63,6 @@ export class CMBuilder {
         const ifTrue = props && ifSelector(props.ifTrue);
         if (ifSelector(ifTrue) === false)
             return null;
-        RN.__name = this.__name;
-        RN.displayName = `Styled(${this.__name})`;
         return _jsx(RN, Object.assign({}, props, { ifTrue: true, css: css, cRef: (c) => setRef(ref, c) }));
     }
     render(_a) {
@@ -121,17 +124,17 @@ export class CMBuilder {
                 if (child) {
                     if (React.isValidElement(child)) {
                         if (child.type === React.Fragment) {
-                            chlds.push(...React.Children.toArray(child.props.children));
+                            chlds.splice(idx + 1, 0, ...React.Children.toArray(child.props.children));
                         }
                         else {
                             regChild(child, idx);
                             const posValue = { index: idx, total: childTotal };
                             result.push((_jsx(positionContext.Provider, { value: posValue, children: child }, idx)));
                         }
-                        idx++;
                     }
                     else
                         result.push(child);
+                    idx++;
                 }
             }
             return result;

@@ -1,4 +1,4 @@
-import { TouchableOpacityProps, ColorValue, OpaqueColorValue, ImageStyle, ActivityIndicatorProps, ScrollViewProps, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import { TouchableOpacityProps, ColorValue, OpaqueColorValue, ImageStyle, ActivityIndicatorProps, ScrollViewProps, NativeSyntheticEvent, NativeScrollEvent, Easing } from "react-native";
 import * as ReactNative from "react-native";
 import { CSSStyle } from "./styles/CSSStyle";
 import * as React from "react";
@@ -195,6 +195,7 @@ export type ModalProps = {
     css?: CSS_String;
     speed?: number;
     animationStyle?: AnimationStyle;
+    easing?: Easing;
 };
 export type ActionSheetProps = Omit<ModalProps, "animationStyle"> & {
     size: Percentage | "content";

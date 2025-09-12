@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import StateBuilder from "react-smart-state";
-import { ActionSheet, AlertDialog, Button, Modal, ScrollView, Text, TouchableOpacity } from "../src";
+import { ActionSheet, AlertDialog, Button, Modal, ScrollView, Text, TouchableOpacity, View } from "../src";
 import { Block } from "./Block";
 import { BlockContainer } from "./BlockContainer";
 import { Platform } from "react-native";
@@ -19,7 +19,8 @@ export const ModalView = () => {
         modal2: false,
         actionSheet: {
             position: undefined,
-            visible: false
+            visible: false,
+            childVis: false
         }
     }).build();
     const Alert = () => {
@@ -55,6 +56,11 @@ export const ModalView = () => {
                         }, text: "ActionSheet Left" }), _jsx(Button, { onPress: () => {
                             state.actionSheet.position = "Right";
                             state.actionSheet.visible = true;
-                        }, text: "ActionSheet Right" }), _jsx(ActionSheet, { position: state.actionSheet.position, size: Platform.OS == "web" ? "30%" : "50%", isVisible: state.actionSheet.visible, onHide: () => state.actionSheet.visible = false, children: _jsx(ScrollView, { style: { maxHeight: "95%" }, children: ["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (_jsx(TouchableOpacity, { onPress: () => state.actionSheet.visible = false, css: "actionButton", children: _jsx(Text, { children: x }) }, x))) }) })] }), _jsx(Block, { title: "AlertDiaLog", children: _jsx(Button, { onPress: Alert, text: "Show alert" }) }), _jsx(Block, { title: "ConfirmDialog", children: _jsx(Button, { onPress: Confirm, text: "Show confirm" }) }), _jsxs(Block, { title: "ToastDialog", children: [_jsx(Button, { onPress: () => Toast("Error"), text: "Show Toast Error" }), _jsx(Button, { onPress: () => Toast("Warning"), text: "Show Toast Warning" }), _jsx(Button, { onPress: () => Toast("Success"), text: "Show Toast Success" }), _jsx(Button, { onPress: () => Toast("Info"), text: "Show Toast Info" })] })] }));
+                        }, text: "ActionSheet Right" }), _jsx(Modal, { css: "he-80% wi-80% dialogtest", isVisible: state.actionSheet.childVis, onHide: () => state.actionSheet.childVis = false, children: _jsx(Text, { children: "this is a test" }) }), _jsx(ActionSheet, { position: state.actionSheet.position, size: Platform.OS == "web" ? "30%" : "50%", isVisible: state.actionSheet.visible, onHide: () => state.actionSheet.visible = false, children: _jsx(View, { css: "fl-1", children: _jsx(ScrollView, { style: { maxHeight: "95%" }, children: ["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (_jsx(TouchableOpacity, { onPress: () => __awaiter(void 0, void 0, void 0, function* () {
+                                        if (yield AlertDialog.confirm("Close ActionSheet"))
+                                            state.actionSheet.visible = false;
+                                        else
+                                            state.actionSheet.childVis = true;
+                                    }), css: "actionButton", children: _jsx(Text, { children: x }) }, x))) }) }) })] }), _jsx(Block, { title: "AlertDiaLog", children: _jsx(Button, { onPress: Alert, text: "Show alert" }) }), _jsx(Block, { title: "ConfirmDialog", children: _jsx(Button, { onPress: Confirm, text: "Show confirm" }) }), _jsxs(Block, { title: "ToastDialog", children: [_jsx(Button, { onPress: () => Toast("Error"), text: "Show Toast Error" }), _jsx(Button, { onPress: () => Toast("Warning"), text: "Show Toast Warning" }), _jsx(Button, { onPress: () => Toast("Success"), text: "Show Toast Success" }), _jsx(Button, { onPress: () => Toast("Info"), text: "Show Toast Info" })] })] }));
 };
 //# sourceMappingURL=ModalView.js.map

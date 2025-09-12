@@ -22,7 +22,7 @@ const StaticFullView = () => {
         state.updater = newId();
     };
     const items = [...context.items().items.entries()];
-    return (_jsx(View, { css: x => x.cls("_topPostion").zI(".zi-lg"), ifTrue: items.length > 0, children: items.map(([key, value], i) => (_jsx(React.Fragment, { children: value.el }, key))) }));
+    return (_jsx(View, { css: "_topPostion zi-4", ifTrue: items.length > 0, children: items.map(([key, value], i) => (_jsx(React.Fragment, { children: value.el }, key))) }));
 };
 const StaticView = () => {
     const context = React.useContext(InternalThemeContext);
