@@ -1,5 +1,5 @@
 import StateBuilder from "react-smart-state";
-import { ActionSheet, AlertDialog, Button, Modal, ScrollView, Text, TouchableOpacity } from "../src";
+import { ActionSheet, AlertDialog, Button, Modal, ScrollView, Text, TouchableOpacity, View } from "../src";
 import { Block } from "./Block";
 import { BlockContainer } from "./BlockContainer";
 import { Platform } from "react-native";
@@ -13,7 +13,8 @@ export const ModalView = () => {
         modal2: false,
         actionSheet: {
             position: undefined,
-            visible: false
+            visible: false,
+            childVis: false
         }
     }).build();
 
@@ -78,18 +79,27 @@ export const ModalView = () => {
                     state.actionSheet.position = "Right";
                     state.actionSheet.visible = true
                 }} text="ActionSheet Right" />
-
+                <Modal css="he-80% wi-80% dialogtest" isVisible={state.actionSheet.childVis} onHide={() => state.actionSheet.childVis = false}>
+                    <Text>this is a test</Text>
+                </Modal>
                 <ActionSheet position={state.actionSheet.position} size={Platform.OS == "web" ? "30%" : "50%"} isVisible={state.actionSheet.visible} onHide={() => state.actionSheet.visible = false}>
-                    <ScrollView style={{ maxHeight: "95%" }}>
-                        {
+                    <View css="fl-1">
 
-                            ["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
-                                <TouchableOpacity onPress={() => state.actionSheet.visible = false} css="actionButton" key={x} >
-                                    <Text>{x}</Text>
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </ScrollView>
+                        <ScrollView style={{ maxHeight: "95%" }}>
+                            {
+
+                                ["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
+                                    <TouchableOpacity onPress={async () => {
+                                        if (await AlertDialog.confirm("Close ActionSheet"))
+                                            state.actionSheet.visible = false;
+                                        else state.actionSheet.childVis = true;
+                                    }} css="actionButton" key={x} >
+                                        <Text>{x}</Text>
+                                    </TouchableOpacity>
+                                ))
+                            }
+                        </ScrollView>
+                    </View>
                 </ActionSheet>
             </Block>
             <Block title="AlertDiaLog">

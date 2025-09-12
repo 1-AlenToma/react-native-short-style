@@ -46,7 +46,13 @@ export class CMBuilder {
     }
 
     renderFirst(props: CSSProps<any>, ref: any) {
-        const RN = useRef<any>(this.render.bind(this)).current;
+        const RN = useLocalRef<any>(() => {
+            let item = this.render.bind(this) as any;
+            item.__name = this.__name;
+            item.displayName = `Styled(${this.__name})`;
+
+            return item;
+        });
         const css = React.useMemo(() => {
             if (props && typeof props.css === "function") {
                 return props.css(new CSSStyle()).toString();
@@ -55,12 +61,13 @@ export class CMBuilder {
         }, [props?.css]);
 
         const ifTrue = props && ifSelector(props.ifTrue)
+
+
+
+
+
         if (ifSelector(ifTrue) === false)
             return null;
-
-
-        RN.__name = this.__name;
-        RN.displayName = `Styled(${this.__name})`;
         return <RN {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
     }
 
@@ -134,16 +141,19 @@ export class CMBuilder {
                 if (child) {
                     if (React.isValidElement(child as any)) {
                         if (child.type === React.Fragment) {
-                            chlds.push(...React.Children.toArray(child.props.children))
+                          
+                            chlds.splice(idx +1,0, ...React.Children.toArray(child.props.children));
                         } else {
                             regChild(child, idx);
                             const posValue = { index: idx, total: childTotal };
-                            result.push((<positionContext.Provider key={idx} value={posValue}>
-                                {child}
-                            </positionContext.Provider>));
+                            result.push((
+                                <positionContext.Provider key={idx} value={posValue}>
+                                    {child}
+                                </positionContext.Provider>));
                         }
-                        idx++;
+
                     } else result.push(child);
+                    idx++;
                 }
             }
 

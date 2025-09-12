@@ -8,9 +8,9 @@ import * as NativeSlider from '@miblanchard/react-native-slider';
 
 const styledItems: any = {}
 const AnimatedTouchable = Native.Animated.createAnimatedComponent(Native.TouchableOpacity);
-export const CreateView = function <T extends object, P>(view: any, name?: string) {
+export const CreateView = function <T extends object, P>(view: any, name?: string, override?: boolean) {
     name = name ?? view.displayName ?? view;
-    let cacheName = view.displayName ?? name;
+    let cacheName = override ? name : view.displayName ?? name;
     let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = new CMBuilder(name, view)).fn();
     View.displayName = `Styled(${name ?? cacheName})`;
     return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => React.ReactElement<P>);
@@ -21,9 +21,9 @@ CreateView.prototype.CssStyleAble = CreateView.CssStyleAble = true;
 
 export const View = CreateView<Native.View, ViewProps>(Native.View);
 export const Slider = CreateView<NativeSlider.Slider, NativeSlider.SliderProps>(NativeSlider.Slider, "Slider");
-export const SafeAreaView = CreateView<Native.SafeAreaView, ViewProps>(Native.SafeAreaView);
-export const Text = CreateView<Native.Text, TextProps>(Native.Text);
-export const TextInput = CreateView<Native.TextInput, Native.TextInputProps>(Native.TextInput);
+export const SafeAreaView = CreateView<Native.SafeAreaView, ViewProps>(Native.SafeAreaView, "SafeAreaView", true);
+export const Text = CreateView<Native.Text, TextProps>(Native.Text, "Text");
+export const TextInput = CreateView<Native.TextInput, Native.TextInputProps>(Native.TextInput, "TextInput");
 export const ScrollView = CreateView<Native.ScrollView, ScrollViewProps>(Native.ScrollView);
 export const FlatList = CreateView<Native.FlatList, FlatListProps<any>>(Native.FlatList, "FlatList");
 export const TouchableOpacity = CreateView<typeof Native.TouchableOpacity, TouchableOpacityProps>(Native.TouchableOpacity);

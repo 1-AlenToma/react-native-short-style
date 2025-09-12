@@ -1,4 +1,4 @@
-import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, OpaqueColorValue, ImageStyle, View, ViewProps, ActivityIndicatorProps, ScrollViewProps, NativeSyntheticEvent, NativeScrollEvent, Easing } from "react-native";
 import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
@@ -216,6 +216,7 @@ export type ModalProps = {
     css?: CSS_String;
     speed?: number;
     animationStyle?: AnimationStyle;
+    easing?: Easing
 }
 
 export type ActionSheetProps = Omit<ModalProps, "animationStyle"> & {

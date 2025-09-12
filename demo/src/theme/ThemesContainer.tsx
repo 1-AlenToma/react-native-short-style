@@ -28,10 +28,10 @@ const StaticFullView = () => {
     context.onItemsChange = () => {
         state.updater = newId();
     }
-    const items = [...context.items().items.entries()]
+    const items = [...context.items().items.entries()];
 
     return (
-        <View css={x => x.cls("_topPostion").zI(".zi-lg")} ifTrue={items.length > 0}>
+        <View css={"_topPostion zi-4"} ifTrue={items.length > 0}>
             {
                 items.map(([key, value], i) => (
                     <React.Fragment key={key}>
