@@ -147,7 +147,7 @@ export const ValueIdentity = {
 
         // Check for $className notation
         if (!(/^(\.( +)?(\d))/g.test(parsedValue.trim())) && parsedValue.trim().startsWith(".")) {
-          //  console.log(parsedValue)
+            //  console.log(parsedValue)
             isClassName = true;
             parsedValue = parsedValue.slice(1); // remove the .
             // value = value.slice(1);
@@ -157,6 +157,10 @@ export const ValueIdentity = {
             parsedValue = parsedValue.replace(/-!important/gi, "");
             important = true;
             //console.log(parsedValue)
+        } else if (parsedValue == "!important") {
+            important = true;
+            isClassName = true;
+            parsedValue = key;
         }
 
         return {
@@ -219,8 +223,13 @@ export const ValueIdentity = {
 
         let props: any = {};
         for (let item of items) {
-            if (/!important/gi.test(item) || item === null)
+            if (item === null)
                 continue;
+            if (/\-!important/gi.test(item))
+                item = item.replace(/\-!important/g, "")
+            if (/!important/gi.test(item))
+                continue;
+
             const isClass = ValueIdentity.isClass(item);
             if (isClass)
                 item = item.trim().substring(1);

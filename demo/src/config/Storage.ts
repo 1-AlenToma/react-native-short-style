@@ -14,7 +14,8 @@ class TempStorage implements CSSStorage {
         if (hours > 1) {
             this.data = new Map();
             this.lastSave = parseInt((new Date().getTime() / 1000).toString());
-        }
+        } else if (this.data.size > 2000)
+            this.data = new Map();
 
     }
 

@@ -85,8 +85,8 @@ export class CMBuilder {
         // Memoized values
         const classNames = React.useMemo(() => {
             const cls = ValueIdentity.getClasses(props.css, themeContext.systemThemes);
-            // if (cls.length > 0)
-            //   console.log(cls.join(","));
+          //   if (cls.length > 0)
+            //  console.log(cls.join(","));
             return cls;
         }, [props.css]);
         const className = React.useMemo(() => classNames.join(" "), [classNames]);

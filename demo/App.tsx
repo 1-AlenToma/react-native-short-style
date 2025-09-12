@@ -33,7 +33,10 @@ import { newId } from './src/config';
 import React, { useEffect, useRef } from 'react';
 import * as icons from "@expo/vector-icons";
 
-
+const userDefined = {
+  "texto, texto >Text": "bac-green co-red",
+   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+}
 const themes = [
   NestedStyleSheet.create({
     AnimatedView: {
@@ -51,7 +54,7 @@ const themes = [
     Icon: {
       color: "#000"
     },
-    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+   ...userDefined
     // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
   }),
   NestedStyleSheet.create({
@@ -69,7 +72,7 @@ const themes = [
     },
     Icon: x => x.co(".co-light"),
     header: "bac:red",
-    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+    ...userDefined
   })
 ]
 
@@ -85,22 +88,24 @@ export default function App() {
   const debug = false;
 
   useEffect(() => {
-  /*  (async () => {
-      const keys = (await AsyncStorage.getAllKeys()).filter(x => x.startsWith("CSSStyled_"));
-      const datas = await AsyncStorage.multiGet(keys);
-      datas.forEach(x => tempData.set(x[0], x[1]))
-      //console.log(tempData)
-      state.loading = false;
-    })();*/
+    /*  (async () => {
+        const keys = (await AsyncStorage.getAllKeys()).filter(x => x.startsWith("CSSStyled_"));
+        const datas = await AsyncStorage.multiGet(keys);
+        datas.forEach(x => tempData.set(x[0], x[1]))
+        //console.log(tempData)
+        state.loading = false;
+      })();*/
   }, [])
 
   if (state.loading)
-      return null;
+    return null;
 
 
   return (
-    <ThemeContainer  icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
-      {debug ? null : (
+    <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+      {debug ? (<View css="texto-!important">
+        <Text>jhgasdgasd</Text>
+      </View>) : (
         <TabBar ifTrue={false} position='Bottom' header={{
           selectedIconStyle: "color:red",
           style: x => x.baC("#ffffff"),

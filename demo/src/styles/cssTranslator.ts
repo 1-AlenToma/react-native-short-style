@@ -1,5 +1,5 @@
 import { extractProps } from "../config/CSSMethods";
-import { Storage } from "../config/Storage";
+import { Storage, TStorage } from "../config/Storage";
 import { StylesAttributes, ShortCSS } from "./validStyles";
 import { ValueIdentity } from "../config/CSSMethods";
 
@@ -132,6 +132,8 @@ const css_translator = (
 
   if (id !== undefined && Storage.has(id))
     return { ...Storage.get(id) };
+  else if (TStorage.has(id ?? css))
+    return { ...TStorage.get(id ?? css) }
 
   let CSS = styleFile ?? {};
   let translatedItem = extractProps(css);
@@ -166,18 +168,16 @@ const css_translator = (
         else if (kValue.isClassName) {
           if (value in CSS || value.toLowerCase() in CSS) {
             value = Object.values(CSS[value] ?? CSS[value.toLowerCase()])[0];
-          }
+          } else continue; // its a class that is not used in this context
         }
 
-
         let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
-
         if (short) {
           (_isImportend ? important : cssItem)[short] = value;
         } else {
           (_isImportend ? important : cssItem)[k] = value;
           if (__DEV__)
-            console.warn(kValue, "not found in react-native style props, but we will still add it")
+            console.warn(kValue, value, "not found in react-native style props, but we will still add it")
         }
         continue;
       }
@@ -203,6 +203,7 @@ const css_translator = (
   }
   if (id !== undefined)
     Storage.set(id, { ...cssItem, important: { ...important } });
+  else TStorage.set(css, { ...cssItem, important: { ...important } });
   return { ...cssItem, important: { ...important } }
 };
 
