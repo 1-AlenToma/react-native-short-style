@@ -8,12 +8,9 @@ So like CSS you could have selectors like `container > Button Text:[children*='s
 # App using `react-native-short-style`
 [Novelo](https://github.com/1-AlenToma/Novelo)
 
-here is how it look like
-![screenshot](https://raw.githubusercontent.com/1-AlenToma/react-native-short-style/main/src/screenshot/image.png)
-
 additinally you could also simplify your styles like instead of background, simple do `bac-red .box fl-1 op:0.5` and so on, box is a class that exist in your stylesheet.
 
-If you see below, you also have predefines components like `Modal`, `ActionSheets`, `Tabs` and `AlertDialog` etc that you could use. See `demo` for more info
+If you see below, you also have predefines components like `Modal`, `ActionSheet`, `Tabs` and `AlertDialog` etc that you could use. See `demo` for more info
 
 here is a simple code that shows how it works.
 
@@ -33,7 +30,7 @@ Note: Do not use dynamic style in css to much, eg a moving ball as its value cha
 The cache have max size and it will reset when the size reaches, so no need to be worry even if you dynamic `css`
 
 
-# here is a predifined Components you could use, like stylesheet, Modal etc.
+# here is a predifined Components you could use, like ActionSheet, Modal etc.
 
 ```tsx
  import {

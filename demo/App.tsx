@@ -88,15 +88,6 @@ export default function App() {
 
   const debug = false;
 
-  useEffect(() => {
-    /*  (async () => {
-        const keys = (await AsyncStorage.getAllKeys()).filter(x => x.startsWith("CSSStyled_"));
-        const datas = await AsyncStorage.multiGet(keys);
-        datas.forEach(x => tempData.set(x[0], x[1]))
-        //console.log(tempData)
-        state.loading = false;
-      })();*/
-  }, [])
 
   if (state.loading)
     return null;
