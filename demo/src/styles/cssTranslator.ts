@@ -132,8 +132,8 @@ const css_translator = (
 
   if (id !== undefined && Storage.has(id))
     return { ...Storage.get(id) };
-  else if (TStorage.has(id ?? css))
-    return { ...TStorage.get(id ?? css) }
+  else if (TStorage.has(css))
+    return { ...TStorage.get(css) }
 
   let CSS = styleFile ?? {};
   let translatedItem = extractProps(css);
@@ -167,19 +167,23 @@ const css_translator = (
           value = undefined;
         else if (kValue.isClassName) {
           if (value in CSS || value.toLowerCase() in CSS) {
-            value = Object.values(CSS[value] ?? CSS[value.toLowerCase()])[0];
+            let tValue = CSS[value] ?? CSS[value.toLowerCase()];
+            if (typeof tValue === "object")
+              value = Object.values(tValue)[0];
+            else value = tValue;
           } else continue; // its a class that is not used in this context
         }
-
         let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
-        if (short) {
-          (_isImportend ? important : cssItem)[short] = value;
-        } else {
-          (_isImportend ? important : cssItem)[k] = value;
-          if (__DEV__)
-            console.warn(kValue, value, "not found in react-native style props, but we will still add it")
-        }
-        continue;
+        if (!kValue.isClassName || short) {
+          if (short) {
+            (_isImportend ? important : cssItem)[short] = value;
+          } else {
+            (_isImportend ? important : cssItem)[k] = value;
+            if (__DEV__)
+              console.warn(kValue, value, "not found in react-native style props, but we will still add it")
+          }
+          continue;
+        } else style = value;
       }
 
 

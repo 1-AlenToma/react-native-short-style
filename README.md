@@ -1,11 +1,9 @@
 # react-native-short-style
-`react-native-short-style` is developed for lazy developers, that is me.
+`react-native-short-style` It is designed to use CSS selectors to style your components as you do with css web like in native.
 
-No joks around, `react-native-short-style` will make your styling of your components much easier.
+With this css you wont need to devide your style across components, and style each component, child etc.
 
-You dont need to import styles in every file and your are also able to have nested styles that automatcly gets applyied to your children. 
-
-so like css `view text` will be applied without doing it your self all the time.
+So like CSS you could have selectors like `container > Button Text:[children*='submit']:"width-100 he-20 di-flex"` etc.
 
 # App using `react-native-short-style`
 [Novelo](https://github.com/1-AlenToma/Novelo)
@@ -13,7 +11,7 @@ so like css `view text` will be applied without doing it your self all the time.
 here is how it look like
 ![screenshot](https://raw.githubusercontent.com/1-AlenToma/react-native-short-style/main/src/screenshot/image.png)
 
-additinally you could also simplify your styles like instead of background, simple do `bac-red box fl-1 op:0.5` and so on, box is a class that exist in your stylesheet.
+additinally you could also simplify your styles like instead of background, simple do `bac-red .box fl-1 op:0.5` and so on, box is a class that exist in your stylesheet.
 
 If you see below, you also have predefines components like `Modal`, `ActionSheets`, `Tabs` and `AlertDialog` etc that you could use. See `demo` for more info
 
@@ -23,6 +21,20 @@ here is a simple code that shows how it works.
 And now simple use your components
 in addition to all the `View` props,
 you can also use css.
+
+
+# !important
+for overriding a css value, it have to be followed by `-!important` eg `wi-100%-!important`.
+for overriding the whole css style use `!important` instead eg `wi-100 he-200 !important` now both `width` and `height` will be overriden.
+
+The overriden rules are as follow. `css` prop override `NestedStyleSheet`, and style override both css and `NestedStyleSheet`.
+
+Note: Do not use dynamic style in css to much, eg a moving ball as its value changes to much and the lib caches all `css` values.
+The cache have max size and it will reset when the size reaches, so no need to be worry even if you dynamic `css`
+
+
+# here is a predifined Components you could use, like stylesheet, Modal etc.
+
 ```tsx
  import {
   ThemeContext,
@@ -57,6 +69,14 @@ you can also use css.
 import * as icons from "@expo/vector-icons";
 
 
+# Simple test
+
+```ts
+const userDefined = {
+  textStyle: "co-yellow pa-5 !important",
+  "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red .textStyle-!important",
+   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+}
 const themes = [
   NestedStyleSheet.create({
     AnimatedView: {
@@ -73,7 +93,8 @@ const themes = [
     },
     Icon: {
       color: "#000"
-    }
+    },
+   ...userDefined
   }),
   NestedStyleSheet.create({
     AnimatedView: {
@@ -88,65 +109,24 @@ const themes = [
     TextInput: {
       color: "#fff"
     },
-    Icon: x => x.props({ refererId: "iconHandler" }).co(".co-light"),
-    header: "bac:red"
+    Icon: x => x.co(".co-light"),
+    header: "bac:red",
+    ...userDefined
   })
 ]
 
-export default function App() {
-  const state = buildState({
-    id: newId(),
-    selectedTheme: 0,
-  }).build();
 
-  let el = useRef<DomPath<typeof View, any> | undefined>()
 
-  useEffect(() => {
-    if (el.current) {
-      // you are also able to search recrusivly throw element event in react-native android, IOS,Web and windows.
-      console.warn("Found item", el.current.querySelectorAll<typeof Text>(".button #txt, #txt2[someattr*='kas']"))
-    }
-  }, [el.current])
-  return (
-    <ThemeContainer icons={icons} referers={[{
-      id: "iconHandler",
-      func: (props: any) => {
-        return props;
-        // edit the props look up at Icon refererId
-        props.ifTrue = true;
-        return props;
-      }
-    }]} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+  // All your components have to be contained within ThemeContainer
+  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
-     <View css="button bac-red fld-column" ref={el}>
-        <View css={x => x.cls("button").baC(".co-blue100")}>
-          <Text id='txt'>test</Text>
-          <Text id='txt'>test</Text>
-          <Text id='txt2' css="tea-center bac-red wi-100%" someattr="kaskdj">test2</Text>
-        </View>
+  <View css="texto-!important">
+        <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>
-    </ThemeContainer >
-  );
-}
+  </ThemeContainer>
 
 ```
-## possible style overview 
-```js
-const userStyle = NestedStyleSheet.create({
-    header: "bac-#292e34",
-    header$Text: x => x.foS(".fos-lg").co(".co-light").foW("bold"),
-    headerLine: "bac-inherit _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1",
-    headerLine$View: "ali-center",
-    headerLine$View$Text: x => x.foS(".fos-lg").foW("bold"),
-    disabled: x => x.op(.8).baC(".co-gray400"),
-    selectedValue: x => x.baC("#007fff").co("#FFFFFF"),
-    alertViewButtonContainer: "fld:row ali:center mah-40 wi-100% fl-1 po-relative to-5",
-    alertViewButtonContainer$TouchableOpacity: "fl-1 he-100% _center bor-0 !important",
-    alertViewButtonContainer$TouchableOpacity$Text: "tea-center fos-12 fow-bold",
-    scrollMenuItem$View: x => x.fl(1)
-})
 
-```
 
 
 Now the library is developed recently and you may find some bugs, please report those and I will try fix theme asap. 

@@ -19,7 +19,6 @@ export declare class IParent {
 }
 export type PositionContext = {
     index?: number;
-    total?: number;
 };
 export type VirtualItemSize = {
     size: number | "EstimatedItemSize";

@@ -110,8 +110,8 @@ const css_translator = (css, styleFile, id) => {
         return cssItem;
     if (id !== undefined && Storage.has(id))
         return Object.assign({}, Storage.get(id));
-    else if (TStorage.has(id !== null && id !== void 0 ? id : css))
-        return Object.assign({}, TStorage.get(id !== null && id !== void 0 ? id : css));
+    else if (TStorage.has(css))
+        return Object.assign({}, TStorage.get(css));
     let CSS = styleFile !== null && styleFile !== void 0 ? styleFile : {};
     let translatedItem = extractProps(css);
     if (translatedItem._hasValue) {
@@ -143,21 +143,29 @@ const css_translator = (css, styleFile, id) => {
                     value = undefined;
                 else if (kValue.isClassName) {
                     if (value in CSS || value.toLowerCase() in CSS) {
-                        value = Object.values((_b = CSS[value]) !== null && _b !== void 0 ? _b : CSS[value.toLowerCase()])[0];
+                        let tValue = (_b = CSS[value]) !== null && _b !== void 0 ? _b : CSS[value.toLowerCase()];
+                        if (typeof tValue === "object")
+                            value = Object.values(tValue)[0];
+                        else
+                            value = tValue;
                     }
                     else
                         continue; // its a class that is not used in this context
                 }
                 let short = ((_c = ShortCSS[k]) !== null && _c !== void 0 ? _c : ShortCSS[k.toLowerCase()]);
-                if (short) {
-                    (_isImportend ? important : cssItem)[short] = value;
+                if (!kValue.isClassName || short) {
+                    if (short) {
+                        (_isImportend ? important : cssItem)[short] = value;
+                    }
+                    else {
+                        (_isImportend ? important : cssItem)[k] = value;
+                        if (__DEV__)
+                            console.warn(kValue, value, "not found in react-native style props, but we will still add it");
+                    }
+                    continue;
                 }
-                else {
-                    (_isImportend ? important : cssItem)[k] = value;
-                    if (__DEV__)
-                        console.warn(kValue, value, "not found in react-native style props, but we will still add it");
-                }
-                continue;
+                else
+                    style = value;
             }
             if (style && typeof style === "string") {
                 style = css_translator(style, styleFile);

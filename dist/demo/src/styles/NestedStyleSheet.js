@@ -12,11 +12,13 @@ class NestedStyleSheet {
             validKeys(key);
             let value = oItem[key];
             delete oItem[key];
-            key = key.replace(/((( )?)+)?([>:,*|!^~=\[\]])((( )?)+)/g, (_, __, ___, g1, g2, g3) => {
-                var _a, _b;
-                //console.log(g1, g2, g3)
-                return `${((_a = g1 === null || g1 === void 0 ? void 0 : g1.length) !== null && _a !== void 0 ? _a : 0) >= 0 && [">", "*"].includes(g2) ? " " : ""}${g2}${((_b = g3 === null || g3 === void 0 ? void 0 : g3.length) !== null && _b !== void 0 ? _b : 0) >= 0 && [">", "*"].includes(g2) ? " " : ""}`;
-            }).trim(); // clean key, remove space etc when needed
+            key = key.replace(/\s*(\*=|~=|\^=|\$=|\|=|[>:,|!^~,$*]|=)\s*/g, (_, operator, index) => {
+                let f = typeof index == "number" && key.charAt(index - 2);
+                let s = typeof index == "number" && key.charAt(index + 1);
+                // only add spaces around combinators like >, +, ~
+                const needsSpace = [">", "~=", "*=", "^=", "|=", "$=", "!=", "=", "*"].includes(operator);
+                return needsSpace ? (`${f !== " " ? " " : ""}${operator}${s !== " " ? " " : ""}`) : operator;
+            }).trim();
             if (value && typeof value == "string")
                 value = value.trim();
             oItem[key] = value;

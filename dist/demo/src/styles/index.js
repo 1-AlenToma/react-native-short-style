@@ -66,7 +66,7 @@ export class CMBuilder {
         return _jsx(RN, Object.assign({}, props, { ifTrue: true, css: css, cRef: (c) => setRef(ref, c) }));
     }
     render(_a) {
-        var _b, _c, _d, _e, _f;
+        var _b, _c, _d, _e;
         var { children, variant, cRef } = _a, props = __rest(_a, ["children", "variant", "cRef"]);
         const id = useLocalRef(newId);
         const context = React.useContext(StyleContext);
@@ -74,7 +74,7 @@ export class CMBuilder {
         const posContext = React.useContext(positionContext);
         const CM = this.__View;
         const childrenArray = React.Children.toArray(children).filter(Boolean);
-        const childTotal = childrenArray.length;
+        let childTotal = 0;
         const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
         // Memoized values
         const classNames = React.useMemo(() => {
@@ -96,12 +96,12 @@ export class CMBuilder {
         // Parent info
         const prt = new IParent();
         prt.index = (_b = posContext.index) !== null && _b !== void 0 ? _b : 0;
-        prt.total = (_e = (_c = posContext.total) !== null && _c !== void 0 ? _c : (_d = context.parent) === null || _d === void 0 ? void 0 : _d.total) !== null && _e !== void 0 ? _e : 1;
+        //  prt.total = posContext.total ?? context.parent?.total ?? 1;
         prt.classPath = classNames;
         prt.type = this.__name;
         prt.parent = context.parent;
-        prt.props = Object.assign({ className, type: this.__name }, props);
-        (_f = context.parent) === null || _f === void 0 ? void 0 : _f.reg(this.__name, prt.index);
+        prt.props = Object.assign(Object.assign({ className, type: this.__name }, props), { children });
+        (_c = context.parent) === null || _c === void 0 ? void 0 : _c.reg(this.__name, prt.index);
         prt.classPath.forEach((x) => { var _a; return (_a = context.parent) === null || _a === void 0 ? void 0 : _a.reg(x, prt.index); });
         const regChild = (child, idx) => {
             var _a, _b, _c;
@@ -137,7 +137,7 @@ export class CMBuilder {
                         continue;
                     }
                     regChild(child, idx);
-                    const posValue = { index: idx, total: childTotal };
+                    const posValue = { index: idx };
                     const childKey = `styled-child-${(_a = frag === null || frag === void 0 ? void 0 : frag.key) !== null && _a !== void 0 ? _a : ''}:${(_b = child.key) !== null && _b !== void 0 ? _b : idx}`;
                     result.push(_jsx(positionContext.Provider, { value: posValue, children: child }, `styled-wrapper-${childKey}`));
                 }
@@ -145,9 +145,11 @@ export class CMBuilder {
                     result.push(child); // non-element nodes
                 }
                 idx++;
+                childTotal++;
             }
             return result;
         };
+        prt.total = (_e = (_d = context.parent) === null || _d === void 0 ? void 0 : _d.total) !== null && _e !== void 0 ? _e : childTotal;
         const mappedChildren = cloneChild(childrenArray);
         const style = useStyled(id, context, this.__name, prt.index, prt.total, variant, prt, themeContext.systemThemes);
         let cssStyle = React.useMemo(() => {

@@ -9,7 +9,8 @@ import { newId } from './src/config';
 import { useEffect } from 'react';
 import * as icons from "@expo/vector-icons";
 const userDefined = {
-    "texto, texto >Text": "bac-green co-red",
+    textStyle: "co-yellow pa-5 !important",
+    "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red textStyle-!important",
     "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
 };
 const themes = [
@@ -54,7 +55,7 @@ export default function App() {
     }, []);
     if (state.loading)
         return null;
-    return (_jsx(ThemeContainer, { icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? (_jsx(View, { css: "texto-!important", children: _jsx(Text, { children: "jhgasdgasd" }) })) : (_jsxs(TabBar, { ifTrue: false, position: 'Bottom', header: {
+    return (_jsx(ThemeContainer, { icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? (_jsx(View, { css: "texto-!important", children: _jsxs(Text, { children: ["hej jkhkjhasd ", _jsx(Text, { children: "test" })] }) })) : (_jsxs(TabBar, { ifTrue: false, position: 'Bottom', header: {
                 selectedIconStyle: "color:red",
                 style: x => x.baC("#ffffff"),
                 textStyle: x => x.co("#000"),

@@ -3,7 +3,7 @@ import cssTranslator, { clearCss } from "../styles/cssTranslator";
 import { IParent, SelectorPart, StyleContextType, PositionContext } from "../Typse";
 import * as React from "react";
 
-export const positionContext = React.createContext<PositionContext>({ index: 0, total: 0 })
+export const positionContext = React.createContext<PositionContext>({ index: 0})
 
 
 

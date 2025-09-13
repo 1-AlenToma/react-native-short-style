@@ -34,7 +34,8 @@ import React, { useEffect, useRef } from 'react';
 import * as icons from "@expo/vector-icons";
 
 const userDefined = {
-  "texto, texto >Text": "bac-green co-red",
+  textStyle: "co-yellow pa-5 !important",
+  "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red textStyle-!important",
    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
 }
 const themes = [
@@ -104,7 +105,7 @@ export default function App() {
   return (
     <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       {debug ? (<View css="texto-!important">
-        <Text>jhgasdgasd</Text>
+        <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (
         <TabBar ifTrue={false} position='Bottom' header={{
           selectedIconStyle: "color:red",

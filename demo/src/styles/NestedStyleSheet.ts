@@ -18,10 +18,17 @@ class NestedStyleSheet {
       validKeys(key);
       let value = oItem[key];
       delete oItem[key];
-      key = key.replace(/((( )?)+)?([>:,*|!^~=\[\]])((( )?)+)/g, (_, __, ___, g1: any, g2: any, g3: any) => {
-        //console.log(g1, g2, g3)
-        return `${(g1?.length ?? 0) >= 0 && [">", "*"].includes(g2) ? " " : ""}${g2}${(g3?.length ?? 0) >= 0 && [">", "*"].includes(g2) ? " " : ""}`
-      }).trim()// clean key, remove space etc when needed
+      key = key.replace(
+        /\s*(\*=|~=|\^=|\$=|\|=|[>:,|!^~,$*]|=)\s*/g,
+        (_, operator, index) => {
+
+          let f = typeof index == "number" && key.charAt(index - 2);
+          let s = typeof index == "number" && key.charAt(index + 1);
+          // only add spaces around combinators like >, +, ~
+          const needsSpace = [">", "~=", "*=", "^=", "|=", "$=", "!=", "=", "*"].includes(operator);
+          return needsSpace ? (`${f !== " " ? " " : ""}${operator}${s !== " " ? " " : ""}`) : operator;
+        }
+      ).trim();
 
       if (value && typeof value == "string")
         value = value.trim();

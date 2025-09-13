@@ -79,7 +79,7 @@ export class CMBuilder {
 
         const CM = this.__View;
         const childrenArray = React.Children.toArray(children).filter(Boolean);
-        const childTotal = childrenArray.length;
+        let childTotal = 0;
         const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
 
         // Memoized values
@@ -106,11 +106,11 @@ export class CMBuilder {
         // Parent info
         const prt = new IParent();
         prt.index = posContext.index ?? 0;
-        prt.total = posContext.total ?? context.parent?.total ?? 1;
+      //  prt.total = posContext.total ?? context.parent?.total ?? 1;
         prt.classPath = classNames;
         prt.type = this.__name;
         prt.parent = context.parent;
-        prt.props = { className, type: this.__name, ...props };
+        prt.props = { className, type: this.__name, ...props, children };
 
         context.parent?.reg(this.__name, prt.index);
         prt.classPath.forEach((x: string) => context.parent?.reg(x, prt.index));
@@ -156,23 +156,26 @@ export class CMBuilder {
                     }
 
                     regChild(child, idx);
-                    const posValue = { index: idx, total: childTotal };
+                    const posValue = { index: idx };
                     const childKey = `styled-child-${frag?.key ?? ''}:${child.key ?? idx}`;
                     result.push(
                         <positionContext.Provider key={`styled-wrapper-${childKey}`} value={posValue}>
                             {child}
                         </positionContext.Provider>
                     );
+                
                 } else {
                     result.push(child); // non-element nodes
                 }
 
                 idx++;
+                childTotal++;
             }
-
+           
             return result;
         };
-
+        
+        prt.total = context.parent?.total ?? childTotal;
         const mappedChildren = cloneChild(childrenArray);
 
         const style = useStyled(

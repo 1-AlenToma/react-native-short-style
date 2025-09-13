@@ -1,6 +1,6 @@
 import cssTranslator, { clearCss } from "../styles/cssTranslator";
 import * as React from "react";
-export const positionContext = React.createContext({ index: 0, total: 0 });
+export const positionContext = React.createContext({ index: 0 });
 // Build fullPath hierarchy
 const expandFullPath = (parent, type, classPath) => {
     const result = [];
