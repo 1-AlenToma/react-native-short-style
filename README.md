@@ -8,6 +8,9 @@ So like CSS you could have selectors like `container > Button Text:[children*='s
 # App using `react-native-short-style`
 [Novelo](https://github.com/1-AlenToma/Novelo)
 
+# Working Web Demo
+[react-native-short-style](https://1-alentoma.github.io/react-native-short-style/)
+
 additinally you could also simplify your styles like instead of background, simple do `bac-red .box fl-1 op:0.5` and so on, box is a class that exist in your stylesheet.
 
 If you see below, you also have predefines components like `Modal`, `ActionSheet`, `Tabs` and `AlertDialog` etc that you could use. See `demo` for more info
