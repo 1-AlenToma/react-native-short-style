@@ -27,7 +27,7 @@
     },
     "experiments": {
       "basePath": "/react-native-short-style",
-      "baseUrl": "/react-native-short-style",
+      "baseUrl": "/react-native-short-style"
     }
   }
 }
