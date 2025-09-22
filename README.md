@@ -3,7 +3,7 @@
 
 With this css you wont need to devide your style across components, and style each component, child etc.
 
-So like CSS you could have selectors like `container > Button Text:[children*='submit']:"width-100 he-20 di-flex"` etc.
+So like CSS you could have selectors like `container > Button Text[children*='submit']:"width-100 he-20 di-flex"` etc.
 
 # App using `react-native-short-style`
 [Novelo](https://github.com/1-AlenToma/Novelo)
