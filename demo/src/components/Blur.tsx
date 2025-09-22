@@ -9,7 +9,7 @@ export const Blur = (props: BlurProps) => {
         props?.onPress?.(event);
     }
     if (!hProps.onPress && hProps.activeOpacity === undefined)
-        props.activeOpacity = 1;
+        hProps.activeOpacity = 1;
     if (props.onPress)
         hProps.onPress = onPress;
 
