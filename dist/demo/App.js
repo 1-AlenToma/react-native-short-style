@@ -6,7 +6,6 @@ import buildState from "./src/States";
 import GlobalStyles from './components/GlobalStyles';
 import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, MovingBall, ProgressView, ScrollMenuView } from './components';
 import { newId } from './src/config';
-import { useEffect } from 'react';
 import * as icons from "@expo/vector-icons";
 const userDefined = {
     textStyle: "co-yellow pa-5 !important",
@@ -44,15 +43,6 @@ export default function App() {
         loading: false
     }).build();
     const debug = false;
-    useEffect(() => {
-        /*  (async () => {
-            const keys = (await AsyncStorage.getAllKeys()).filter(x => x.startsWith("CSSStyled_"));
-            const datas = await AsyncStorage.multiGet(keys);
-            datas.forEach(x => tempData.set(x[0], x[1]))
-            //console.log(tempData)
-            state.loading = false;
-          })();*/
-    }, []);
     if (state.loading)
         return null;
     return (_jsx(ThemeContainer, { icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? (_jsx(View, { css: "texto-!important", children: _jsxs(Text, { children: ["hej jkhkjhasd ", _jsx(Text, { children: "test" })] }) })) : (_jsxs(TabBar, { ifTrue: false, position: 'Bottom', header: {
