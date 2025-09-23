@@ -4,6 +4,7 @@
   "main": "expo/AppEntry.js",
   "type": "commonjs",
   "scripts": {
+    "export": "rmdir /s /q dist && expo export",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -17,30 +18,30 @@
     "./"
   ],
   "dependencies": {
-    "@expo/metro-runtime": "~5.0.4",
-    "@expo/vector-icons": "^14.1.0",
+    "@expo/metro-runtime": "~6.1.2",
+    "@expo/vector-icons": "^15.0.2",
     "@miblanchard/react-native-slider": "^2.6.0",
-    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "css-select": "^5.1.0",
-    "expo": "^53.0.9",
-    "expo-constants": "~17.1.6",
-    "expo-linking": "~7.1.5",
-    "expo-router": "~5.0.7",
-    "expo-status-bar": "~2.2.3",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.2",
+    "expo": "^54.0.10",
+    "expo-constants": "~18.0.9",
+    "expo-linking": "~8.0.8",
+    "expo-router": "~6.0.8",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.4",
     "react-native-get-random-values": "^1.11.0",
-    "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": "~4.10.0",
-    "react-native-web": "^0.20.0",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "^0.21.0",
     "react-scripts": "^5.0.1",
     "react-smart-state": "^1.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "gh-pages": "^6.3.0",
-    "typescript": "~5.8.3"
+    "typescript": "~5.9.2"
   },
   "private": true,
   "browserslist": {

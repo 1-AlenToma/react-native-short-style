@@ -32,11 +32,29 @@ The overriden rules are as follow. `css` prop override `NestedStyleSheet`, and s
 Note: Do not use dynamic style in css to much, eg a moving ball as its value changes to much and the lib caches all `css` values.
 The cache have max size and it will reset when the size reaches, so no need to be worry even if you dynamic `css`
 
+# Convert
+To Convert Any component to styled component use `CreateView` eg
+
+```ts
+const Custom = ({style, css, ifTrue, ...}, ref) => {
+
+  return null
+
+}
+
+const StyledCustome =CreateView<Custom, any>(Custom);
+
+/// the current code is used for View
+ const View = CreateView<Native.View, ViewProps>(Native.View);
+
+```
+
 
 # here is a predifined Components you could use, like ActionSheet, Modal etc.
 
 ```tsx
  import {
+  CreateView,
   ThemeContext,
   ScrollView,
   ThemeContainer,
@@ -128,5 +146,5 @@ const themes = [
 ```
 
 
-
+note: some components is using settings for `@expo/vector-icons 15` like FormGroup info icons, so if used below the current version then assign your own icons for ex infoIcon props
 Now the library is developed recently and you may find some bugs, please report those and I will try fix theme asap. 

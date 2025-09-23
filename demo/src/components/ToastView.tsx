@@ -90,7 +90,7 @@ export const ToastView = () => {
         case "Info":
             typeInfo = {
                 css: `_${data.type.toLowerCase()}`,
-                icon: (<Icon type="AntDesign" name="infocirlce" size={30} css="co:white" />)
+                icon: (<Icon type="AntDesign" name="info-circle" size={30} css="co:white" />)
             }
             break;
         case "Warning":

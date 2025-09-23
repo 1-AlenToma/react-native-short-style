@@ -13,15 +13,16 @@ export const CreateView = function <T extends object, P>(view: any, name?: strin
     let cacheName = override ? name : view.displayName ?? name;
     let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = new CMBuilder(name, view)).fn();
     View.displayName = `Styled(${name ?? cacheName})`;
-    return View as any as GenericView<T, P> & ((props: GenericViewProps<T, P>) => React.ReactElement<P>);
+    return View as any as GenericView<T, P> & ((props: GenericViewProps<T, Omit<P, "style">>) => React.ReactElement<P>);
 }
+
+
 
 // so we could know that this item was create by react-native-short-style
 CreateView.prototype.CssStyleAble = CreateView.CssStyleAble = true;
 
 export const View = CreateView<Native.View, ViewProps>(Native.View);
 export const Slider = CreateView<NativeSlider.Slider, NativeSlider.SliderProps>(NativeSlider.Slider, "Slider");
-export const SafeAreaView = CreateView<Native.SafeAreaView, ViewProps>(Native.SafeAreaView, "SafeAreaView", true);
 export const Text = CreateView<Native.Text, TextProps>(Native.Text, "Text");
 export const TextInput = CreateView<Native.TextInput, Native.TextInputProps>(Native.TextInput, "TextInput");
 export const ScrollView = CreateView<Native.ScrollView, ScrollViewProps>(Native.ScrollView);

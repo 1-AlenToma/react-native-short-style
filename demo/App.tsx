@@ -114,7 +114,7 @@ export default function App() {
             </Fab>
             <BlockContainer>
               <Block title="Theme Example">
-                <Button icon={<Icon type="AntDesign" name="adduser" color="red" />} disabled={false} onPress={() => state.selectedTheme = state.selectedTheme == 0 ? 1 : 0} text="Toggle Theme" />
+                <Button icon={<Icon type="Entypo" name="add-user" color="red" />} disabled={false} onPress={() => state.selectedTheme = state.selectedTheme == 0 ? 1 : 0} text="Toggle Theme" />
               </Block>
 
               <ProgressView />

@@ -15,7 +15,6 @@ export const CreateView = function (view, name, override) {
 CreateView.prototype.CssStyleAble = CreateView.CssStyleAble = true;
 export const View = CreateView(Native.View);
 export const Slider = CreateView(NativeSlider.Slider, "Slider");
-export const SafeAreaView = CreateView(Native.SafeAreaView, "SafeAreaView", true);
 export const Text = CreateView(Native.Text, "Text");
 export const TextInput = CreateView(Native.TextInput, "TextInput");
 export const ScrollView = CreateView(Native.ScrollView);

@@ -87,16 +87,16 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                     onPress={() => state.visible = !state.visible}
                     css={`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`}>
                     <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC bac-transparent">
-                        <Text style={selectedText ? undefined : {
-                            color: "#CCC"
-                        }} css="fos-sm">{selectedText ?? props.placeHolder}</Text>
+                        <Text style={selectedText ? undefined : {color: "#CCC"}} css="fos-sm">
+                            {selectedText ?? props.placeHolder}
+                            </Text>
                     </View>
                     <View css="fl:1 _center wi:30 maw:30 he:100% bac-transparent">
                         <Icon style={{
                             transform: [{
                                 rotateX: (mode == "Fold" ? "0deg" : (state.visible ? "180deg" : "0deg"))
                             }]
-                        }} type="AntDesign" name={mode == "Fold" ? "caretright" : "caretdown"} />
+                        }} type="AntDesign" name={mode == "Fold" ? "caretright" : "caret-down"} />
                     </View>
                 </TouchableOpacity>
             </Selector>

@@ -16,6 +16,7 @@ export const Icon = (props: IConProps) => {
     }
     TypeIcon.displayName = props.type;
     let Ico: (props: IConProps) => React.ReactNode = styledItems[props.type] ?? (styledItems[props.type] = CreateView<any, any>(TypeIcon, "Icon"));
+   // console.log(Ico, props.type)
     if (props.flash)
         timer(() => {
             if (flash != props.flash)

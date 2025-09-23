@@ -24,7 +24,7 @@ export type VirtualItemSize = {
     size: number | "EstimatedItemSize";
     overscanCount?: number;
 };
-export type ViewStyle = ReactNative.StyleProp<ReactNative.ViewStyle>;
+export type ViewStyle = (ReactNative.StyleProp<ReactNative.ViewStyle>);
 export type TextStyle = ReactNative.StyleProp<ReactNative.TextStyle>;
 export type ICSS = {
     props: string[];
@@ -71,7 +71,7 @@ export type GenericCSS<A, B = CSS_String, C = {}, D = {}, E = {}> = A | B | C | 
 export type StyledProps = {
     css?: CSS_String;
     ifTrue?: ((() => boolean) | boolean);
-    style?: ViewStyle;
+    style?: ViewStyle | TextStyle;
     id?: string;
 };
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";
@@ -373,6 +373,7 @@ export type FormItemProps = StyledProps & {
     title?: string | React.ReactNode;
     labelPosition?: "Left" | "Top";
     icon?: IConProps | React.ReactNode;
+    infoIcon?: React.ReactNode;
     info?: string;
     message?: React.ReactNode;
 };
