@@ -147,4 +147,3 @@ const themes = [
 
 
 note: some components is using settings for `@expo/vector-icons 15` like FormGroup info icons, so if used below the current version then assign your own icons for ex infoIcon props
-Now the library is developed recently and you may find some bugs, please report those and I will try fix theme asap. 
