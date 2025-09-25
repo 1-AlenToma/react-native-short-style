@@ -1,6 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-get-random-values';
 import { ThemeContainer, Text, View, Button, Icon, NestedStyleSheet, TabBar, TabView, Fab, Collabse, Loader, ToolTip } from './src';
 import buildState from "./src/States";
 import GlobalStyles from './components/GlobalStyles';

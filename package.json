@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "type": "module",
@@ -35,8 +35,6 @@
   ],
   "dependencies": {
     "@miblanchard/react-native-slider": "*",
-    "css-select": "*",
-    "react-native-get-random-values": "*",
     "react-smart-state": "*"
   }
 }
