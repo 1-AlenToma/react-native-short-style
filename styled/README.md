@@ -15,12 +15,6 @@ additinally you could also simplify your styles like instead of background, simp
 
 If you see below, you also have predefines components like `Modal`, `ActionSheet`, `Tabs` and `AlertDialog` etc that you could use. See `demo` for more info
 
-here is a simple code that shows how it works.
-
-
-And now simple use your components
-in addition to all the `View` props,
-you can also use css.
 
 
 # !important
