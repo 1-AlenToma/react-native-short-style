@@ -13,7 +13,12 @@
   "engines": {
     "node": ">=10"
   },
-  "keywords": ["css in js", "css3", "css in react-native", "react-native css"],
+  "keywords": [
+    "css in js",
+    "css3",
+    "css in react-native",
+    "react-native css"
+  ],
   "scripts": {
     "build": "rmdir /s /q dist && tsc && cd demo && npm run export",
     "web": "cd demo && npx expo start",
@@ -35,6 +40,7 @@
   ],
   "dependencies": {
     "@miblanchard/react-native-slider": "*",
+    "react-native-short-style-devtools": "file:../react-native-short-style-devtools",
     "react-smart-state": "*"
   }
 }

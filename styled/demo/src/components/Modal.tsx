@@ -74,13 +74,13 @@ export const Modal = (props: ModalProps) => {
         let fn = state.isVisible ? context.add.bind(context) : context.remove.bind(context);
 
         fn(state.id,
-            <View key={state.id} css="_blur op:1 bac:transparent fl:1" style={{ zIndex: zIndex + 300 }}>
+            <View inspectDisplayName="ModalContainer" key={state.id} css="_blur op:1 bac:transparent fl:1 ModalContainer" style={{ zIndex: zIndex + 300 }}>
                 <Blur style={{
                     opacity: animate.y
                 }} onPress={props.disableBlurClick ? undefined : () => {
                     toggle(false);
                 }} css="_blur zi:1" />
-                <AnimatedView {...props}
+                <AnimatedView inspectDisplayName="Modal" {...props}
                     css={x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css)}
                     style={[...style,
                     {
@@ -95,7 +95,7 @@ export const Modal = (props: ModalProps) => {
                                 x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0)
                             } icon={<Icon type="AntDesign" name="close" size={15} />} />
                     </View>
-                    <View css={x => x.fillView().zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>
+                    <View inspectDisplayName="ModalContent" css={x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>
                         {props.children}
                     </View>
                 </AnimatedView>

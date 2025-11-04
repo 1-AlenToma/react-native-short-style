@@ -6,3 +6,8 @@ export * from "./Typse";
 export * from "./hooks";
 
 
+
+
+import { ConsoleInterceptor } from "./config/ConsoleInterceptor";
+
+ConsoleInterceptor.enable();

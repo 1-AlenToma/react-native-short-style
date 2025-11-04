@@ -13,5 +13,5 @@ export const Blur = (props: BlurProps) => {
     if (props.onPress)
         hProps.onPress = onPress;
 
-    return (<Component {...hProps} css={x => x.cls("_blur").joinRight(hProps.css)} />)
+    return (<Component inspectDisplayName="Blur" {...hProps} css={x => x.cls("_blur").joinRight(hProps.css)} />)
 }

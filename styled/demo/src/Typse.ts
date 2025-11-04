@@ -4,6 +4,21 @@ import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
 
 export const StyledKey = "StyledKey";
+interface NodeProps extends Record<string, any> {
+    _viewId: string;
+    _parent_viewId?: string;
+    _elementIndex?: number;
+    css?: any;
+    style?: any;
+}
+
+
+export type ElementTool = {
+    name: string;
+    children?: any[];
+    readOnlyProps?: string[],
+    props: NodeProps
+}
 
 export class IParent {
     index?: number;
@@ -22,6 +37,7 @@ export class IParent {
 
 export type PositionContext = {
     index?: number;
+    parentId?: string;
 }
 
 export type VirtualItemSize = {
@@ -87,6 +103,7 @@ export type StyledProps = {
     ifTrue?: ((() => boolean) | boolean);
     style?: ViewStyle | TextStyle;
     id?: string;
+    inspectDisplayName?: string;
 };
 
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";
@@ -129,8 +146,18 @@ export type ButtonProps = {
     whilePressedDelay?: number;
 } & StyledProps & Omit<TouchableOpacityProps, "children"> & MouseProps;
 
+export type IExtraThemeContext = {
+    elementSelection: boolean
+}
 
 export type IThemeContext = {
+    /** If you want to use react-native-short-style-devtools to incpect you renderred views and styles, then assign this 
+     * to your local ip.
+     * also make sure port 7778 and ws 7780 are accesesable.
+     * after you run 
+     * in chrome run http://localhost:7778/ to view the inspector
+     */
+    localIp?: string;
     /** selectedThemeIndex */
     selectedIndex: number;
     /** All themes eg black, light themes, it is a list of NestedStyleSheets */

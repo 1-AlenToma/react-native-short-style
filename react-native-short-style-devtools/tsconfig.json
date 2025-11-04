@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": "src",
+        "module": "commonjs",
+        "target": "ES2020",
+        "esModuleInterop": true,
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "allowJs": false,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*",
+        "assets/**/*" // ✅ include assets for tooling (not compiled)
+    ],
+    "exclude": [
+        "node_modules",
+        ".vscode-test"
+    ]
+}

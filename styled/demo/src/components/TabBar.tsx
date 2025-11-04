@@ -37,7 +37,7 @@ export class TabView extends React.PureComponent<TabItemProps, {}> {
         const context: ITabBarContext = this.context as any;
         let css = optionalStyle(props.css);
         return (
-            <View {...props} css={`fl:1 wi:100% he:100% bac-transparent ${css.c}`} />
+            <View inspectDisplayName="TabView" {...props} css={`TabView fl:1 wi:100% he:100% bac-transparent ${css.c} `} />
         )
     }
 

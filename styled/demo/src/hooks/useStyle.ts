@@ -3,7 +3,7 @@ import cssTranslator, { clearCss } from "../styles/cssTranslator";
 import { IParent, SelectorPart, StyleContextType, PositionContext } from "../Typse";
 import * as React from "react";
 
-export const positionContext = React.createContext<PositionContext>({ index: 0})
+export const positionContext = React.createContext<PositionContext>({ index: 0, parentId: "__0__" })
 
 
 
@@ -251,8 +251,11 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
 
     let merged: Record<string, any> = {};
     let important: Record<string, any> = {};
+    let keyStyle: Record<string, any> = {};
 
     for (const rule of context.rules) {
+        let keySelector: Record<string, any> = {};
+        let keySelectorImportant: Record<string, any> = {};
         for (const item of rule.parsedSelector) {
             //const selectorParts = parseSelector(selStr);
             //  const selectorParts = selStr.
@@ -265,7 +268,6 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
                   console.log(rule)
       
               }*/
-
             if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
                 continue;
             // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
@@ -273,26 +275,45 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
 
 
             if (typeof rule.style === "string") {
-                merged = { ...merged, ...cssTranslator(rule.style as any as string, systemTheme) };
-                if (merged.important) important = { ...important, ...merged.important };
+                let st = cssTranslator(rule.style as any as string, systemTheme);
+                merged = { ...merged, ...st };
+                if (merged.important) important = { ...important, ...cleanStyle(merged.important) };
                 merged = cleanStyle(merged);
+                if (__DEV__) {
+                    keySelector = ({ ...keySelector, ...st });
+                    if (keySelector.important)
+                        keySelectorImportant = { ...keySelectorImportant, ...cleanStyle(keySelector.important) };
+                    keySelector = cleanStyle(keySelector);
+
+                }
             } else {
                 const isWholeImportant = (rule.style as any)["!important"] === true;
                 for (const [key, value] of Object.entries(rule.style)) {
                     if (key === "!important") continue;
                     if (typeof value === "string" && value.endsWith("!important")) {
                         important[key] = value.replace(/(\-)?!important/gi, "").trim();
+                        if (__DEV__)
+                            keySelectorImportant[key] = important[key]
                     } else if (isWholeImportant) {
                         important[key] = value;
-                    } else if (!(key in important)) {
-                        merged[key] = value;
+                        if (__DEV__)
+                            keySelectorImportant[key] = value;
+                    } else {
+                        if (!(key in important))
+                            merged[key] = value;
+                        if (__DEV__ && !(key in keySelectorImportant))
+                            keySelectorImportant[key] = value;
                     }
                 }
             }
+
+
         }
+
+        keyStyle[rule.selectors.join(",")] = { ...keySelector, ...keySelectorImportant };
     }
 
-    return { ...merged, important } as Record<string, any> & { important: typeof important };
+    return [{ ...merged, important}, keyStyle] as [Record<string, any> & { important: typeof important }, Record<string, any>];
 }
 
 

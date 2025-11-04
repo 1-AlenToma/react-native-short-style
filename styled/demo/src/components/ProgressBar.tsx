@@ -53,11 +53,12 @@ export const ProgressBar = ({
     return (
         <View
             ifTrue={ifTrue}
+            inspectDisplayName="ProgressBar"
             onLayout={e => {
                 setSize(e.nativeEvent.layout);
             }}
             style={style}
-            css={x => x.cls("_progressBar").joinRight(css)}>
+            css={x => x.cls("_progressBar", "ProgressBar").joinRight(css)}>
             <Blur css="zi:1" />
             <View
                 css="zi:3 bac:transparent wi-100% juc-center ali-center fld-row">

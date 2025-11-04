@@ -35,7 +35,7 @@ import * as icons from "@expo/vector-icons";
 const userDefined = {
   textStyle: "co-yellow pa-5 !important",
   "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red textStyle-!important",
-   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
+  "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
 }
 const themes = [
   NestedStyleSheet.create({
@@ -54,7 +54,7 @@ const themes = [
     Icon: {
       color: "#000"
     },
-   ...userDefined
+    ...userDefined
     // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
   }),
   NestedStyleSheet.create({
@@ -93,11 +93,11 @@ export default function App() {
 
 
   return (
-    <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+    <ThemeContainer localIp="192.168.1.239" icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       {debug ? (<View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (
-        <TabBar ifTrue={false} position='Bottom' header={{
+        <TabBar ifTrue={false} lazyLoading={true} position='Bottom' header={{
           selectedIconStyle: "color:red",
           style: x => x.baC("#ffffff"),
           textStyle: x => x.co("#000"),

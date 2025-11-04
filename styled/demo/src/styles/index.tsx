@@ -5,13 +5,13 @@ import {
     TouchableOpacity,
     Platform,
 } from "react-native";
-import { globalData, StyleContext, ThemeContext } from "../theme/ThemeContext";
+import { devToolsHandlerContext, globalData, StyleContext, ThemeContext } from "../theme/ThemeContext";
 import { CSSProps, CSSStyle } from "./CSSStyle";
-import { ifSelector, newId, refCreator, setRef, ValueIdentity } from "../config";
+import { ifSelector, newId, refCreator, setRef, ValueIdentity, flatStyle } from "../config";
 import NestedStyleSheet from "./NestedStyleSheet";
 import cssTranslator, { clearCss } from "./cssTranslator";
 import { IParent } from "../Typse";
-import { cleanStyle, useStyled, positionContext, useLocalRef } from "../hooks";
+import { cleanStyle, useStyled, positionContext, useLocalRef, useTimer } from "../hooks";
 
 export class CMBuilder {
     __name: string;
@@ -71,11 +71,46 @@ export class CMBuilder {
         return <RN {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
     }
 
-    render({ children, variant, cRef, ...props }: CSSProps<any>) {
-        const id = useLocalRef(newId)
+    render({ children, variant, cRef, style, css, ifTrue, onPress, ...props }: CSSProps<any>) {
+        let internalProps = { ...props };
+        const id = useLocalRef(newId);
         const context = React.useContext(StyleContext);
         const themeContext = React.useContext(ThemeContext);
         const posContext = React.useContext(positionContext);
+        const [changedProps, setChangedProps] = React.useState<any>(undefined);
+        const timer = useTimer(0);
+        const inspect = __DEV__ && devToolsHandlerContext.data.isOpened;
+        if (__DEV__) {
+            devToolsHandlerContext.useEffect(() => {
+                if (devToolsHandlerContext.data.changedProps.has(id)) {
+                    setChangedProps(devToolsHandlerContext.data.changedProps.get(id));
+                } else if (changedProps) {
+                    setChangedProps(undefined) // clear it as reload has been triggered
+                }
+            }, "data.propsUpdated")
+        }
+
+        if (inspect && changedProps) {
+
+            /**
+             * remove 
+             *  _viewId: id,
+                        _elementIndex: posContext.index,
+                        _parent_viewId: posContext.parentId ?? "__0__",
+             */
+            try {
+                let item = changedProps;
+                style = item.style ?? {};
+                ifTrue = item.ifTrue ?? ifTrue;
+                internalProps = { ...internalProps, ...item, _viewId: undefined, _elementIndex: undefined, _parent_viewId: undefined }
+                if (item.children && typeof children == "string")
+                    children = item.children;
+                // console.log("internal", changedProps);
+            } catch (e) {
+                console.error(e);
+            }
+
+        }
 
         const CM = this.__View;
         const childrenArray = React.Children.toArray(children).filter(Boolean);
@@ -84,16 +119,16 @@ export class CMBuilder {
 
         // Memoized values
         const classNames = React.useMemo(() => {
-            const cls = ValueIdentity.getClasses(props.css, themeContext.systemThemes);
-          //   if (cls.length > 0)
+            const cls = ValueIdentity.getClasses(css, themeContext.systemThemes);
+            //   if (cls.length > 0)
             //  console.log(cls.join(","));
             return cls;
-        }, [props.css]);
+        }, [css]);
         const className = React.useMemo(() => classNames.join(" "), [classNames]);
-        const css = props.css;
+        const _css = css;
         const dataSet =
-            __DEV__ && Platform.OS === "web" && css
-                ? { css: "__DEV__ CSS:" + css, type: this.__name, classNames: className }
+            __DEV__ && Platform.OS === "web" && _css
+                ? { css: "__DEV__ CSS:" + _css, type: this.__name, classNames: className }
                 : undefined;
 
         if (isTextWeb) {
@@ -106,11 +141,11 @@ export class CMBuilder {
         // Parent info
         const prt = new IParent();
         prt.index = posContext.index ?? 0;
-      //  prt.total = posContext.total ?? context.parent?.total ?? 1;
+        //  prt.total = posContext.total ?? context.parent?.total ?? 1;
         prt.classPath = classNames;
         prt.type = this.__name;
         prt.parent = context.parent;
-        prt.props = { className, type: this.__name, ...props, children };
+        prt.props = { className, type: this.__name, ...internalProps, children };
 
         context.parent?.reg(this.__name, prt.index);
         prt.classPath.forEach((x: string) => context.parent?.reg(x, prt.index));
@@ -156,14 +191,14 @@ export class CMBuilder {
                     }
 
                     regChild(child, idx);
-                    const posValue = { index: idx };
+
                     const childKey = `styled-child-${frag?.key ?? ''}:${child.key ?? idx}`;
                     result.push(
-                        <positionContext.Provider key={`styled-wrapper-${childKey}`} value={posValue}>
+                        <positionContext.Provider key={`styled-wrapper-${childKey}`} value={{ index: idx, parentId: id }}>
                             {child}
                         </positionContext.Provider>
                     );
-                
+
                 } else {
                     result.push(child); // non-element nodes
                 }
@@ -171,14 +206,14 @@ export class CMBuilder {
                 idx++;
                 childTotal++;
             }
-           
+
             return result;
         };
-        
+
         prt.total = context.parent?.total ?? childTotal;
         const mappedChildren = cloneChild(childrenArray);
 
-        const style = useStyled(
+        const [_styles, keySelectors] = useStyled(
             id,
             context,
             this.__name,
@@ -190,21 +225,21 @@ export class CMBuilder {
         );
 
         let cssStyle = React.useMemo(() => {
-            if (!css || css.trim().length === 0) return undefined;
-            return cssTranslator(css, themeContext.systemThemes);
-        }, [css, themeContext.systemThemes]);
+            if (!_css || _css.trim().length === 0) return undefined;
+            return cssTranslator(_css, themeContext.systemThemes);
+        }, [_css, themeContext.systemThemes]);
 
         //**
         // style.important override cssStyle and cssStyle.important override the style.important
         // and style tag override all */
-        if (style && style.important)
-            cssStyle = { ...cssStyle, ...style.important };
+        if (_styles && _styles.important)
+            cssStyle = { ...cssStyle, ..._styles.important };
         if (cssStyle.important)
             cssStyle = { ...cssStyle, ...cssStyle.important };
 
-        const styles = (Array.isArray(props.style)
-            ? [style, cssStyle, ...props.style]
-            : [style, cssStyle, props.style]
+        const styles = (Array.isArray(style)
+            ? [_styles, cssStyle, ...style]
+            : [_styles, cssStyle, style]
         ).filter(Boolean);
 
         //  if (classNames.includes("virtualItemSelector"))
@@ -215,11 +250,63 @@ export class CMBuilder {
         }
 
         useEffect(() => {
-            return () => clearCss(id);
+            return () => {
+                clearCss(id);
+                // clear it
+                if (inspect)
+                    devToolsHandlerContext.delete(id);
+            }
         }, [])
+    
+
+        const patch = async () => {
+            if (inspect && ifTrue) {
+                if (internalProps?.inspectDisplayName)
+                    delete internalProps.inspectDisplayName;
+                devToolsHandlerContext.patch({
+                    name: props.inspectDisplayName ?? this.__name,
+                    children: [],
+                    props: {
+                        ifTrue,
+                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...(flatStyle(styles)), _props: undefined, transform: undefined, important: undefined }, css }),
+                        classes: devToolsHandlerContext.withKeysOnly(keySelectors),
+                        _viewId: id,
+                        _elementIndex: posContext.index,
+                        _parent_viewId: posContext.parentId ?? "__0__",
+                        ...(typeof children == "string" ? { children } : {})
+                    }
+                });
+            } else if (inspect) devToolsHandlerContext.delete(id);
+        }
+
+
+        const pressed = (e) => {
+            if (devToolsHandlerContext.data.elementSelection === true) {
+                e.preventDefault(); // stops default browser behavior (like form submission)
+                e.stopPropagation(); // stops bubbling up to parent elements
+                devToolsHandlerContext.data.elementSelection = false;
+                devToolsHandlerContext.sendProp("elementSelection");
+                devToolsHandlerContext.select(id);
+                alert("Element is Selected")
+            } else {
+                onPress?.(e);
+            }
+        }
+
+        if (ifTrue) {
+            if (onPress || (inspect && devToolsHandlerContext.data.elementSelection === true))
+                internalProps.onPress = (e) => {
+                    pressed(e);
+                }
+        }
+        if (inspect)
+            timer(patch);
+
+        if (ifTrue == false)
+            return null;
 
         if (childTotal === 0) {
-            return <CM dataSet={dataSet} {...props} ref={(c) => this.setRef(cRef, c)} style={styles} />;
+            return <CM dataSet={dataSet} {...internalProps} ref={(c) => this.setRef(cRef, c)} style={styles} />;
         }
 
         return (
@@ -232,10 +319,9 @@ export class CMBuilder {
             >
                 <CM
                     dataSet={dataSet}
-                    {...props}
+                    {...internalProps}
                     ref={(c) => this.setRef(cRef, c)}
-                    style={styles}
-                >
+                    style={styles}>
                     {mappedChildren}
                 </CM>
             </StyleContext.Provider>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>React Native Short Style Inspector</title>
+  <script>
+    window.appMode = "WebTest";
+  </script>
+  <script src="data.js"></script>
+  <link href="style.css" rel="stylesheet" />
+  <script>
+    window.appSettings = undefined;
+  </script>
+</head>
+
+<body>
+  <div class="toolbar">
+    <div class="title">React Native Short Style Inspector
+      <span class="note" style="clear: both;">For Project {#}</span>
+    </div>
+
+    <button id="update">Update Text</button>
+    <button id="deleteNode">deleteNode</button>
+    <div class="node-count" id="nodeCount">— nodes</div>
+    <div style="margin-left: auto; display: flex; gap:4">
+      <span class="loader"></span>
+      <input type="search" id="search" placeholder="Search nodes (name or prop)" />
+    </div>
+  </div>
+  <div class="path hideScroll">
+    Path: App > View
+  </div>
+  <div class="tabs">
+    <div class="header">
+      <a class="icon" data-props="elementSelection" data-value="true" title="Select an element in the app and it will be selected here"><img src="gesture_select.svg" /></a>
+      <p class="selected" data-value="Elements">Elements</p>
+      <p data-value="Console"><span class="nr">No</span>Console</p>
+      <input type="range" id="zoom" name="zoom" min="1" max="2" value="1" step="0.1" />
+      <div style="margin-left:auto">
+        <button class="btn save hidden" title="Save changes for current node"><img style="height:var(--pathHeight)"
+            src="save.svg" />Save</button>
+        <button class="btn reload" title="Clear all changed data eg (reload)"><img style="height:var(--pathHeight)"
+            src="reload_app.svg" /></button>
+
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="container active" data-type="Elements">
+        <div class="left hideScroll">
+          <div class="tree-root" id="treeRoot" aria-label="Component tree">
+            <!-- tree will be rendered here -->
+          </div>
+        </div>
+
+        <div class="right hideScroll">
+          <div class="props-panel" id="propsPanel">
+            <div class="empty" id="emptyInfo">Select a node to view props</div>
+          </div>
+        </div>
+      </div>
+      <div class="container" data-type="Console">
+        <div class="left hideScroll"></div>
+        <div class="right hideScroll">
+          <button class="btn toRight clearLogs" title="Clear all logs"><img src="clear_logs.svg" /></button>
+          <ul class="lst">
+            <li><a class="messages btn selected"><span>No</span>Messages</a></li>
+            <li><a class="logs btn"><span>No</span>Logs</a></li>
+            <li><a class="errors btn"><span>No</span>Errors</a></li>
+            <li><a class="warnings btn"><span>No</span>Warnings</a></li>
+            <li><a class="infos btn"><span>No</span>Info</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+
+</html>

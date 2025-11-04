@@ -53,7 +53,7 @@ export const Button = (props: ButtonProps) => {
 
 
     return (
-        <TouchableOpacity {...pressableProps}
+        <TouchableOpacity inspectDisplayName={"Button"} {...pressableProps}
             onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled"))}>
             {props.icon}
             <Text ifTrue={props.text != undefined} css={x => x.cls("fos-xs").joinRight(props.textCss)}>{props.text}</Text>

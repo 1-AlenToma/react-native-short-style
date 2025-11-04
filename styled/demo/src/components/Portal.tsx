@@ -15,7 +15,7 @@ export const Portal = (props: PortalProps) => {
     React.useEffect(() => {
         let fn = ifSelector(props.ifTrue) !== false ? context.add.bind(context) : context.remove.bind(context);
         fn(state.id, (
-            <View key={state.id} css={`zi:1 ${optionalStyle(props.css).c}`} style={props.style}>
+            <View inspectDisplayName="Portal" key={state.id} css={`zi:1 ${optionalStyle(props.css).c}`} style={props.style}>
                 {props.children}
             </View>
         ), true);

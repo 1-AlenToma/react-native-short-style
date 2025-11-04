@@ -263,7 +263,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
 
         fn(state.id,
-            <View key={state.id} css={"co-transparent _topPostion"} style={{ zIndex: zIndex + 300 }}>
+            <View inspectDisplayName="ActionSheetContainer" key={state.id} css={"co-transparent _topPostion ActionSheetContainer"} style={{ zIndex: zIndex + 300 }}>
                 <Blur style={{
                     opacity: blurAnimation.animate.x.interpolate({
                         inputRange: [0, 1],
@@ -274,6 +274,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         toggle(false);
                 }} css="zi:1" />
                 <AnimatedView
+                    inspectDisplayName="ActionSheet"
                     onTouchStart={() => {
                         //state.refItem.isTouched = true;
                     }}
@@ -290,10 +291,11 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         },
                     ]}  {...state.refItem.panResponse.panHandlers}>
                     <View
+                        inspectDisplayName="ActionSheetContent"
                         style={{
                             flexDirection: !isVertical ? "row" : undefined
                         }}
-                        css="wi:100% he:100% pa:10 flex:1">
+                        css="wi:100% he:100% pa:10 flex:1 ActionSheetContent">
                         {position == "Bottom" || position == "Right" ? handle : null}
                         <View ifTrue={state.refItem.show || !props.lazyLoading}
                             css={x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue()}

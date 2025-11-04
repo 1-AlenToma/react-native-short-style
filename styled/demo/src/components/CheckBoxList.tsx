@@ -89,7 +89,6 @@ export const CheckBoxList = (props: CheckBoxListProps) => {
         return null;
     return (
         <CheckBoxContext.Provider value={contextValue}>
-
             <ViewItem title={props.label} {...props}>
                 <View css="CheckBoxList fl-1">
                     {

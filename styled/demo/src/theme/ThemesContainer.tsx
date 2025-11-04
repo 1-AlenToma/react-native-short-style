@@ -1,4 +1,4 @@
-import { ThemeContext, globalData, InternalThemeContext, StyleContext } from "./ThemeContext";
+import { ThemeContext, globalData, InternalThemeContext, StyleContext, devToolsHandlerContext } from "./ThemeContext";
 import * as React from "react";
 import { IThemeContext, Rule } from "../Typse";
 import StateBuilder from "../States";
@@ -6,7 +6,7 @@ import { newId, clearAllCss, currentTheme } from "../config";
 import { View, AlertView, ToastView } from "../components";
 import { Platform } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
-
+import { useLocalRef } from "../hooks";
 
 const StaticItem = ({ onMounted, id, item }: any) => {
     const state = StateBuilder({
@@ -167,13 +167,45 @@ const ThemeInternalContainer = ({ children }: any) => {
 
 export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
+    const [ready, setReady] = React.useState(false);
+    const devtoolOpend = React.useRef(devToolsHandlerContext.data.isOpened);
+    if (__DEV__) {
+
+        devToolsHandlerContext.hook("data.elementSelection");
+
+    }
+
+
+    if (__DEV__ && props.localIp && devToolsHandlerContext.host != props.localIp)
+        devToolsHandlerContext.host = props.localIp;
+
+    if (__DEV__) {
+        devToolsHandlerContext.hook("data.isOpened").on(() => devToolsHandlerContext.data.isOpened);
+        devToolsHandlerContext.hook("data.rerender").on(() => devToolsHandlerContext.data.rerender != undefined)
+    }
+
+    if (devToolsHandlerContext.data.isOpened == false && __DEV__)
+        console.info("Consider installing react-native-short-style-devtools to be able to inspect the rendered style and css.");
+    if (__DEV__)
+        devToolsHandlerContext.useEffect(() => {
+            if (devtoolOpend.current != devToolsHandlerContext.data.isOpened) {
+                if (!devToolsHandlerContext.data.isOpened) {
+                    console.warn("react-native-short-style-devtools is offline");
+                    if (devtoolOpend.current)
+                        devToolsHandlerContext.open(); // try to open it once
+                }
+                else console.info(`react-native-short-style-devtools is online.\nnote when using the devtool the app will be a little slower depending on our pc, so use it only to design your app`);
+
+            }
+            devtoolOpend.current = devToolsHandlerContext.data.isOpened;
+        }, "data.isOpened")
 
     React.useEffect(() => {
         let events = globalData.appStart();
         if (props.storage)
             globalData.storage = props.storage as any;
         return () => events.forEach(x => x?.remove?.());
-    }, [])
+    }, []);
 
     if (props.storage && globalData.storage !== props.storage)
         globalData.storage = props.storage;
@@ -187,11 +219,28 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     const theme = currentTheme(props);
     // console.log(theme)
     const rules = parseStyles(theme, props.selectedIndex);
+    if ((!ready || devToolsHandlerContext.data.rerender) && devToolsHandlerContext.data.isOpened && __DEV__) {
+        devToolsHandlerContext.sendTree({
+            name: "ThemeContextAPP",
+            children: [],
+            readOnlyProps: ["classes.*", "css", "props"],
+            props: {
+                _viewId: "__0__",
+                platform: Platform.OS
+            }
+        }).then(() => setReady(true));
+        if (devToolsHandlerContext.data.rerender)
+            devToolsHandlerContext.data.rerender = undefined;
+    }
+
+    if (!ready)
+        return null;
+
     // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));
     //  console.log(rules.length)
     return (
         <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>
-            <ThemeContext.Provider value={{ ...props, systemThemes: theme }}>
+            <ThemeContext.Provider value={{ ...props, systemThemes: theme, elementSelection: devToolsHandlerContext.data.elementSelection }}>
                 <ThemeInternalContainer>
                     {props.children}
                 </ThemeInternalContainer>
@@ -200,3 +249,4 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     )
 
 }
+

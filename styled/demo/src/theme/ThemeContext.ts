@@ -1,13 +1,15 @@
 import * as React from "react";
-import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType, CSSStorage, StyledKey } from "../Typse";
+import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContext, StyleContextType, CSSStorage, StyledKey, IExtraThemeContext } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Dimensions, Platform } from "react-native";
+import { DevtoolsHandler } from "../config/DevToolsHandler";
 
 
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
-    themes: []
-} as IThemeContext);
+    themes: [],
+    elementSelection: false
+} as IThemeContext & IExtraThemeContext);
 
 // --- Context ---
 export const StyleContext = React.createContext<StyleContextType>({
@@ -63,8 +65,10 @@ const getWebStorage = () => {
 }
 
 
+export const devToolsHandlerContext = StateBuilder<DevtoolsHandler>(() => new DevtoolsHandler()).ignore("ws", "que").globalBuild();
 
-export const globalData = StateBuilder<GlobalState>({
+
+export const globalData = StateBuilder<GlobalState>(() => ({
     storage: getWebStorage(),
     tStorage: new Map() as any,
     activePan: false,
@@ -120,7 +124,7 @@ export const globalData = StateBuilder<GlobalState>({
             windowChangeEvent
         ]
     }
-}).timeout(undefined).ignore(
+})).timeout(1).ignore(
     "alertViewData.data",
     "alertViewData.toastData",
     "storage",

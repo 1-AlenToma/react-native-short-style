@@ -1,0 +1,39 @@
+{
+  "name": "react-native-short-style-devtools",
+  "version": "1.0.0",
+  "description": "devtools for inpecting rendered views",
+  "keywords": [
+    "react-native-short-style-devtools"
+  ],
+  "homepage": "https://github.com/1-AlenToma/react-native-short-style#readme",
+  "bugs": {
+    "url": "https://github.com/1-AlenToma/react-native-short-style/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1-AlenToma/react-native-short-style.git"
+  },
+  "license": "MIT",
+  "author": "Alen Toma",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "copy-assets": "cpx \"src/assets/**/*\" dist/assets",
+    "compile": "tsc -p ./",
+    "build": "npm run compile && npm run copy-assets",
+    "local": "node ./dist/localServer.js"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "@types/ws": "*",
+    "cpx": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "mime": "*",
+    "ws": "*"
+  }
+}

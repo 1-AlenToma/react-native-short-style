@@ -21,7 +21,7 @@ export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
     } as LoaderRef);
 
 
-    return (<View css="wi:100% he:100% flg:1 bac:transparent">
+    return (<View inspectDisplayName="Loader" css="wi:100% he:100% flg:1 bac:transparent Loader">
         <Blur css="bor:5 zi:2" ifTrue={props.loading} />
         <View ifTrue={props.loading} css="juc:center ali:center _abc wi:100% he:100% bac:transparent zi:3">
             <ActivityIndicator color="white" size="large" {...props} children={null} />
@@ -31,7 +31,7 @@ export const Loader = React.forwardRef<LoaderRef, LoaderProps>((props, ref) => {
                 </Text>) : props.text
             }
         </View>
-        <View css='wi:100% he:100% fl:1 flg:1 zi:1'>
+        <View inspectDisplayName="LoaderContent" css='wi:100% he:100% fl:1 flg:1 zi:1 LoaderContent'>
             {props.children}
         </View>
     </View>)

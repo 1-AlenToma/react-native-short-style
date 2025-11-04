@@ -4,8 +4,9 @@
   "main": "expo/AppEntry.js",
   "type": "commonjs",
   "scripts": {
+    "link": "npm link file:../../react-native-short-style-devtools --legacy-peer-deps",
     "export": "rmdir /s /q dist && expo export",
-    "start": "expo start",
+    "start": "npm run link && expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -34,9 +35,11 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
+    "react-native-short-style-devtools": "^1.0.0",
     "react-native-web": "^0.21.0",
     "react-scripts": "^5.0.1",
-    "react-smart-state": "^1.1.2"
+    "react-smart-state": "^1.1.2",
+    "save": "^2.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
