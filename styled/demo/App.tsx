@@ -93,7 +93,7 @@ export default function App() {
 
 
   return (
-    <ThemeContainer localIp="192.168.1.239" icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+    <ThemeContainer localIp={"localhost"} icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       {debug ? (<View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (

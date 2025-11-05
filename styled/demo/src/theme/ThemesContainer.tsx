@@ -233,7 +233,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
             devToolsHandlerContext.data.rerender = undefined;
     }
 
-    if (!ready)
+    if (!ready  !&& devToolsHandlerContext.data.isOpened)
         return null;
 
     // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));

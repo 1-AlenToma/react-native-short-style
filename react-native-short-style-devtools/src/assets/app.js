@@ -420,7 +420,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
 
     const save = () => {
-
+        htmlScrollPosition.loading(true);
         const getKeyValueInput = (el) => {
             let result = [];
             for (let item of [...el.children]) {
@@ -532,15 +532,16 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
             }
         }
         vscode.postMessage({ type: 'SAVE_NODE_PROP', payload: { ...json, _deletedItems: getDeletedJson(deleteJson) } });
+        htmlScrollPosition.loading(false);
     }
 
 
 
     function addInput(key, index) {
-        let colType = window.RN_STYLE_PROPS.find(x => x.name.toLowerCase() === key.toLowerCase());
-        if (colType != undefined && colType.type === "number")
+        let colType = window.RN_STYLE_PROPS.find(x => x.name.toLowerCase() === key.toLowerCase())?.type ?? "text";
+        if (colType === "number")
             colType = "number";
-        else colType = "text";
+        else if (colType != "color") colType = "text";
         let div = document.createElement("div");
         let input = document.createElement("input");
 
@@ -565,6 +566,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         inputValue.setAttribute("name", `${key}_value`);
         inputValue.readOnly = isReadOnly;
         inputValue.placeholder = "value";
+        inputValue.setAttribute("value", inputValue.value);
         if (item[index][0].trim() !== "" && document.querySelector("datalist#" + item[index][0].trim().toLowerCase())) {
             inputValue.setAttribute("list", key.toLowerCase());
         }
@@ -574,7 +576,14 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
             if (id !== "" && document.querySelector("datalist#" + id.toLowerCase())) {
                 inputValue.setAttribute("list", id.toLowerCase());
             }
-        })
+        });
+
+        inputValue.addEventListener("input", () => {
+            inputValue.setAttribute("value", inputValue.value);
+        });
+
+
+
         div.appendChild(createwrapper(inputValue));
         if (!isSingleValue && !isReadOnly) {
             let btn = document.createElement("button");
@@ -688,10 +697,11 @@ searchInput.addEventListener('input', (ev) => {
     searchValue = ev.target.value.trim().toLowerCase();
     searchedItems = {};
 });
+
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault(); // block unintended form behavior
-        if (document.querySelector(".header p.selected").textContent.startsWith("Elements"))
+        if (document.querySelector(".container.active")?.getAttribute("data-type") == "Elements" || !document.querySelector(".header p.selected") || document.querySelector(".header p.selected")?.getAttribute("data-value") == ("Elements"))
             searchHtml(true);
         else searchLogs(true);
         // put your logic here

@@ -151,11 +151,12 @@ export type IExtraThemeContext = {
 }
 
 export type IThemeContext = {
-    /** If you want to use react-native-short-style-devtools to incpect you renderred views and styles, then assign this 
+    /** If you want to use react-native-short-style-devtools to inspect your renderred views and styles, then assign this 
      * to your local ip.
      * also make sure port 7778 and ws 7780 are accesesable.
      * after you run 
      * in chrome run http://localhost:7778/ to view the inspector
+     * if localhost dose not work try getting your lanip(ip4) by runnuing ipconfig in cmd 
      */
     localIp?: string;
     /** selectedThemeIndex */

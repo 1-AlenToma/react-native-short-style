@@ -58,17 +58,21 @@ export class DevtoolsHandler {
 
         this.ws.onopen = () => {
             //  if (this.data.isOpened != this.data.isOpened)
-            this.ws.send(JSON.stringify({ type: "REGISTER", clientType: "APP" }));
-            this.data.isOpened = true;
+            try {
+                this.ws.send(JSON.stringify({ type: "REGISTER", clientType: "APP" }));
+                this.data.isOpened = true;
 
-            console.info("connected to react-native-short-style-devtools")
+                console.info("connected to react-native-short-style-devtools")
+            } catch (e) {
+                console.error(e);
+            }
         };
 
-        this.ws.onclose = () => {
+        this.ws.onclose = (ev) => {
             if (this.data.isOpened != this.data.isOpened)
                 this.data.isOpened = false;
-
-            console.info("disconnected from react-native-short-style-devtools")
+            this.ws = undefined;
+            console.info("disconnected from react-native-short-style-devtools", ev)
             /*  setTimeout(() => {// try again
                   this.open();
               }, 1000);*/
@@ -85,7 +89,7 @@ export class DevtoolsHandler {
                         this.data.rerender = newId();
                     }
                     else {
-                        this.que = this.que.filter(x => !_logTypes.includes(x.type))
+                        //this.que = this.que.filter(x => !_logTypes.includes(x.type))
                         await this.ws.send(safeStringify(items));
                     }
                     return;
@@ -128,8 +132,8 @@ export class DevtoolsHandler {
                 return;
             }
             this.renderingTree = type == "TREE_DATA";
-            if (this.renderingTree)
-                this.que = this.que.filter(x => !_logTypes.includes(x.type))
+            //  if (this.renderingTree)
+            //    this.que = this.que.filter(x => !_logTypes.includes(x.type))
             if (type)
                 this.que.push({ ...wsTypes, type, payload });
             const dta = [...this.que]
@@ -196,6 +200,15 @@ export class DevtoolsHandler {
         }
 
         return item;
+    }
+
+    cleanDeletedItemsStyle(style: any, deletedItemStyle: any) {
+        for (let k in deletedItemStyle) {
+        
+            if (k in style) {
+                delete style[k];
+            }
+        }
     }
 
     validateDeletedProps(props: any, _deletedItems: any) {

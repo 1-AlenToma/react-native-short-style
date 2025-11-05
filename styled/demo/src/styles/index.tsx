@@ -101,6 +101,7 @@ export class CMBuilder {
             try {
                 let item = changedProps;
                 style = item.style ?? {};
+                console.log(item)
                 ifTrue = item.ifTrue ?? ifTrue;
                 internalProps = { ...internalProps, ...item, _viewId: undefined, _elementIndex: undefined, _parent_viewId: undefined }
                 if (item.children && typeof children == "string")
@@ -237,17 +238,24 @@ export class CMBuilder {
         if (cssStyle.important)
             cssStyle = { ...cssStyle, ...cssStyle.important };
 
-        const styles = (Array.isArray(style)
+        let styles = (Array.isArray(style)
             ? [_styles, cssStyle, ...style]
             : [_styles, cssStyle, style]
         ).filter(Boolean);
 
-        //  if (classNames.includes("virtualItemSelector"))
-        //    console.log(style)
-
         if (isTextWeb && globalData.activePan) {
             styles.push({ userSelect: "none" });
         }
+
+        if (inspect && changedProps && __DEV__ && changedProps._deletedItems?.style) {
+            styles = (flatStyle(styles));
+            devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
+        }
+
+        //  if (classNames.includes("virtualItemSelector"))
+        //    console.log(style)
+
+
 
         useEffect(() => {
             return () => {
@@ -257,7 +265,7 @@ export class CMBuilder {
                     devToolsHandlerContext.delete(id);
             }
         }, [])
-    
+
 
         const patch = async () => {
             if (inspect && ifTrue) {

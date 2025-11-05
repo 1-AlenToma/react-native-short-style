@@ -703,3 +703,14 @@
     .hidden {
         display: none !important;
     }
+
+    input[type=color] {
+        min-width: 90px !important;
+    }
+
+    input[type="color"]::after {
+        content: attr(value);
+        position: absolute;
+        margin-top: -19px;
+        margin-left: 34px;
+    }

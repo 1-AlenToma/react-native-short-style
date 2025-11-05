@@ -12,7 +12,8 @@
     "web": "expo start --web",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "connect": "adb connect 127.0.0.1:58526"
   },
   "files": [
     "public",

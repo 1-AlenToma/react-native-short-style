@@ -1,4 +1,4 @@
-import { DevServer, startDevServer } from "./index";
+import { DevServer, startDevServer } from "./DevServer";
 const server = startDevServer();
 
 // send something to HTML
