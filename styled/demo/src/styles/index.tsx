@@ -71,14 +71,13 @@ export class CMBuilder {
         return <RN {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
     }
 
-    render({ children, variant, cRef, style, css, ifTrue, onPress, ...props }: CSSProps<any>) {
+    render({ children, variant, cRef, style, css, ifTrue, ...props }: CSSProps<any>) {
         let internalProps = { ...props };
         const id = useLocalRef(newId);
         const context = React.useContext(StyleContext);
         const themeContext = React.useContext(ThemeContext);
         const posContext = React.useContext(positionContext);
         const [changedProps, setChangedProps] = React.useState<any>(undefined);
-        const timer = useTimer(0);
         const inspect = __DEV__ && devToolsHandlerContext.data.isOpened;
         if (__DEV__) {
             devToolsHandlerContext.useEffect(() => {
@@ -87,22 +86,15 @@ export class CMBuilder {
                 } else if (changedProps) {
                     setChangedProps(undefined) // clear it as reload has been triggered
                 }
-            }, "data.propsUpdated")
+            }, "data.propsUpdated");
         }
 
         if (inspect && changedProps) {
-
-            /**
-             * remove 
-             *  _viewId: id,
-                        _elementIndex: posContext.index,
-                        _parent_viewId: posContext.parentId ?? "__0__",
-             */
             try {
                 let item = changedProps;
                 style = item.style ?? {};
-                console.log(item)
-                ifTrue = item.ifTrue ?? ifTrue;
+                if ("ifTrue" in item)
+                    ifTrue = item.ifTrue ?? ifTrue;
                 internalProps = { ...internalProps, ...item, _viewId: undefined, _elementIndex: undefined, _parent_viewId: undefined }
                 if (item.children && typeof children == "string")
                     children = item.children;
@@ -247,28 +239,26 @@ export class CMBuilder {
             styles.push({ userSelect: "none" });
         }
 
-        if (inspect && changedProps && __DEV__ && changedProps._deletedItems?.style) {
-            styles = (flatStyle(styles));
+        if (inspect && ifTrue != false && changedProps && changedProps._deletedItems?.style) {
+            styles = flatStyle(styles);
             devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
         }
-
-        //  if (classNames.includes("virtualItemSelector"))
-        //    console.log(style)
-
-
 
         useEffect(() => {
             return () => {
                 clearCss(id);
                 // clear it
-                if (inspect)
+                if (inspect) {
+                    devToolsHandlerContext.components.delete(id);
                     devToolsHandlerContext.delete(id);
+
+                }
             }
         }, [])
 
 
         const patch = async () => {
-            if (inspect && ifTrue) {
+            if (inspect && ifTrue != false) {
                 if (internalProps?.inspectDisplayName)
                     delete internalProps.inspectDisplayName;
                 devToolsHandlerContext.patch({
@@ -284,37 +274,24 @@ export class CMBuilder {
                         ...(typeof children == "string" ? { children } : {})
                     }
                 });
-            } else if (inspect) devToolsHandlerContext.delete(id);
+            } else if (inspect) {
+                devToolsHandlerContext.delete(id);
+                devToolsHandlerContext.components.delete(id);
+            };
         }
 
-
-        const pressed = (e) => {
-            if (devToolsHandlerContext.data.elementSelection === true) {
-                e.preventDefault(); // stops default browser behavior (like form submission)
-                e.stopPropagation(); // stops bubbling up to parent elements
-                devToolsHandlerContext.data.elementSelection = false;
-                devToolsHandlerContext.sendProp("elementSelection");
-                devToolsHandlerContext.select(id);
-                alert("Element is Selected")
-            } else {
-                onPress?.(e);
-            }
-        }
-
-        if (ifTrue) {
-            if (onPress || (inspect && devToolsHandlerContext.data.elementSelection === true))
-                internalProps.onPress = (e) => {
-                    pressed(e);
-                }
-        }
         if (inspect)
-            timer(patch);
+            patch();
 
         if (ifTrue == false)
             return null;
 
         if (childTotal === 0) {
-            return <CM dataSet={dataSet} {...internalProps} ref={(c) => this.setRef(cRef, c)} style={styles} />;
+            return <CM dataSet={dataSet} {...internalProps} ref={(c) => {
+                this.setRef(cRef, c);
+                if (inspect)
+                    c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
+            }} style={styles} />;
         }
 
         return (
@@ -328,7 +305,11 @@ export class CMBuilder {
                 <CM
                     dataSet={dataSet}
                     {...internalProps}
-                    ref={(c) => this.setRef(cRef, c)}
+                    ref={(c) => {
+                        this.setRef(cRef, c);
+                        if (inspect)
+                            c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
+                    }}
                     style={styles}>
                     {mappedChildren}
                 </CM>

@@ -1,12 +1,12 @@
 import { ThemeContext, globalData, InternalThemeContext, StyleContext, devToolsHandlerContext } from "./ThemeContext";
 import * as React from "react";
-import { IThemeContext, Rule } from "../Typse";
+import { IThemeContext, Rule, Size } from "../Typse";
 import StateBuilder from "../States";
 import { newId, clearAllCss, currentTheme } from "../config";
 import { View, AlertView, ToastView } from "../components";
-import { Platform } from "react-native";
+import { GestureResponderEvent, Platform, StyleSheet, View as NativeView, TouchableOpacity, Image } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
-import { useLocalRef } from "../hooks";
+import { svgSelect } from "../constant";
 
 const StaticItem = ({ onMounted, id, item }: any) => {
     const state = StateBuilder({
@@ -165,16 +165,260 @@ const ThemeInternalContainer = ({ children }: any) => {
     )
 }
 
+const styles = StyleSheet.create({
+    touchOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: 9999,
+        backgroundColor: "#000",
+        opacity: 0.2
+    },
+    highlightBox: {
+        position: "absolute",
+        zIndex: 10000,
+        opacity: 0.5,
+        borderWidth: .5,
+        borderColor: "#00bfff",
+        backgroundColor: "rgba(0, 191, 255, 0.2)", // semi-transparent cyan fill
+    },
+    highlightBorder: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: "#00bfff",
+    },
+});
+
+export const DevToolLayoutSelector = () => {
+    try {
+        devToolsHandlerContext.hook("data.elementSelection", "data.isOpened");
+        const positionsRef = React.useRef<Map<any, Size>>(new Map());
+        let selectorRef = React.useRef<typeof TouchableOpacity | null>(null);
+
+        devToolsHandlerContext.useEffect(() => {
+            if (devToolsHandlerContext.data.elementSelection)
+                positionsRef.current = new Map();
+        }, "data.elementSelection")
+
+        const [highlight, setHighlight] = React.useState<Size | null>(null);
+        const [clicked, setClicked] = React.useState<Size | null>(null);
+
+        const measure = (el: NativeView) => {
+
+            return new Promise<Size | undefined>((r) => {
+
+                if (el.measureInWindow) {
+                    el.measureInWindow((x, y, width, height) => {
+                        r({ x, y, width, height, px: x, py: y });
+                    });
+                } else if (el.measure) {
+                    el.measure((x, y, width, height, pageX, pageY) => {
+                        r({ x, y, width, height, px: pageX, py: pageY });
+                    });
+                } else {
+                    r(undefined);
+                }
+            });
+        };
+
+        const measureComponentOnce = async (cm: any, id: any) => {
+            if (positionsRef.current.has(id)) return positionsRef.current.get(id);
+
+            const pos = await measure(cm);
+            if (pos) positionsRef.current.set(id, pos);
+            return pos;
+        };
+
+        const selectComponentAt = async (x: number, y: number) => {
+            try {
+                if (selectorRef.current) {
+                    let pos = await measureComponentOnce(selectorRef.current, "selector");
+                    const { px, py, width, height } = pos;
+                    if (x >= px && x <= px + width && y >= py && y <= py + height) {
+                        devToolsHandlerContext.data.elementSelection = !devToolsHandlerContext.data.elementSelection;
+                        devToolsHandlerContext.sendProp("elementSelection");
+                        return;
+                    }
+
+                }
+                let closestComponent: any = null;
+                let smallestArea = Infinity;
+                let closestRect: Size | undefined = undefined;
+                let entries = [...devToolsHandlerContext.components.entries()]
+                for (const [id, cm] of entries) {
+                    if (!cm) {
+                        continue
+                    };
+                    const position = await measureComponentOnce(cm, id);
+                    if (!position) continue;
+
+                    const { px, py, width, height } = position;
+
+                    if (x >= px && x <= px + width && y >= py && y <= py + height) {
+                        const area = width * height;
+                        if (area < smallestArea) {
+                            smallestArea = area;
+                            closestComponent = id;
+                            closestRect = position;
+                        }
+                    }
+                }
+
+                if (closestComponent) {
+                    devToolsHandlerContext.select(closestComponent);
+                    setClicked(closestRect);
+                } else {
+                    setClicked(null);
+                }
+            } catch (e) {
+                console.error(e)
+            }
+        };
+
+
+        const selectComponentAtWeb = (x: number, y: number) => {
+            let closest: any = null;
+            let smallestArea = Infinity;
+            let closestRect: DOMRect | null = null;
+
+            for (const [id, cm] of devToolsHandlerContext.components.entries()) {
+                const el = cm as any as HTMLElement;
+                if (!el || !el.getBoundingClientRect) continue;
+
+                const rect = el.getBoundingClientRect();
+                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                    const area = rect.width * rect.height;
+                    if (area < smallestArea) {
+                        smallestArea = area;
+                        closest = id;
+                        closestRect = rect;
+                    }
+                }
+            }
+
+            if (closest && closestRect) {
+                // devToolsHandlerContext.select(closest);
+                setHighlight({
+                    px: closestRect.left,
+                    py: closestRect.top,
+                    width: closestRect.width,
+                    height: closestRect.height,
+                    x: closestRect.left,
+                    y: closestRect.top,
+                });
+            } else {
+                setHighlight(null);
+            }
+        };
+
+
+
+        // Touch handler (mobile)
+        const handleSelection = (event: GestureResponderEvent) => {
+            const { pageX, pageY } = event.nativeEvent;
+            // console.log(pageX, pageY)
+            selectComponentAt(pageX, pageY);
+        };
+
+
+        // Mouse handler (web)
+        const handleMouseMove = (event: React.MouseEvent) => {
+
+            selectComponentAtWeb(event.clientX, event.clientY)
+        };
+
+        const handleMouseLeave = () => setHighlight(null);
+
+        const selector = (
+            <TouchableOpacity
+                ref={selectorRef as any}
+                onPress={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    devToolsHandlerContext.data.elementSelection = !devToolsHandlerContext.data.elementSelection;
+                    devToolsHandlerContext.sendProp("elementSelection");
+                }} style={{
+                    position: "absolute",
+                    borderRadius: 5,
+                    top: 10,
+                    right: 10,
+                    width: 30,
+                    height: 30,
+                    zIndex: 99999,
+                    backgroundColor: devToolsHandlerContext.data.elementSelection ? "red" : "transparent"
+                }}>
+                <Image
+                    source={{ uri: svgSelect }}
+                    style={{ width: 30, height: 30 }}
+                    resizeMode="contain"
+                />
+            </TouchableOpacity>
+        )
+
+        if (!devToolsHandlerContext.data.elementSelection) return __DEV__ && devToolsHandlerContext.data.isOpened ? selector : null;
+        let NView: typeof View = NativeView as any;
+
+        return (
+            <>
+                <NView
+                    pointerEvents="box-only"
+                    style={styles.touchOverlay}
+                    onStartShouldSetResponder={() => true}
+                    onResponderRelease={handleSelection}
+                    onMoveShouldSetResponderCapture={() => false} // allow scrolling
+
+                    // Web mouse events
+                    onMouseMove={handleMouseMove as any}
+                    onMouseLeave={handleMouseLeave as any}
+                />
+                {selector}
+                {clicked && (
+                    <NativeView
+                        pointerEvents="none"
+                        style={[
+                            styles.highlightBox,
+                            {
+                                top: clicked.py,
+                                left: clicked.px,
+                                width: clicked.width,
+                                height: clicked.height,
+                                borderColor: "red"
+                            },
+                        ]}>
+                        <NativeView style={styles.highlightBorder} />
+                    </NativeView>
+                )}
+                {highlight && (
+                    <NativeView
+                        pointerEvents="none"
+                        style={[
+                            styles.highlightBox,
+                            {
+                                top: highlight.py,
+                                left: highlight.px,
+                                width: highlight.width,
+                                height: highlight.height,
+                            },
+                        ]}>
+                        <NativeView style={styles.highlightBorder} />
+                    </NativeView>
+                )}
+
+            </>
+        );
+    } catch (e) {
+        console.error(e)
+        throw e;
+    }
+};
+
+
 export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
     const [ready, setReady] = React.useState(false);
     const devtoolOpend = React.useRef(devToolsHandlerContext.data.isOpened);
-    if (__DEV__) {
-
-        devToolsHandlerContext.hook("data.elementSelection");
-
-    }
-
 
     if (__DEV__ && props.localIp && devToolsHandlerContext.host != props.localIp)
         devToolsHandlerContext.host = props.localIp;
@@ -233,14 +477,13 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
             devToolsHandlerContext.data.rerender = undefined;
     }
 
-    if (!ready  !&& devToolsHandlerContext.data.isOpened)
+    if (!ready && devToolsHandlerContext.data.isOpened)
         return null;
 
-    // console.log(rules.filter(x => x.selectors.find(f => f.indexOf("container> Text") != -1)));
-    //  console.log(rules.length)
     return (
         <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>
             <ThemeContext.Provider value={{ ...props, systemThemes: theme, elementSelection: devToolsHandlerContext.data.elementSelection }}>
+                <DevToolLayoutSelector />
                 <ThemeInternalContainer>
                     {props.children}
                 </ThemeInternalContainer>

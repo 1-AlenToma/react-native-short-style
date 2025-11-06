@@ -1,5 +1,6 @@
 import { newId } from "react-smart-state";
 import { ElementTool } from "../Typse";
+import React from "react";
 //import { WebSocket } from "ws"
 type LogTypes = "ERROR" | "LOG" | "WARNING" | "INFO";
 type Types = ("TREE_DATA" | "PATCH_NODE" | "PATCH_DELETE" | "PATCH_SELECT" | "PROP") | LogTypes;
@@ -38,9 +39,9 @@ export class DevtoolsHandler {
     ws: WebSocket = undefined;
     thisServer: WebSocket;
     data: DevToolsData = new DevToolsData();
-    constructor() {
-        // this.open();
-    }
+    components: Map<string, React.ReactElement> = new Map();
+    timer: any = undefined;
+
 
     get host() {
         return this._host;
@@ -51,8 +52,9 @@ export class DevtoolsHandler {
         this.open();
     }
 
+
     async open() {
-        if (!this._host || this._host == "")
+        if (!this._host || this._host == "" || !__DEV__)
             return;
         this.ws = new WebSocket(`ws://${this._host}:7780`);
 
@@ -118,13 +120,32 @@ export class DevtoolsHandler {
     }
 
 
-    pushItem(type?: Types, payload?: any) {
+    pushItem(type?: Types, payload?: any, isTree?: boolean) {
         this.que.push({ ...wsTypes, type, payload });
+        if (isTree)
+            treeData.set(payload.props._viewId, { ...wsTypes, type, payload: payload });
+        return this;
+
+    }
+
+    timerSend() {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.send();
+        }, 10);
+
+        return this;
+    }
+
+    async simpleSend(type?: Types, payload?: any) {
+        try {
+            await this.ws.send(safeStringify({ type, payload, ...wsTypes }));
+        } catch (e) { console.error(e); }
     }
 
     async send(type?: Types, payload?: any) {
         try {
-            if (!this.ws)
+            if (!this.ws || !__DEV__)
                 return;
             if (!this.data.isOpened || (this.renderingTree && type != "TREE_DATA")) {
                 if (type)
@@ -149,7 +170,8 @@ export class DevtoolsHandler {
     }
 
     async sendProp(key: keyof DevToolsData) {
-        await this.send("PROP", { key, value: this.data[key] });
+        this.simpleSend("PROP", { key, value: this.data[key] });
+
     }
 
     async sendTree(tree: ElementTool) {
@@ -159,17 +181,16 @@ export class DevtoolsHandler {
     }
 
     async patch(tree: ElementTool) {
-        treeData.set(tree.props._viewId, { ...wsTypes, type: "PATCH_NODE", payload: tree });
-        await this.send("PATCH_NODE", tree)
+        this.pushItem("PATCH_NODE", tree, true).timerSend();
     }
 
     async delete(viewId: string) {
         treeData.delete(viewId);
-        await this.send("PATCH_NODE", viewId)
+        this.pushItem("PATCH_NODE", viewId).timerSend()
     }
 
     async select(viewId: string) {
-        await this.send("PATCH_SELECT", viewId);
+        this.pushItem("PATCH_SELECT", viewId).timerSend();
     }
 
     SKIP_KEYS = new Set(["style", "css"]);
@@ -204,7 +225,7 @@ export class DevtoolsHandler {
 
     cleanDeletedItemsStyle(style: any, deletedItemStyle: any) {
         for (let k in deletedItemStyle) {
-        
+
             if (k in style) {
                 delete style[k];
             }

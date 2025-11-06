@@ -262,7 +262,7 @@ const parseConsole = (renderedItem) => {
 
     messages.onclick = infos.onclick = logs.onclick = errors.onclick = warnings.onclick = click;
     const cnl = document.querySelector("[data-type='Console']");
-    const leftPanel = cnl.querySelector(".left");
+    const leftPanel = cnl.querySelector(".left .tree-root");
     const selectedCnl = document.querySelector(".lst li .selected") ?? document.querySelector(".lst li:first-child");
     selectedCnl.classList.add("selected");
     const scrolledToBottom = leftPanel.scrollTop === (leftPanel.scrollHeight - leftPanel.offsetHeight);
@@ -1212,3 +1212,54 @@ window.__rnInspector = {
     },
     getFlatNodes: () => flatNodes
 };
+
+let toolBar = document.querySelector(".toolbar");
+if (window.location.href.indexOf("IFRAME") !== -1 && toolBar)
+    toolBar.style.display = "none";
+
+
+let isResizing = false;
+let leftDivs = document.querySelectorAll(".left");
+let currentZoom = 1;
+
+function getZoom(el) {
+    // Read computed zoom or fallback to 1
+    const zoomValue = parseFloat(getComputedStyle(el).zoom);
+    return isNaN(zoomValue) ? 1 : zoomValue;
+}
+
+leftDivs.forEach(x => {
+    const resizers = x.querySelectorAll(".resizer");
+    resizers.forEach(r => {
+        r.addEventListener("mousedown", (e) => {
+            isResizing = true;
+            currentZoom = getZoom(x); // 🔥 get zoom factor on mousedown
+            document.body.style.cursor = "ew-resize";
+            document.body.style.userSelect = "none";
+        });
+    });
+});
+
+document.addEventListener("mousemove", (e) => {
+    if (!isResizing) return;
+    let item = leftDivs[0];
+    let pos = item.getBoundingClientRect();
+
+    // Adjust for zoom (divide pixel delta by zoom factor)
+    const newWidth = (e.clientX - pos.left) / currentZoom;
+
+    const minWidth = 100;
+    const maxWidth = window.innerWidth * 0.8;
+
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+        leftDivs.forEach(x => (x.style.width = newWidth + "px"));
+    }
+});
+
+document.addEventListener("mouseup", () => {
+    if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = "auto";
+        document.body.style.userSelect = "auto";
+    }
+});

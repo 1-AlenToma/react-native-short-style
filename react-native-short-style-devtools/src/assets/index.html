@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
   <title>React Native Short Style Inspector</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <script>
     window.appMode = "WebTest";
   </script>
@@ -34,7 +35,8 @@
   </div>
   <div class="tabs">
     <div class="header">
-      <a class="icon" data-props="elementSelection" data-value="true" title="Select an element in the app and it will be selected here"><img src="gesture_select.svg" /></a>
+      <a class="icon" data-props="elementSelection" data-value="true"
+        title="Select an element in the app and it will be selected here"><img src="gesture_select.svg" /></a>
       <p class="selected" data-value="Elements">Elements</p>
       <p data-value="Console"><span class="nr">No</span>Console</p>
       <input type="range" id="zoom" name="zoom" min="1" max="2" value="1" step="0.1" />
@@ -50,6 +52,7 @@
     <div class="content">
       <div class="container active" data-type="Elements">
         <div class="left hideScroll">
+          <div class="resizer"></div>
           <div class="tree-root" id="treeRoot" aria-label="Component tree">
             <!-- tree will be rendered here -->
           </div>
@@ -62,7 +65,12 @@
         </div>
       </div>
       <div class="container" data-type="Console">
-        <div class="left hideScroll"></div>
+        <div class="left hideScroll">
+          <div class="resizer"></div>
+          <div class="tree-root" aria-label="Component tree">
+            <!-- tree will be rendered here -->
+          </div>
+        </div>
         <div class="right hideScroll">
           <button class="btn toRight clearLogs" title="Clear all logs"><img src="clear_logs.svg" /></button>
           <ul class="lst">

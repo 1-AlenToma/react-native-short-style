@@ -1,6 +1,7 @@
 // ui-lib/DevServer.ts
 import fs from "fs";
 import path from "path";
+import { parse } from 'url';
 import http from "http";
 import mime from "mime";
 import { WebSocketServer, WebSocket } from "ws";
@@ -62,7 +63,11 @@ export class DevServer {
         const assetsDir = path.join(this.root, 'assets');
         this.httpServer = http.createServer((req, res) => {
             try {
-                let filePath = path.join(assetsDir, req.url === '/' ? 'webview.html' : req.url!);
+                // Parse URL to ignore query string
+                const reqUrl = parse(req.url || '/', true);
+                const pathname = reqUrl.pathname || '/';
+
+                let filePath = path.join(assetsDir, pathname === '/' ? 'index.html' : pathname);
                 if (!fs.existsSync(filePath)) {
                     res.writeHead(404);
                     res.end('Not found');
@@ -79,7 +84,7 @@ export class DevServer {
 
                 let content = isText ? fs.readFileSync(filePath, 'utf8') : fs.readFileSync(filePath);
 
-                if (typeof content == "string" && filePath.endsWith('webview.html')) {
+                if (typeof content == "string" && filePath.endsWith('index.html')) {
                     // Inject appSettings + fix paths for Chrome
                     content = content
                         .replace(/WebTest/gi, "")
@@ -110,7 +115,7 @@ export class DevServer {
 
     private createWebSocketServer() {
         this.wsServer = new WebSocketServer({
-            port: this.wsPort, 
+            port: this.wsPort,
             host: "0.0.0.0" // 👈 listen on all network interfaces
         });
 

@@ -53,6 +53,7 @@
 
     .container {
         display: flex;
+        flex-direction: row;
         height: 100%;
     }
 
@@ -107,15 +108,40 @@
         border-right: 1px solid var(--border);
         background: var(--panel);
         overflow: auto;
+        position: relative;
+        flex: 0 0 auto;
+        max-width: 90%;
+        /* disable flex-grow/shrink, respect width exactly */
     }
+
+    .left *:not(.resizer) {
+        z-index: 1;
+    }
+
+    .resizer {
+        width: 6px;
+        background: transparent;
+        cursor: ew-resize;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        transition: background 0.2s;
+        z-index: 2;
+    }
+
+    .resizer:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
 
     .right {
         background: var(--panel-2);
-        width: 30%;
+        width: auto;
         padding: 12px;
         overflow: auto;
         max-height: 100%;
-        max-width: 50vw;
+        flex-grow: 1;
     }
 
     /* Tree styling */
@@ -501,24 +527,6 @@
 
     }
 
-    @media (max-width: 750px) {
-        .container.active {
-            display: block !important;
-            overflow-y: auto;
-        }
-
-        .left {
-            width: 99%;
-        }
-
-        .right {
-            position: fixed;
-            bottom: 0px !important;
-            right: 0;
-            max-height: 80vh !important;
-            width: auto !important;
-        }
-    }
 
     .node-container {
         position: relative;
@@ -713,4 +721,6 @@
         position: absolute;
         margin-top: -19px;
         margin-left: 34px;
+        color: white;
+        mix-blend-mode: difference;
     }
