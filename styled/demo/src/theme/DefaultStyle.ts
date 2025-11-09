@@ -274,7 +274,14 @@ export const defaultTheme = {
   },
 };
 
+
+
+
+
 export const ComponentsStyles = NestedStyleSheet.create({
+  "_touchOverlay":"poe-box-only ._abc to-0 le-0 wi-100% he-100% zi-999 bac-#000 op-0.2",
+  "_highlightBox": "._abc zi-10000 op-0.5 bow-0.5 boc-#00bfff bac-rgba(0, 191, 255, 0.2) poe-none",
+  "_highlightBorder": "fl-1 bow-0.5 boc-#00bfff poe-none",
   "_blur": x => x.cls("_topPostion").fl(1).cls("_center").baC(".co-black").op(.5),
   "_topPostion": x => x.po("absolute").to(0).le(0).fillView().baC(".co-transparent").zI(".zi-sm"),
   "_modalDefaultStyle": x => x.pa(10).zI(2).wi("80%").he("20%").boR(5).boW(1).boC("gray"),

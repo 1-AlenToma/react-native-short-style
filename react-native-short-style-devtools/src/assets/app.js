@@ -1,14 +1,53 @@
 const ignoreAttrs = ["_viewId", "_parent_viewId", "_elementIndex"]
-const settings = window.appSettings ?? {
+const settings = Object.assign({
     elementSelection: false,
     zoom: 1,
+    autoSave: true,
+    webDevToolsIsOpen: true,
     consoleData: {
         errors: [],
         warnings: [],
         infos: [],
         logs: [],
     }
-}
+}, window.appSettings ?? {});
+
+
+const propsChanged = {
+    data: {},
+    has: (key) => {
+        let result = Object.keys(propsChanged.data).map(x => {
+            if (x.startsWith(key))
+                return propsChanged.data[x];
+            return undefined;
+        }).filter(x => x !== undefined);
+        return result;
+    },
+    add: (id, func) => {
+        propsChanged.data[id] = () => {
+            func(settings);
+        }
+
+        return propsChanged;
+    },
+    remove: (id) => {
+        if (propsChanged.data[id])
+            delete propsChanged.data[id];
+        return propsChanged;
+    }
+};
+
+propsChanged.add("autoSave.Click", (settings) => {
+    if (settings.autoSave)
+        document.querySelector(".autoSave").classList.add("selected");
+    else document.querySelector(".autoSave").classList.remove("selected");
+})
+
+propsChanged.add("autoSave.Save", (settings) => {
+    if (!settings.autoSave && selectedViewId)
+        document.querySelector(".save")?.classList.remove("hidden");
+    else document.querySelector(".save")?.classList.add("hidden");
+})
 
 function safeStringify(obj, space = 2) {
     const seen = new WeakSet();
@@ -39,9 +78,12 @@ const parseMessage = (event) => {
                 continue;
             if (msg.__To)
                 delete msg.__To;
-
             if (msg.type === 'TREE_DATA') {
-                htmlScrollPosition.loading(true)
+                htmlScrollPosition.loading(true);
+                if (msg.settings) {
+                    Object.assign(settings, msg.settings);
+                    parseSetting(false)
+                }
                 // full replace
                 renderPayload(msg);
             }
@@ -88,6 +130,36 @@ const parseMessage = (event) => {
 
     }
 }
+
+document.querySelector(".modal .title .btn").onclick = () => {
+    modal.hide();
+}
+
+const sleep = (ms) => new Promise(r => setTimeout(() => {
+    r();
+}, ms))
+const modal = {
+    content: document.querySelector(".modal .center"),
+    container: document.querySelector(".modal"),
+    title: document.querySelector(".modal .title span"),
+    show: async () => {
+        modal.container.parentElement.style.display = "flex";
+        await sleep(50);
+        modal.container.classList.add("active");
+
+        return modal;
+    },
+    hide: async () => {
+        modal.content.textContent = "";
+        modal.container.classList.remove("active");
+        await sleep(350);
+        modal.container.parentElement.style.display = "none";
+        modal.title.parentElement.querySelectorAll(".btn:not(.close)").forEach(x => x.remove());
+        return modal;
+    }
+}
+
+modal.hide();
 
 const htmlScrollPosition = {
     rendering: false,
@@ -139,15 +211,16 @@ const mock = () => {
     }
 
     socket.onmessage = (e) => {
+        requestIdleCallback(() => {
+            parseMessage(e);
+        })
 
-        parseMessage(e);
 
     };
 
     return {
-        postMessage: (args) => {
-            args.__To = "APP";
-            socket.send(JSON.stringify(args));
+        postMessage: (type, payload) => {
+            socket.send(JSON.stringify({ type, payload, __To: "APP" }));
         }
 
     }
@@ -162,6 +235,9 @@ tabs.querySelectorAll(".header p").forEach(x => {
         let value = x.getAttribute("data-value") ?? x.textContent;
         tabs.querySelector(`.content> div[data-type=${value}]`)?.classList.add("active");
         searchInput.placeholder = value.startsWith("Elements") ? "Search nodes (name or prop)" : "Search logs";
+        if (value.startsWith("Elements"))
+            document.querySelector(".clearLogs").style.display = "none";
+        else document.querySelector(".clearLogs").style.display = "inline-flex";
         searchedItems = {};
     })
 });
@@ -182,7 +258,7 @@ document.querySelectorAll("[data-props]:not([data-props=''])").forEach(x => {
 });
 
 document.querySelector(".reload").addEventListener("click", () => {
-    vscode.postMessage({ type: "RELOAD", payload: true });
+    vscode.postMessage("RELOAD", true);
 });
 
 document.querySelectorAll(".lst li a").forEach(x => {
@@ -202,7 +278,6 @@ document.querySelector(".clearLogs").addEventListener("click", () => {
 });
 
 const sendSettigs = (x) => {
-    const data = { type: "PROP" };
     let htmlObject = x.getAttribute != undefined;
     let key = htmlObject ? x.getAttribute("data-props") : x;
     value = settings[key];
@@ -212,14 +287,15 @@ const sendSettigs = (x) => {
     settings[key] = value;
     if (htmlObject)
         x.setAttribute("data-value", value)
-    data[key] = value;
-    vscode.postMessage(data);
+    propsChanged.has(key).forEach(x => x());
+    vscode.postMessage("PROP", { key, value });
 }
 
 let selectedConsole = undefined;
 let consoleData = undefined;
 
 const parseConsole = (renderedItem) => {
+    renderedItem = (Array.isArray(renderedItem) ? renderedItem : [renderedItem]).filter(x => x != undefined)
     const createConsoleItem = ({ type, payload }) => {
         let text = payload;
         if (text && typeof text == "object" && Array.isArray(text) && text.length == 1) {
@@ -272,7 +348,7 @@ const parseConsole = (renderedItem) => {
             e.classList.add("expand")
     }
 
-    if (!renderedItem || consoleData == undefined) {
+    if (renderedItem.length <= 0 || consoleData == undefined) {
         consoleData = {
             errors: settings.consoleData.errors.map(x => createConsoleItem(x)),
             info: settings.consoleData.infos.map(x => createConsoleItem(x)),
@@ -313,24 +389,30 @@ const parseConsole = (renderedItem) => {
         leftPanel.children[leftPanel.children.length - 1]?.scrollIntoView();
         selectedConsole = tempSelectedConsole;
     } else {
-        const item = createConsoleItem(renderedItem);
-        switch (renderedItem.type.toLowerCase()) {
-            case "log":
-                consoleData.log.push(item);
-                break;
-            case "info":
-                consoleData.info.push(item);
-                break;
-            case "warnings":
-                consoleData.warnings.push(item);
-                break;
-            case "errors":
-                consoleData.errors.push(item);
-        }
+        for (let x of renderedItem) {
+            const item = createConsoleItem(x);
+            switch (x.type.toLowerCase()) {
+                case "log":
+                case "logs":
+                    consoleData.log.push(item);
+                    break;
+                case "info":
+                case "infos":
+                    consoleData.info.push(item);
+                    break;
+                case "warnings":
+                case "warning":
+                    consoleData.warnings.push(item);
+                    break;
+                case "errors":
+                case "error":
+                    consoleData.errors.push(item);
+            }
 
-        leftPanel.appendElement(item);
-        if (scrolledToBottom)
-            item.scrollIntoView()
+            leftPanel.appendElement(item);
+            if (scrolledToBottom)
+                item.scrollIntoView();
+        }
     }
 
     if (tab)
@@ -412,14 +494,13 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
 
 
-    function createwrapper(child) {
-        let div = document.createElement("div")
-        div.appendChild(child);
+    function createwrapper(...childs) {
+        let div = document.createElement("div");
+        childs.forEach(x => div.appendChild(x))
         return div;
     }
 
-
-    const save = () => {
+    const save = (dataOnly) => {
         htmlScrollPosition.loading(true);
         const getKeyValueInput = (el) => {
             let result = [];
@@ -461,7 +542,14 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
         }
 
-        let inputContainers = [...document.querySelector(".props-panel").children].map(getKeyValueInput).flatMap(x => x);
+        let inputContainers = [...document.querySelector(".props-panel").children].map(getKeyValueInput).flatMap(x => x).sort((a, b) => {
+            const aIsObj = typeof a.value === "object" && a.value !== null;
+            const bIsObj = typeof b.value === "object" && b.value !== null;
+
+            if (aIsObj && !bIsObj) return -1; // a first
+            if (!aIsObj && bIsObj) return 1;  // b first
+            return 0; // keep order otherwise
+        });
         let json = { _viewId: viewId };
         let deleteJson = {};
         const getDeletedJson = (item) => {
@@ -510,6 +598,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                     item2 = item2[x];
                     item = item[x]
                 });
+
                 if (data.isDeleted) {
                     if (item[key] == undefined)
                         item2[key] = value;
@@ -531,13 +620,15 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                 }
             }
         }
-        vscode.postMessage({ type: 'SAVE_NODE_PROP', payload: { ...json, _deletedItems: getDeletedJson(deleteJson) } });
+        if (!dataOnly)
+            vscode.postMessage('SAVE_NODE_PROP', { ...json, _deletedItems: getDeletedJson(deleteJson) });
         htmlScrollPosition.loading(false);
+        return json;
     }
 
 
 
-    function addInput(key, index) {
+    function addInput(key, index, prependToChild) {
         let colType = window.RN_STYLE_PROPS.find(x => x.name.toLowerCase() === key.toLowerCase())?.type ?? "text";
         if (colType === "number")
             colType = "number";
@@ -545,13 +636,29 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         let div = document.createElement("div");
         let input = document.createElement("input");
 
+        let timer = undefined;
+
+        const onChange = (e) => {
+            if (!settings.autoSave)
+                return;
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                let inputs = e.target.parentElement.parentElement.querySelectorAll("input");
+                if (inputs.length < 2)
+                    return;
+                if (inputs[1].readOnly)
+                    return;
+                if (inputs[0].value.length > 0 && inputs[1].value.length > 0)
+                    save();
+            }, 500);
+        }
         input.type = "text";
+        input.class
         input.value = item[index][0];
         input.readOnly = typeof jsonItem !== "object" || key.length > 0 || isReadOnly;
         input.setAttribute("name", key);
         input.placeholder = "key";
-
-
+        input.onchange = onChange;
 
 
         if (propKey === "style" || !container.classList.contains("props")) {
@@ -562,14 +669,35 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
         let inputValue = document.createElement("input");
         inputValue.type = colType;
-        inputValue.value = item[index][1];
+        inputValue.disabled = isReadOnly;
+        inputValue.value = colType == "color" ? window.toHex(item[index][1]) : item[index][1];
         inputValue.setAttribute("name", `${key}_value`);
         inputValue.readOnly = isReadOnly;
         inputValue.placeholder = "value";
-        inputValue.setAttribute("value", inputValue.value);
+        inputValue.setAttribute("value", colType == "color" ? window.toHex(item[index][1]) : item[index][1]);
+        inputValue.onchange = onChange;
+
+
         if (item[index][0].trim() !== "" && document.querySelector("datalist#" + item[index][0].trim().toLowerCase())) {
             inputValue.setAttribute("list", key.toLowerCase());
         }
+
+        if (colType == "color" && !isReadOnly) {
+            let inputValue2 = document.createElement("input");
+            inputValue2.type = "text";
+            inputValue2.value = item[index][1];
+            inputValue2.setAttribute("name", `${key}_value`);
+            inputValue2.placeholder = "value";
+            inputValue2.onchange = inputValue.onchange = (e) => {
+                let inputs = e.target.parentElement.querySelectorAll("input");
+                inputs.forEach(x => {
+                    if (x !== e.target && x.value !== e.target.value)
+                        x.value = window.toHex(e.target.value)
+                });
+                onChange(e)
+            };
+            div.appendChild(createwrapper(inputValue, inputValue2));
+        } else div.appendChild(createwrapper(inputValue));
 
         input.addEventListener("input", () => {
             const id = input.value.replace(/\s+/g, "-").toLowerCase();
@@ -582,26 +710,28 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
             inputValue.setAttribute("value", inputValue.value);
         });
 
-
-
-        div.appendChild(createwrapper(inputValue));
         if (!isSingleValue && !isReadOnly) {
             let btn = document.createElement("button");
             btn.textContent = "-";
             btn.className = "btn";
             btn.onclick = function () {
-
                 item.splice(index, 1)
                 div.classList.add("deleted");
                 let deletedLine = document.createElement("line");
                 deletedLine.classList.add("deletedProp");
                 div.prepend(deletedLine);
                 div.querySelectorAll("input").forEach(x => x.setAttribute("readonly", true));
-                // div.remove();
+                if (settings.autoSave)
+                    save();
             }
+
             div.appendChild(btn);
         }
-        container.appendChild(div);
+        if (prependToChild)
+            container.prepend(div);
+        else container.appendChild(div);
+
+        return input;
     }
 
 
@@ -611,6 +741,9 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
     if (typeof jsonItem == "object")
         label.setAttribute("data-for", propKey);
     buttons.appendChild(label);
+    const btnContainers = document.createElement("div");
+    btnContainers.style.gap = "5px";
+    buttons.appendChild(btnContainers);
 
 
     // add new key
@@ -620,10 +753,13 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         btn.className = "btn";
         btn.onclick = function () {
             item.push(["", ""]);
-            addInput("", item.length - 1)
+            addInput("", item.length - 1, true)?.focus();
         }
-        buttons.appendChild(btn);
+        btnContainers.appendChild(btn);
+
     }
+
+
 
     if (item.length > 0 && !document.querySelector(".props-panel .save")) {
         // save 
@@ -632,11 +768,54 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
             // save to 
             save();
         }
-        btn.classList.remove("hidden")
-    } else document.querySelector(".save").classList.add("hidden");
+
+        if (!settings.autoSave)
+            btn.classList.remove("hidden");
+        else btn.classList.add("hidden");
+
+
+        btn = document.querySelector(".json");
+        btn.onclick = function () {
+            let json = save(true);
+            let copy = document.createElement("button");
+            copy.className = "btn copy";
+            copy.innerHTML = `<img src="copy_content.svg" style="height:var(--pathHeight)" />`;
+            copy.onclick = () => {
+                navigator.clipboard.writeText(JSON.stringify(json, undefined, 4));
+                flash(copy)
+                flash(modal.content)
+            }
+            if (json.style) {
+                let copyStyle = document.createElement("button");
+                copyStyle.className = "btn copyStyle";
+                copyStyle.innerHTML = `<img src="copy_content.svg" style="height:var(--pathHeight)" /> Style`;
+                copyStyle.onclick = () => {
+                    navigator.clipboard.writeText(JSON.stringify(json.style, undefined, 4));
+                    let prettyJsonStyle = modal.content.querySelector("pretty-json")?.shadowRoot?.querySelector("pretty-json[key=style]")?.shadowRoot?.querySelector(".row");
+                    flash(copyStyle);
+                    if (prettyJsonStyle)
+                        flashByStyle(prettyJsonStyle);
+                }
+                modal.title.parentElement.appendChild(copyStyle);
+            }
+            let pre = document.createElement("pre");
+            let code = document.createElement("pretty-json");
+            code.setAttribute("expand", "5");
+            code.textContent = JSON.stringify(json, undefined, 4);
+            pre.appendChild(code);
+            modal.title.parentElement.appendChild(copy);
+            modal.title.textContent = "Json Viewer";
+            modal.content.appendChild(pre);
+            modal.show()
+        }
+        btn.classList.remove("hidden");
+    } else {
+        document.querySelectorAll(".save, .json").forEach(x => x.classList.add("hidden"));
+        // propsChanged.remove("autoSave.Save");
+    }
     for (let key of item) {
         if (key[1] && typeof key[1] === "object")
-            inputForm(key[0], key[1], viewId, false, container, isReadOnly, fullkeyName)
+            inputForm(key[0], key[1], viewId, false, container, isReadOnly, fullkeyName);
         else
             addInput(key[0], item.indexOf(key));
     }
@@ -708,7 +887,40 @@ searchInput.addEventListener('keydown', (e) => {
     }
 });
 
-function flash(node, index) {
+function flashByStyle(node, index, byStyle = {}) {
+    if (!node || !(node instanceof HTMLElement)) return;
+
+    // Save original styles so we can restore them later
+    const originalTransition = node.style.transition;
+    const originalBoxShadow = node.style.boxShadow;
+    const originalBackground = node.style.backgroundColor;
+
+    // Merge provided styles with default flash effect
+    const flashStyle = {
+        transition: "all 0.3s ease",
+        boxShadow: "0 0 20px rgba(255, 255, 0, 0.9)",
+        backgroundColor: "rgba(255, 255, 0, 0.2)",
+        ...byStyle
+    };
+
+    // Apply flash styles
+    Object.assign(node.style, flashStyle);
+
+    // Animate back to normal
+    setTimeout(() => {
+        node.style.transition = "all 0.5s ease";
+        node.style.boxShadow = originalBoxShadow || "";
+        node.style.backgroundColor = originalBackground || "";
+    }, 300);
+
+    // Fully restore transition timing after flash ends
+    setTimeout(() => {
+        node.style.transition = originalTransition || "";
+    }, 1000);
+}
+
+
+function flash(node, index, byStyle) {
     node.classList.add("flash")
     setTimeout(() => {
         node.classList.remove("flash")
@@ -1122,19 +1334,14 @@ function showProps(node, path) {
 
         // propsCard.innerHTML = '<div class="empty">No props</div>';
     } else {
-        propsPanel.innerHTML = `
-        <div class="note">
-            Changing those values will override the component props. you will have to reload the app to revert it.\n
-            Style is the rendered style eg css + style+ stylesheet
-        
-        </div>`;
+        propsPanel.innerHTML = "";
         keys.forEach(key => {
             let value = node.props[key];
             let readOnly = currentTree.readOnlyProps?.some(x => x.startsWith(key))
             if (!ignoreAttrs.includes(key) && (key == "style" || !Array.isArray(value))) {
 
                 if (key == "style" && Array.isArray(value)) {
-                    value = value.reduce((c, v) => ({ ...c, ...(v ?? {}) }), {})
+                    value = value.reduce((c, v) => ({ ...c, ...(v ?? {}) }), {});
                 }
 
                 try {
@@ -1213,9 +1420,17 @@ window.__rnInspector = {
     getFlatNodes: () => flatNodes
 };
 
+
 let toolBar = document.querySelector(".toolbar");
-if (window.location.href.indexOf("IFRAME") !== -1 && toolBar)
+if (window.location.href.indexOf("IFRAME") !== -1 && toolBar) {
     toolBar.style.display = "none";
+    document.documentElement.style.setProperty('--toolbarHeight', "2px");
+
+    document.querySelector(".header").appendChild(document.querySelector("#search"));
+    document.querySelector("#search").style.marginLeft = "5px";
+} else {
+    document.querySelector(".exit")?.remove();
+}
 
 
 let isResizing = false;

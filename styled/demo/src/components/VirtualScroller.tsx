@@ -117,16 +117,15 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
     };
     return (<View
         ifTrue={visibility}
-        onLayout={({ nativeEvent }: LayoutChangeEvent) => {
+        onLayout={React.useCallback(({ nativeEvent }: LayoutChangeEvent) => {
             const size = nativeEvent.layout;
             if (context.parentState.estimatedItemSize <= 2) {
                 context.parentState.estimatedItemSize = isHorizontal ? size.width : size.height;
-
             }
             itemSizes[startIndex] = size;
             //  validateTrigger();
-        }}
-        css={x => x.joinLeft(context.props.itemStyle).cls("virtualItemSelector")}
+        }, [])}
+        css={React.useMemo(() => x => x.joinLeft(context.props.itemStyle).cls("virtualItemSelector"), [context.props.itemStyle])}
         style={style}>
         {children}
     </View>)
@@ -143,7 +142,7 @@ const VirtualScrollerView = React.memo(({ startIndex }: { startIndex: number }) 
     const renderedItems = useDeferredMemo(() => {
         const isView = context.props.onItemLayout || (context.props.numColumns && context.props.numColumns > 1 && !isHorizontal);
         const Container: any = onItemPress ? TouchableOpacity : (isView ? View : React.Fragment);
-        const containerProps: any = isView || onItemPress ? ({ style: { flex: 1, backgroundColor: "transparent" } as ViewStyle })  : undefined;
+        const containerProps: any = isView || onItemPress ? ({ style: { flex: 1, backgroundColor: "transparent" } as ViewStyle }) : undefined;
         const rows = context.itemRows.get(startIndex)
         return rows.map((item, i) => {
             const index = startIndex + i;
@@ -155,7 +154,7 @@ const VirtualScrollerView = React.memo(({ startIndex }: { startIndex: number }) 
     }, [context.itemRows, ...(context.props.updateOn ?? [])])
 
     return (
-        <ScrollIsVisibleView startIndex={startIndex}>
+        <ScrollIsVisibleView key={"starter" + startIndex} startIndex={startIndex}>
             {renderedItems}
         </ScrollIsVisibleView>
     );
@@ -220,19 +219,19 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 rows.children.push(<VirtualScrollerView key={i} startIndex={i} />);
             }
             state.items = rows;
-        })
+        }, effectiveItems.length <= 5 ? 0 : undefined)
     }
 
     React.useEffect(() => {
         prepaireItems();
     }, [effectiveItems])
 
-    globalData.useEffect(() => {
+    /*globalData.useEffect(() => {
         state.containerSize = undefined;
         state.estimatedItemSize = 0;
         state.itemSizes = {}
         state.id = newId();
-    }, "screen")
+    }, "screen")*/
 
     const itemSize = React.useMemo(() => {
         if (props.itemSize?.size == "EstimatedItemSize") {
@@ -314,14 +313,16 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 id={props.id}
                 onLayout={({ nativeEvent }) => {
                     timer(() => {
-                        const { layout } = nativeEvent;
-                        if (
-                            !state.containerSize ||
-                            layout.width !== state.containerSize.width ||
-                            layout.height !== state.containerSize.height
-                        ) {
-                            state.containerSize = layout;
-                        }
+                        state.batch(() => {
+                            const { layout } = nativeEvent;
+                            if (
+                                !state.containerSize ||
+                                layout.width !== state.containerSize.width ||
+                                layout.height !== state.containerSize.height
+                            ) {
+                                state.containerSize = layout;
+                            }
+                        });
                     });
                 }}
             >

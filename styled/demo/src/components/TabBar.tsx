@@ -8,15 +8,18 @@ import * as React from "react";
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import {
     ifSelector,
-    optionalStyle
+    optionalStyle,
+    measure,
+    newId
 } from "../config";
-import { useAnimate } from "../hooks";
+import { useAnimate, useTimer } from "../hooks";
 
 import { MenuChildren, MenuIcon, MouseProps, Size, TabBarProps, TabItemProps, IConProps, CSS_String } from "../Typse";
 import StateBuilder from "../States";
 import { Icon } from "./Icon";
 import { globalData } from "../theme/ThemeContext";
 import { Loader } from "./Loader";
+import { sleep, updater } from "react-smart-state";
 
 
 type ITabBarContext = {
@@ -109,6 +112,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
 
     }
     if (menuItems.length <= 1) return null; // its a single View no need to display Menu Header;
+    const width = (100 / menuItems.length) + "%";
 
     let border = (
         <AnimatedView
@@ -123,7 +127,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                     overflow: "visible",
                     borderRadius: 2,
                     height: 3,
-                    width: state.manuItemSize?.width ?? 0,
+                    width: width,
                     transform: [
                         {
                             translateX: context.animated.x.interpolate({
@@ -142,12 +146,12 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                 style={[
                     header.overlayStyle.content.o,
                     {
-                        width: state.manuItemSize?.width,
-                        height: state.manuItemSize?.height
+                        width: "100%",
+                        height: "100%"
                     },
                     position != "Top"
-                        ? { bottom: -(state.manuItemSize?.height ?? 0) }
-                        : { top: -(state.manuItemSize?.height ?? 0) }
+                        ? { bottom: "-100%" }
+                        : { top: "-100%" }
                 ]}
                 css={`bac:yellow bow:1 boc:red bor:1 _overflow op:0.1 _abc ${header.overlayStyle.content.c}`}
             />
@@ -228,8 +232,8 @@ export const TabBar = (props: TabBarProps) => {
     const temp = {};
     temp[props.selectedTabIndex ?? 0] = true;
     const state = StateBuilder(() => ({
-        size: { width: globalData.window.width, height: globalData.window.height } as Size,
         index: props.selectedTabIndex ?? 0,
+        updater: "",
         refItem: {
             rItems: children.map(x => { }) as any as MenuChildren[],
             loadedViews: temp,
@@ -238,17 +242,20 @@ export const TabBar = (props: TabBarProps) => {
             startValue: undefined,
             handled: false,
             interpolate: [],
-            panResponse: undefined
+            panResponse: undefined,
+            container: undefined as typeof View | undefined,
+            size: { width: 0, height: 0 } as Size,
         }
 
     })).ignore("refItem").build();
-    globalData.hook("window");
+    const timer = useTimer(100)
+    //globalData.hook("window");
     const getWidth = (index: number) => {
-        let v = index * (state.size.width ?? globalData.window.width);
+        let v = index * (state.refItem.size.width ?? 0);
         if (isNaN(v)) return 0;
         return v;
     };
-    const getInputRange = () => {
+    const getInputRange = React.useCallback(() => {
         let item = children
             .map((x, i) => {
                 return {
@@ -259,9 +266,9 @@ export const TabBar = (props: TabBarProps) => {
             .sort((a, b) => a.value - b.value);
 
         return item;
-    };
+    }, [state.refItem.size.width, children.length]);
 
-    state.refItem.interpolate = getInputRange();
+    state.refItem.interpolate = React.useMemo(getInputRange, [getInputRange()]);
     const tAnimate = (
         index: number,
         speed?: number,
@@ -278,7 +285,7 @@ export const TabBar = (props: TabBarProps) => {
         animateX(
             value,
             () => {
-                fn?.();
+                timer(() => fn?.());
             },
             speed
         );
@@ -322,10 +329,7 @@ export const TabBar = (props: TabBarProps) => {
         //assign();
     }, "index");
 
-    state.useEffect(() => {
-        state.refItem.interpolate = getInputRange();
-        tAnimate(state.index, 0);
-    }, "size");
+
 
     React.useEffect(() => {
         state.refItem.interpolate = getInputRange();
@@ -347,7 +351,7 @@ export const TabBar = (props: TabBarProps) => {
             menuAnimation.currentValue.x = undefined;
             let newValue = gestureState.dx;
             let diff = newValue - state.refItem.startValue;
-            let width = state.size.width;
+            let width = state.refItem.size.width;
             let i = state.index ?? 0;
             let speed = 200;
             menuAnimation.animate.flattenOffset();
@@ -458,16 +462,18 @@ export const TabBar = (props: TabBarProps) => {
         props: props,
         lazyLoading: props.lazyLoading ?? false,
         selectedIndex: state.index ?? 0,
-        size: state.size,
+        size: state.refItem.size,
         animated: menuAnimation.animate
-    }
+    };
 
-
+    const interpolate = React.useMemo(() => state.refItem.interpolate.map(x => x.value), [state.refItem.interpolate])
 
     return (
-        <View onLayout={({ nativeEvent }) => {
-            state.size = nativeEvent.layout;
-        }} css={x => x.cls("_tabBar").joinRight(props.css)} style={props.style}>
+        <View ref={x => state.refItem.container = x as any} onLayout={({ nativeEvent }) => {
+            state.refItem.size = nativeEvent.layout;
+            state.refItem.interpolate = getInputRange();
+            tAnimate(state.index, 0, () => state.index == 0 ? state.updater = newId() : undefined);
+        }} css={React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css])} style={props.style}>
             <TabBarContext.Provider value={contextValue}>
                 {position === "Top" && visibleChildren.length > 1 ? (
                     <TabBarMenu children={children} />
@@ -486,8 +492,8 @@ export const TabBar = (props: TabBarProps) => {
                                 {
                                     translateX: animate.x.interpolate(
                                         {
-                                            inputRange: state.refItem.interpolate.map(x => x.value),
-                                            outputRange: state.refItem.interpolate.map(x => x.value),
+                                            inputRange: interpolate,
+                                            outputRange: interpolate,
                                             extrapolate: "clamp"
                                         }
                                     )
@@ -500,8 +506,8 @@ export const TabBar = (props: TabBarProps) => {
                     {children.map((x, i) => (
                         <View
                             style={{
-                                maxWidth: state.size.width,
-                                width: state.size.width,
+                                maxWidth: `${100 / children.length}%`,
+                                width: `${100 / children.length}%`,
                                 flexGrow: 1,
                                 backgroundColor: "transparent"
                             }}

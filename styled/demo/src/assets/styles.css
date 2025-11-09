@@ -1,0 +1,42 @@
+#root {
+  transition: margin-bottom 0.3s ease;
+}
+
+#devtools-iframe {
+  width: 100%;
+  height: 100%;
+  /* collapsed initially */
+  border: none;
+  display: block;
+  transition: height 0.3s ease;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}
+
+
+.resizer {
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  cursor: row-resize;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transition: background 0.2s;
+  z-index: 2;
+}
+
+.resizer:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.iframeDevContainer {
+  position: relative;
+  width: 100%;
+  height: 300;
+  overflow: hidden;
+  /*transition: height 0.3s ease;*/
+}

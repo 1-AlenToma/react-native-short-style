@@ -3,10 +3,13 @@ import * as React from "react";
 import { IThemeContext, Rule, Size } from "../Typse";
 import StateBuilder from "../States";
 import { newId, clearAllCss, currentTheme } from "../config";
-import { View, AlertView, ToastView } from "../components";
-import { GestureResponderEvent, Platform, StyleSheet, View as NativeView, TouchableOpacity, Image } from "react-native";
+import { View, AlertView, ToastView, TouchableOpacity } from "../components";
+import { GestureResponderEvent, Platform, StyleSheet, View as NativeView, Image } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
 import { svgSelect } from "../constant";
+import { DevtoolsIframe } from "../components/DevtoolsIframe";
+import { sleep } from "react-smart-state";
+
 
 const StaticItem = ({ onMounted, id, item }: any) => {
     const state = StateBuilder({
@@ -128,79 +131,54 @@ const ThemeInternalContainer = ({ children }: any) => {
 
 
     return (
-
         <InternalThemeContext.Provider value={contextValue}>
-            <View onLayout={(event) => {
-                if (Platform.OS !== "web") {
-                    event.target.measure(
-                        (x, y, width, height) => {
-                            state.containerSize.height = height;
-                            state.containerSize.width = width;
-                            state.containerSize.y = y;
-                            state.containerSize.x = x;
-                            globalData.containerSize = state.containerSize;
-                        },
-                    );
-                } else {
-                    state.containerSize.height = event.nativeEvent.layout.height;
-                    state.containerSize.width = event.nativeEvent.layout.width;
-                    state.containerSize.y = event.nativeEvent.layout.y;
-                    state.containerSize.x = event.nativeEvent.layout.x;
-                    globalData.containerSize = state.containerSize;
-                }
-            }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
-                <StaticFullView />
-                <StaticView />
-                <ToastView />
-                <AlertView />
-                <View style={{
-                    width: "100%",
-                    height: "100%",
-                    zIndex: 1
-                }}>
-                    {children}
+            <DevtoolsIframe>
+                <View onLayout={(event) => {
+                    if (Platform.OS !== "web") {
+                        event.target.measure(
+                            (x, y, width, height) => {
+                                state.containerSize.height = height;
+                                state.containerSize.width = width;
+                                state.containerSize.y = y;
+                                state.containerSize.x = x;
+                                globalData.containerSize = state.containerSize;
+                            },
+                        );
+                    } else {
+                        state.containerSize.height = event.nativeEvent.layout.height;
+                        state.containerSize.width = event.nativeEvent.layout.width;
+                        state.containerSize.y = event.nativeEvent.layout.y;
+                        state.containerSize.x = event.nativeEvent.layout.x;
+                        globalData.containerSize = state.containerSize;
+                    }
+                }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
+                    <DevToolLayoutSelector />
+                    <StaticFullView />
+                    <StaticView />
+                    <ToastView />
+                    <AlertView />
+                    <View style={{
+                        width: "100%",
+                        height: "100%",
+                        zIndex: 1
+                    }}>
+                        {children}
+                    </View>
                 </View>
-            </View>
+            </DevtoolsIframe>
         </InternalThemeContext.Provider>
     )
 }
 
-const styles = StyleSheet.create({
-    touchOverlay: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 9999,
-        backgroundColor: "#000",
-        opacity: 0.2
-    },
-    highlightBox: {
-        position: "absolute",
-        zIndex: 10000,
-        opacity: 0.5,
-        borderWidth: .5,
-        borderColor: "#00bfff",
-        backgroundColor: "rgba(0, 191, 255, 0.2)", // semi-transparent cyan fill
-    },
-    highlightBorder: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: "#00bfff",
-    },
-});
-
 export const DevToolLayoutSelector = () => {
     try {
-        devToolsHandlerContext.hook("data.elementSelection", "data.isOpened");
+        devToolsHandlerContext.hook("data.settings.elementSelection", "data.isOpened");
         const positionsRef = React.useRef<Map<any, Size>>(new Map());
-        let selectorRef = React.useRef<typeof TouchableOpacity | null>(null);
 
         devToolsHandlerContext.useEffect(() => {
-            if (devToolsHandlerContext.data.elementSelection)
+            if (devToolsHandlerContext.data.settings.elementSelection)
                 positionsRef.current = new Map();
-        }, "data.elementSelection")
+        }, "data.settings.elementSelection")
 
         const [highlight, setHighlight] = React.useState<Size | null>(null);
         const [clicked, setClicked] = React.useState<Size | null>(null);
@@ -233,16 +211,7 @@ export const DevToolLayoutSelector = () => {
 
         const selectComponentAt = async (x: number, y: number) => {
             try {
-                if (selectorRef.current) {
-                    let pos = await measureComponentOnce(selectorRef.current, "selector");
-                    const { px, py, width, height } = pos;
-                    if (x >= px && x <= px + width && y >= py && y <= py + height) {
-                        devToolsHandlerContext.data.elementSelection = !devToolsHandlerContext.data.elementSelection;
-                        devToolsHandlerContext.sendProp("elementSelection");
-                        return;
-                    }
 
-                }
                 let closestComponent: any = null;
                 let smallestArea = Infinity;
                 let closestRect: Size | undefined = undefined;
@@ -262,12 +231,13 @@ export const DevToolLayoutSelector = () => {
                             smallestArea = area;
                             closestComponent = id;
                             closestRect = position;
+                            devToolsHandlerContext.select(closestComponent);
                         }
                     }
                 }
 
                 if (closestComponent) {
-                    devToolsHandlerContext.select(closestComponent);
+                    //  devToolsHandlerContext.select(closestComponent);
                     setClicked(closestRect);
                 } else {
                     setClicked(null);
@@ -333,21 +303,27 @@ export const DevToolLayoutSelector = () => {
 
         const selector = (
             <TouchableOpacity
-                ref={selectorRef as any}
-                onPress={(e) => {
+                noneDevtools={true}
+                css="poe-box-only"
+                onPress={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    devToolsHandlerContext.data.elementSelection = !devToolsHandlerContext.data.elementSelection;
-                    devToolsHandlerContext.sendProp("elementSelection");
+                    devToolsHandlerContext.batch(async () => {
+                        if (!devToolsHandlerContext.data.settings.elementSelection && !devToolsHandlerContext.data.settings.webDevToolsIsOpen)
+                            devToolsHandlerContext.data.settings.webDevToolsIsOpen = true;
+                        devToolsHandlerContext.data.settings.elementSelection = !devToolsHandlerContext.data.settings.elementSelection;
+
+                        await devToolsHandlerContext.sendProp("elementSelection", "webDevToolsIsOpen");
+                    });
                 }} style={{
                     position: "absolute",
                     borderRadius: 5,
                     top: 10,
-                    right: 10,
+                    right: 15,
                     width: 30,
                     height: 30,
                     zIndex: 99999,
-                    backgroundColor: devToolsHandlerContext.data.elementSelection ? "red" : "transparent"
+                    backgroundColor: devToolsHandlerContext.data.settings.elementSelection ? "red" : "transparent"
                 }}>
                 <Image
                     source={{ uri: svgSelect }}
@@ -357,14 +333,14 @@ export const DevToolLayoutSelector = () => {
             </TouchableOpacity>
         )
 
-        if (!devToolsHandlerContext.data.elementSelection) return __DEV__ && devToolsHandlerContext.data.isOpened ? selector : null;
-        let NView: typeof View = NativeView as any;
+        if (!devToolsHandlerContext.data.settings.elementSelection) return __DEV__ && devToolsHandlerContext.data.isOpened ? selector : null;
+
 
         return (
             <>
-                <NView
-                    pointerEvents="box-only"
-                    style={styles.touchOverlay}
+                <View
+                    noneDevtools={true}
+                    css={"._touchOverlay"}
                     onStartShouldSetResponder={() => true}
                     onResponderRelease={handleSelection}
                     onMoveShouldSetResponderCapture={() => false} // allow scrolling
@@ -375,35 +351,36 @@ export const DevToolLayoutSelector = () => {
                 />
                 {selector}
                 {clicked && (
-                    <NativeView
-                        pointerEvents="none"
+                    <View
+                        noneDevtools={true}
+                        css="._highlightBox"
                         style={[
-                            styles.highlightBox,
                             {
                                 top: clicked.py,
                                 left: clicked.px,
                                 width: clicked.width,
                                 height: clicked.height,
-                                borderColor: "red"
+                                borderColor: "red",
                             },
                         ]}>
-                        <NativeView style={styles.highlightBorder} />
-                    </NativeView>
+                        <View noneDevtools={true} css="._highlightBorder" />
+                    </View>
                 )}
                 {highlight && (
-                    <NativeView
-                        pointerEvents="none"
+                    <View
+                        css="._highlightBox"
+                        noneDevtools={true}
                         style={[
-                            styles.highlightBox,
                             {
+                                pointerEvents: "none",
                                 top: highlight.py,
                                 left: highlight.px,
                                 width: highlight.width,
                                 height: highlight.height,
                             },
                         ]}>
-                        <NativeView style={styles.highlightBorder} />
-                    </NativeView>
+                        <View noneDevtools={true} css="._highlightBorder" />
+                    </View>
                 )}
 
             </>
@@ -481,14 +458,15 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         return null;
 
     return (
+
         <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>
-            <ThemeContext.Provider value={{ ...props, systemThemes: theme, elementSelection: devToolsHandlerContext.data.elementSelection }}>
-                <DevToolLayoutSelector />
+            <ThemeContext.Provider value={{ ...props, systemThemes: theme }}>
                 <ThemeInternalContainer>
                     {props.children}
                 </ThemeInternalContainer>
             </ThemeContext.Provider>
         </StyleContext.Provider>
+
     )
 
 }

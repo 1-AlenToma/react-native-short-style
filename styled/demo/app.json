@@ -30,7 +30,8 @@
       "baseUrl": "/react-native-short-style"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ]
   }
 }

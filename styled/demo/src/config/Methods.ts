@@ -1,11 +1,21 @@
 import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTranslator";
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
-import { AlertViewAlertProps, AlertViewProps, IThemeContext, StyledKey, ToastProps } from "../Typse";
+import { AlertViewAlertProps, AlertViewProps, IThemeContext, Size, StyledKey, ToastProps } from "../Typse";
 import { CSSStyle } from "../styles/CSSStyle"
 import { PlatformStyleSheet } from "../theme/PlatformStyles";
 import React from "react";
+import { MeasureOnSuccessCallback, View } from "react-native";
 
+export const measure = function (item: View) {
+    return new Promise<Size | undefined>(r => {
+        if (item.measure) {
+            item.measure((x, y, width, height, py, px) => {
+                r({ x, y, width, px, py, height })
+            })
+        } else r(undefined)
+    })
+}
 
 export const toArray = (item: any) => {
     if (!item) return [];

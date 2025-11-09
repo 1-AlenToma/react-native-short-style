@@ -1,4 +1,5 @@
 export const StylesAttributes = [
+  "pointerEvents",
   "alignContent",
   "alignItems",
   "alignSelf",
@@ -96,6 +97,10 @@ export const StylesAttributes = [
 
 export const ShortCSS =
 {
+  pointerEvents: "pointerEvents",
+  poE: "pointerEvents",
+  pointerevents: "pointerEvents",
+  poe: "pointerEvents",
   textTransform: 'textTransform',
   alignContent: 'alignContent',
   alC: 'alignContent',
@@ -437,6 +442,8 @@ export const ShortCSS =
 
 
 export const ShortStyles = {
+  pointerEvents: "pointerEvents",
+  poE: "pointerEvents",
   outlineStyle: "outlineStyle",
   ouS: "outlineStyle",
   "textTransform": "textTransform",

@@ -24,20 +24,33 @@ export class IParent {
     index?: number;
     total?: number;
     parent?: IParent;
-    childrenPaths: { type: string, index: number, typeIndex: number }[] = [];
+    childrenPaths: Map<string, { type: string, index: number, typeIndex: number }> = new Map()
     classPath: string[] = [];
     props: Record<string, any> = {};
     type: string = "";
 
+    getKey(...args) {
+        return args.join("|");
+    }
+
     reg(type: string, index: number) {
-        if (!this.childrenPaths.find(x => x.index == index && x.type == type))
-            this.childrenPaths.push({ type, index, typeIndex: this.childrenPaths.filter(x => x.type == type).length });
+        let key = this.getKey(type, index);
+        if (!this.childrenPaths.has(key))
+            this.childrenPaths.set(key, { type, index, typeIndex: Array.from(this.childrenPaths.values()).filter(x => x.type == type).length });
+    }
+
+    unreg(type: string, index: number) {
+
+        this.childrenPaths.delete(this.getKey(type, index));
+
     }
 }
 
-export type PositionContext = {
+
+export type IPositionContext = {
     index?: number;
     parentId?: string;
+    typeName?: string;
 }
 
 export type VirtualItemSize = {
@@ -86,7 +99,7 @@ export type Rule = {
 export type StyleContextType = {
     rules: Rule[];
     path: string[];
-    parent?: any;
+    parent?: IParent;
 };
 
 export type SelectorPart = {
@@ -104,6 +117,7 @@ export type StyledProps = {
     style?: ViewStyle | TextStyle;
     id?: string;
     inspectDisplayName?: string;
+    noneDevtools?: boolean;
 };
 
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";
@@ -147,7 +161,7 @@ export type ButtonProps = {
 } & StyledProps & Omit<TouchableOpacityProps, "children"> & MouseProps;
 
 export type IExtraThemeContext = {
-    elementSelection: boolean
+    
 }
 
 export type IThemeContext = {

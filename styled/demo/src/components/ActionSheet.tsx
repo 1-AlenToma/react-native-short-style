@@ -105,7 +105,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
         setSize();
         const fn = !isVertical ? animateX : animateY;
-        blurAnimation.animateX(show ? 1 : 0, undefined, 100)
+        blurAnimation.animateX(show ? 1 : 0, undefined, 20)
         fn(
             firstValue(show),
             () => {
@@ -162,6 +162,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
         handleStyle.bottom = 8;
     if (isVertical && position == "Bottom")
         handleStyle.top = 8;
+
+    const _css = React.useMemo(() => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue(), [props.css]);
 
     const renderUpdate = () => {
         let Handle = Platform.OS == "web" ? TouchableOpacity : View;
@@ -262,6 +264,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
         let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
 
+
         fn(state.id,
             <View inspectDisplayName="ActionSheetContainer" key={state.id} css={"co-transparent _topPostion ActionSheetContainer"} style={{ zIndex: zIndex + 300 }}>
                 <Blur style={{
@@ -298,15 +301,17 @@ export const ActionSheet = (props: ActionSheetProps) => {
                         css="wi:100% he:100% pa:10 flex:1 ActionSheetContent">
                         {position == "Bottom" || position == "Right" ? handle : null}
                         <View ifTrue={state.refItem.show || !props.lazyLoading}
-                            css={x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue()}
+                            css={_css}
                             style={[(props.size != "content" ? {
                                 flex: 1,
                                 flexGrow: 1
                             } : undefined)]} onLayout={({ nativeEvent }) => {
                                 if (props.size == "content") {
-                                    state.size = nativeEvent.layout;
-                                    state.size.height += 50 as any;
-                                    state.size.width += 50 as any;
+                                    state.batch(() => {
+                                        state.size = nativeEvent.layout;
+                                        state.size.height += 50 as any;
+                                        state.size.width += 50 as any;
+                                    })
                                 }
                             }}>
                             {props.children}

@@ -6,13 +6,16 @@
   <meta name="viewport" content="width=device-width" />
   <title>React Native Short Style Inspector</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script defer src="pretty-json.js"></script>
   <script>
     window.appMode = "WebTest";
   </script>
   <script src="data.js"></script>
   <link href="style.css" rel="stylesheet" />
   <script>
+
     window.appSettings = undefined;
+
   </script>
 </head>
 
@@ -35,44 +38,61 @@
   </div>
   <div class="tabs">
     <div class="header">
-      <a class="icon" data-props="elementSelection" data-value="true"
+      <a class="icon" data-props="elementSelection" data-value="{{elementSelection}}"
         title="Select an element in the app and it will be selected here"><img src="gesture_select.svg" /></a>
       <p class="selected" data-value="Elements">Elements</p>
       <p data-value="Console"><span class="nr">No</span>Console</p>
-      <input type="range" id="zoom" name="zoom" min="1" max="2" value="1" step="0.1" />
+      <input type="range" id="zoom" name="zoom" min="1" max="2" value="{{zoom}}" step="0.1" />
       <div style="margin-left:auto">
+        <a class="info"
+          title="Changing those values will override the component props. you will have to reload the app to revert it. Style is the rendered style eg css + style+ stylesheet">
+          <img src="info.svg" />
+        </a>
+        <button class="btn json hidden" title="View Json"><img style="height:var(--pathHeight)"
+            src="json.svg" />JSON</button>
         <button class="btn save hidden" title="Save changes for current node"><img style="height:var(--pathHeight)"
             src="save.svg" />Save</button>
+        <button class="btn autoSave" data-props="autoSave" data-value="{{autoSave}}" title="Enable auto save"><img
+            style="height:var(--pathHeight)" src="save.svg" />AutoSave</button>
         <button class="btn reload" title="Clear all changed data eg (reload)"><img style="height:var(--pathHeight)"
             src="reload_app.svg" /></button>
+        <button class="btn clearLogs" title="Clear all logs"><img src="clear_logs.svg"
+            style="height:var(--pathHeight)" /></button>
+        <button class="btn exit" data-props="webDevToolsIsOpen" data-value="{{webDevToolsIsOpen}}" selectable="false"
+          title="Close devtools" style="background-color: red;"><img src="exit.svg"
+            style="height:var(--pathHeight)" /></button>
 
       </div>
     </div>
 
     <div class="content">
       <div class="container active" data-type="Elements">
-        <div class="left hideScroll">
+        <div class="left">
           <div class="resizer"></div>
-          <div class="tree-root" id="treeRoot" aria-label="Component tree">
-            <!-- tree will be rendered here -->
+          <div class="scrollAble">
+            <div class="tree-root" id="treeRoot" aria-label="Component tree">
+              <!-- tree will be rendered here -->
+            </div>
           </div>
         </div>
 
-        <div class="right hideScroll">
+        <div class="right scrollAble">
           <div class="props-panel" id="propsPanel">
             <div class="empty" id="emptyInfo">Select a node to view props</div>
           </div>
         </div>
       </div>
       <div class="container" data-type="Console">
-        <div class="left hideScroll">
+        <div class="left">
           <div class="resizer"></div>
-          <div class="tree-root" aria-label="Component tree">
-            <!-- tree will be rendered here -->
+          <div class="scrollAble">
+            <div class="tree-root" aria-label="Component tree">
+              <!-- tree will be rendered here -->
+            </div>
           </div>
         </div>
-        <div class="right hideScroll">
-          <button class="btn toRight clearLogs" title="Clear all logs"><img src="clear_logs.svg" /></button>
+        <div class="right scrollAble">
+
           <ul class="lst">
             <li><a class="messages btn selected"><span>No</span>Messages</a></li>
             <li><a class="logs btn"><span>No</span>Logs</a></li>
@@ -82,6 +102,13 @@
           </ul>
         </div>
       </div>
+    </div>
+  </div>
+  <div class="centerContainer">
+    <div class="blur"></div>
+    <div class="modal animation">
+      <div class="title"><span>test</span> <button class="btn close">X</button></div>
+      <div class="center">test center</div>
     </div>
   </div>
   <script src="app.js"></script>

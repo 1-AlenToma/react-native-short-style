@@ -6,17 +6,25 @@ type LogTypes = "ERROR" | "LOG" | "WARNING" | "INFO";
 type Types = ("TREE_DATA" | "PATCH_NODE" | "PATCH_DELETE" | "PATCH_SELECT" | "PROP") | LogTypes;
 const _logTypes = ["ERROR", "LOG", "WARNING", "INFO"]
 type ChangedProps = { _viewId: string, style?: string, css?: string };
-const treeData = new Map<string, { type: Types, payload: ElementTool }>();
+const treeData = new Map<string, { type: Types, payload: ElementTool, settings?: any }>();
 const wsTypes = {
     __To: "HTML" as "APP" | "HTML"
 }
 
-export class DevToolsData {
+class Settings {
     elementSelection: boolean = false;
+    webDevToolsIsOpen: boolean = false;
+    zoom: number = 1.5;
+    autoSave: boolean = true;
+}
+
+export class DevToolsData {
     changedProps: Map<string, ChangedProps> = new Map<string, ChangedProps>();
     propsUpdated: string = "";
     isOpened: boolean = false;
     rerender: string = "";
+    settings: Settings = new Settings();
+
 }
 
 
@@ -42,6 +50,9 @@ export class DevtoolsHandler {
     components: Map<string, React.ReactElement> = new Map();
     timer: any = undefined;
 
+    get webUrl() {
+        return `http://${this.host}:7778/index.html?q=IFRAME`;
+    }
 
     get host() {
         return this._host;
@@ -82,36 +93,39 @@ export class DevtoolsHandler {
 
         this.ws.onmessage = async (event) => {
             try {
-                let data = JSON.parse(event.data);
-                if (data.type == "TREE") {
-                    let items = [...treeData.values()];
-                    if (items.length <= 0 || items[0].type != "TREE_DATA") {
-                        treeData.clear();
-                        this.renderingTree = true;
-                        this.data.rerender = newId();
-                    }
-                    else {
-                        //this.que = this.que.filter(x => !_logTypes.includes(x.type))
-                        await this.ws.send(safeStringify(items));
-                    }
-                    return;
-                }
-                if (data.__To)
-                    delete data.__To;
-                if (data.type == "PROP") {
-                    for (let key in data) {
-                        if (key != "type") {
-                            this.data[key] = data[key];
+                let item = JSON.parse(event.data);
+                let items = Array.isArray(item) ? item : [item];
+                for (let data of items) {
+                    if (data.type == "TREE") {
+                        let datas = [...treeData.values()];
+                        if (datas.length <= 0 || datas[0].type != "TREE_DATA") {
+                            treeData.clear();
+                            this.renderingTree = true;
+                            this.data.rerender = newId();
                         }
+                        else {
+                            //this.que = this.que.filter(x => !_logTypes.includes(x.type))
+                            await this.ws.send(safeStringify(datas));
+                        }
+                        return;
                     }
-                } else if (data.type == "SAVE_NODE_PROP") {
-                    this.data.changedProps.set(data.payload._viewId, data.payload);
-                    this.data.propsUpdated = newId()
-                } else if (data.type == "RELOAD") {
-                    this.data.changedProps.clear();
-                    this.data.propsUpdated = newId();
-                } else {
-                    console.log("type could not be found ", event.data)
+                    if (data.__To)
+                        delete data.__To;
+
+                    if (data.type == "PROP") {
+                        if (data.payload.key) {
+                            this.data.settings[data.payload.key] = data.payload.value;
+                        }
+
+                    } else if (data.type == "SAVE_NODE_PROP") {
+                        this.data.changedProps.set(data.payload._viewId, data.payload);
+                        this.data.propsUpdated = newId()
+                    } else if (data.type == "RELOAD") {
+                        this.data.changedProps.clear();
+                        this.data.propsUpdated = newId();
+                    } else {
+                        console.log("type could not be found ", event.data)
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -169,8 +183,9 @@ export class DevtoolsHandler {
         }
     }
 
-    async sendProp(key: keyof DevToolsData) {
-        this.simpleSend("PROP", { key, value: this.data[key] });
+    async sendProp(...keys: (keyof Settings)[]) {
+        for (let key of keys)
+            this.simpleSend("PROP", { key, value: this.data.settings[key], ...wsTypes });
 
     }
 

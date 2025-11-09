@@ -1,9 +1,11 @@
+import { devNull } from "os";
 import { parseSelector } from "../config/CssSelectorParser";
 import cssTranslator, { clearCss } from "../styles/cssTranslator";
-import { IParent, SelectorPart, StyleContextType, PositionContext } from "../Typse";
+import { IParent, SelectorPart, StyleContextType, IPositionContext } from "../Typse";
 import * as React from "react";
+import { devToolsHandlerContext } from "../theme/ThemeContext";
 
-export const positionContext = React.createContext<PositionContext>({ index: 0, parentId: "__0__" })
+export const PositionContext = React.createContext<IPositionContext>({ index: 0, parentId: "__0__" })
 
 
 
@@ -41,7 +43,7 @@ function buildNodeMeta(fullPath: FullPathNode[], parent: IParent | undefined, th
         indices[i] = p?.index ?? 0;
         totals[i] = p?.total ?? 1;
 
-        const parentChildren = p?.parent?.childrenPaths ?? [];
+        const parentChildren = Array.from(p?.parent?.childrenPaths?.values() ?? []);
         typeIndex[i] = parentChildren.find(x => x.index === indices[i] && x.type === nodeType)?.typeIndex ?? 0;
         totalTypes[i] = parentChildren.filter(x => x.type === nodeType).length;
 
@@ -55,7 +57,7 @@ function buildNodeMeta(fullPath: FullPathNode[], parent: IParent | undefined, th
     const lastIdx = fullPath.length - 1;
     indices[lastIdx] = index;
     totals[lastIdx] = total;
-    const lastParentChildren = parent?.childrenPaths ?? [];
+    const lastParentChildren = Array.from(parent?.childrenPaths?.values() ?? []);;
     typeIndex[lastIdx] = lastParentChildren.find(x => x.index === index && x.type === type)?.typeIndex ?? 0;
     totalTypes[lastIdx] = lastParentChildren.filter(x => x.type === type).length;
     props[lastIdx] = thisParent?.props ?? {};
@@ -238,6 +240,7 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
     const id = `${parentId}_useStyled`;
     const current = variant ? `${type}.${variant}` : type;
     const classNames = thisParent?.classPath ?? [];
+    const idDev = devToolsHandlerContext.data.isOpened && __DEV__;
 
     React.useEffect(() => {
         return () => clearCss(id);
@@ -279,7 +282,7 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
                 merged = { ...merged, ...st };
                 if (merged.important) important = { ...important, ...cleanStyle(merged.important) };
                 merged = cleanStyle(merged);
-                if (__DEV__) {
+                if (idDev) {
                     keySelector = ({ ...keySelector, ...st });
                     if (keySelector.important)
                         keySelectorImportant = { ...keySelectorImportant, ...cleanStyle(keySelector.important) };
@@ -292,16 +295,16 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
                     if (key === "!important") continue;
                     if (typeof value === "string" && value.endsWith("!important")) {
                         important[key] = value.replace(/(\-)?!important/gi, "").trim();
-                        if (__DEV__)
+                        if (idDev)
                             keySelectorImportant[key] = important[key]
                     } else if (isWholeImportant) {
                         important[key] = value;
-                        if (__DEV__)
+                        if (idDev)
                             keySelectorImportant[key] = value;
                     } else {
                         if (!(key in important))
                             merged[key] = value;
-                        if (__DEV__ && !(key in keySelectorImportant))
+                        if (idDev && !(key in keySelectorImportant))
                             keySelectorImportant[key] = value;
                     }
                 }
@@ -313,7 +316,7 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
         keyStyle[rule.selectors.join(",")] = { ...keySelector, ...keySelectorImportant };
     }
 
-    return [{ ...merged, important}, keyStyle] as [Record<string, any> & { important: typeof important }, Record<string, any>];
+    return [{ ...merged, important }, keyStyle] as [Record<string, any> & { important: typeof important }, Record<string, any>];
 }
 
 

@@ -52,7 +52,7 @@ export const useAnimate = ({
     const animateX = (
         value: any,
         onFinished?: Function,
-        sp?: any
+        sp?: number
     ) => {
         if (value == currentValue.x) {
             onFinished?.();
@@ -72,36 +72,42 @@ export const useAnimate = ({
         );
     };
 
-
     const run = (
-        value: any,
-        animObject: any,
+        value: number,
+        animObject: Animated.Value,
         key: "x" | "y",
         onFinished?: Function,
-        sp?: any,
-
+        sp?: number,
     ) => {
         try {
             animating.isAnimating = true;
             animating[key]?.stop?.();
-            animating[key] = Animated.timing(
-                animObject,
-                {
-                    toValue: value,
-                    duration: sp ?? speed ?? 300,
-                    easing: easing ?? Easing.linear,
-                    delay,
-                    useNativeDriver: useNativeDriver
-                }
-            );
+
+            // If speed is 0, set value immediately
+            if (sp === 0) {
+                animObject.setValue(value);
+                animating.isAnimating = false;
+                onFinished?.();
+                return;
+            }
+
+            animating[key] = Animated.timing(animObject, {
+                toValue: value,
+                duration: sp ?? speed ?? 300,
+                easing: easing ?? Easing.linear,
+                delay,
+                useNativeDriver: useNativeDriver
+            });
+
             animating[key].start(() => {
                 animating.isAnimating = false;
                 onFinished?.();
             });
         } catch (e) {
-            console.error("animObject", e)
+            console.error("animObject", e);
         }
     };
+
 
     return {
         animateY,

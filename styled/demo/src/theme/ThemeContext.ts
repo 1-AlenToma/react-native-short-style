@@ -8,7 +8,6 @@ import { DevtoolsHandler } from "../config/DevToolsHandler";
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
     themes: [],
-    elementSelection: false
 } as IThemeContext & IExtraThemeContext);
 
 // --- Context ---
@@ -65,7 +64,7 @@ const getWebStorage = () => {
 }
 
 
-export const devToolsHandlerContext = StateBuilder<DevtoolsHandler>(new DevtoolsHandler()).ignore("ws", "que", "components").timeout(undefined).globalBuild();
+export const devToolsHandlerContext = StateBuilder<DevtoolsHandler>(new DevtoolsHandler()).ignore("ws", "que", "components").globalBuild();
 
 
 export const globalData = StateBuilder<GlobalState>(() => ({
@@ -124,9 +123,11 @@ export const globalData = StateBuilder<GlobalState>(() => ({
             windowChangeEvent
         ]
     }
-})).timeout(1).ignore(
+})).timeout(undefined).ignore(
     "alertViewData.data",
     "alertViewData.toastData",
+    "screen",
+    "window",
     "storage",
     "tStorage",
     "icons").globalBuild();

@@ -5,13 +5,15 @@ import { parse } from 'url';
 import http from "http";
 import mime from "mime";
 import { WebSocketServer, WebSocket } from "ws";
-import AppSettings from "./appSettings";
+import { ObjectJson, Settings } from "./ObjectJson";
 
 export interface DevServerOptions {
     root?: string;
     port?: number;
     wsPort?: number;
 }
+
+
 
 
 const assetsFiles: Record<string, string> = {
@@ -39,7 +41,7 @@ export class DevServer {
     private port: number;
     private wsPort: number;
     private started = false;
-    private appSettings: AppSettings = new AppSettings();
+    private appSettings: ObjectJson<Settings> = new ObjectJson(new Settings());
 
     constructor(opts: DevServerOptions = {}) {
         this.root = opts.root ?? path.resolve(__dirname);
@@ -86,10 +88,16 @@ export class DevServer {
 
                 if (typeof content == "string" && filePath.endsWith('index.html')) {
                     // Inject appSettings + fix paths for Chrome
+
+                    content = content.replace(/\{\{(.*?)\}\}/g, (_, key) => {
+                        return this.appSettings.data[key] ?? ""; // fallback if missing
+                    });
+
                     content = content
                         .replace(/WebTest/gi, "")
                         .replace("{#}", "Default")
-                        .replace("appSettings = undefined", `appSettings = ${JSON.stringify(this.appSettings)}`);
+                        .replace("appSettings = undefined", `appSettings = ${JSON.stringify(this.appSettings.data)}`);
+
 
                     // Replace VSCode URIs with relative asset paths
                     for (let assetName in assetsFiles) {
@@ -130,7 +138,12 @@ export class DevServer {
                     // If client is registering itself
                     if (msg.type === "REGISTER") {
                         wsItem.clientType = msg.clientType;   // "app" or "html"
+                        if (msg.payload) {
+                            Object.assign(this.appSettings, msg.payload);
+                            this.appSettings.save();
+                        }
                         console.log(`Registered ${wsItem.clientType}`);
+                        wsItem.ws.send(JSON.stringify(this.appSettings.ObjectValue()));
                         return;
                     }
                     this.send(msg);
@@ -150,16 +163,25 @@ export class DevServer {
     send(data: { __To: "HTML" | "APP" } | { __To: "HTML" | "APP" }[]) {
         try {
             const items = Array.isArray(data) ? data : [data]; // normalize to array
-
-            for (const item of items) {
-                const payload = JSON.stringify(item);
-
-                for (const c of this.clients) {
-                    if (c.clientType === item.__To && c.ws.readyState === WebSocket.OPEN) {
-                        c.ws.send(payload);
-                    }
+            const appItems = JSON.stringify(items.filter(x => x.__To == "APP"));
+            const htmlItems = JSON.stringify(items.filter(x => x.__To == "HTML"));
+            items.filter((x: any) => x.type == "PROP").forEach((x: any) => {
+                if (x.payload?.key != undefined) {
+                    this.appSettings.setKeyValue(x.payload.key as any, x.payload.value);
                 }
+            });
+
+            if (this.appSettings.hasChanged)
+                this.appSettings.save();
+
+            for (const c of this.clients) {
+                if (c.clientType === "APP" && c.ws.readyState === WebSocket.OPEN)
+                    c.ws.send(appItems);
+                if (c.clientType === "HTML" && c.ws.readyState === WebSocket.OPEN)
+                    c.ws.send(htmlItems);
+
             }
+
         } catch (e) {
             console.error("send() error:", e);
         }

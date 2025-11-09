@@ -13,6 +13,7 @@ type zIndex = `.zi-${keyof typeof defaultTheme.zIndex}` | (ValueType["zIndex"] &
 type BorderRadius = `.bor-${keyof typeof defaultTheme.borderRadius}` | (number & {});
 type Spacing = `.sp-${keyof typeof defaultTheme.spacing}` | (ValueType["letterSpacing"] & {});
 type SizeValue<K extends string> = `${Sizes}${K}` | number | (string & {});
+type PointerEvents = "auto" | "none" | "box-only" | "box-none" | (string & {});;
 type Display =
     // Outside-inside keywords
     | "block"
@@ -385,6 +386,14 @@ export abstract class ExtraCssStyle {
 }
 
 export class CSSStyle extends ExtraCssStyle {
+
+    pointerEvents(value: PointerEvents) {
+        return this.add(ShortStyles.pointerEvents, value);
+    }
+
+    poE(value: PointerEvents) {
+        return this.add(ShortStyles.pointerEvents, value);
+    }
 
     textTransform(value: ValueType["textTransform"]) {
         return this.add(ShortStyles.textTransform, value);
@@ -1078,6 +1087,8 @@ export class CSSStyle extends ExtraCssStyle {
     teSC(value?: Colors<".co"> | null) {
         return this.add(ShortStyles.textShadowColor, value);
     }
+
+
 
     /*
       use style insted

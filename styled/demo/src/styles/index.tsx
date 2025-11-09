@@ -11,12 +11,15 @@ import { ifSelector, newId, refCreator, setRef, ValueIdentity, flatStyle } from 
 import NestedStyleSheet from "./NestedStyleSheet";
 import cssTranslator, { clearCss } from "./cssTranslator";
 import { IParent } from "../Typse";
-import { cleanStyle, useStyled, positionContext, useLocalRef, useTimer } from "../hooks";
+import { useStyled, PositionContext, useLocalRef, useTimer } from "../hooks";
+
+
 
 export class CMBuilder {
     __name: string;
     __View: any;
     myRef: any = undefined;
+    Component: any = undefined;
     constructor(name: string, view: any) {
         this.__name = name;
         this.__View = view;
@@ -40,19 +43,17 @@ export class CMBuilder {
 
     fn() {
         const bound: any = this.renderFirst.bind(this);
+        this.Component = this.render.bind(this) as any;
+        this.Component.__name = this.__name;
+        this.Component.displayName = `Styled(${this.__name})`;
         bound.__name = this.__name; // attach __name to the bound function
 
         return refCreator(bound, this.__name, this.__View);
     }
 
-    renderFirst(props: CSSProps<any>, ref: any) {
-        const RN = useLocalRef<any>(() => {
-            let item = this.render.bind(this) as any;
-            item.__name = this.__name;
-            item.displayName = `Styled(${this.__name})`;
 
-            return item;
-        });
+
+    renderFirst(props: CSSProps<any>, ref: any) {
         const css = React.useMemo(() => {
             if (props && typeof props.css === "function") {
                 return props.css(new CSSStyle()).toString();
@@ -60,29 +61,33 @@ export class CMBuilder {
             return props?.css || "";
         }, [props?.css]);
 
-        const ifTrue = props && ifSelector(props.ifTrue)
-
-
-
-
+        const ifTrue = props && ifSelector(props.ifTrue);
 
         if (ifSelector(ifTrue) === false)
             return null;
-        return <RN {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
+
+
+        return <this.Component {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
     }
 
-    render({ children, variant, cRef, style, css, ifTrue, ...props }: CSSProps<any>) {
-        let internalProps = { ...props };
+    render({ children, variant, cRef, style, css, ifTrue, noneDevtools, ...props }: CSSProps<any>) {
+        let internalProps = Object.assign({}, props)
         const id = useLocalRef(newId);
         const context = React.useContext(StyleContext);
         const themeContext = React.useContext(ThemeContext);
-        const posContext = React.useContext(positionContext);
+        const positionContext = React.useContext(PositionContext);
         const [changedProps, setChangedProps] = React.useState<any>(undefined);
-        const inspect = __DEV__ && devToolsHandlerContext.data.isOpened;
-        if (__DEV__) {
+        const isDev = __DEV__ && !noneDevtools;
+        const inspect = isDev && devToolsHandlerContext.data.isOpened;
+        if (isDev) {
             devToolsHandlerContext.useEffect(() => {
                 if (devToolsHandlerContext.data.changedProps.has(id)) {
-                    setChangedProps(devToolsHandlerContext.data.changedProps.get(id));
+                    const item: any = devToolsHandlerContext.data.changedProps.get(id);
+                    if (!item?.handled || !changedProps) {
+                        setChangedProps({ ...item });
+                        if (item)
+                            item.handled = true;
+                    }
                 } else if (changedProps) {
                     setChangedProps(undefined) // clear it as reload has been triggered
                 }
@@ -131,18 +136,16 @@ export class CMBuilder {
         const current = variant ? `${this.__name}.${variant}` : this.__name;
         const fullPath = React.useMemo(() => [...context.path, current], [context.path, current]);
 
-        // Parent info
-        const prt = new IParent();
-        prt.index = posContext.index ?? 0;
+        const componentParent = new IParent();
+        componentParent.index = positionContext.index ?? 0;
         //  prt.total = posContext.total ?? context.parent?.total ?? 1;
-        prt.classPath = classNames;
-        prt.type = this.__name;
-        prt.parent = context.parent;
-        prt.props = { className, type: this.__name, ...internalProps, children };
-
-        context.parent?.reg(this.__name, prt.index);
-        prt.classPath.forEach((x: string) => context.parent?.reg(x, prt.index));
-
+        componentParent.classPath = classNames;
+        componentParent.type = this.__name;
+        componentParent.props = { className, type: this.__name, ...internalProps, children };
+        context.parent?.reg(this.__name, componentParent.index);
+        componentParent.classPath.forEach((x: string) => context.parent?.reg(x, componentParent.index));
+        // Parent info
+        componentParent.parent = context.parent;
 
 
         const regChild = (child: any, idx: number) => {
@@ -156,9 +159,11 @@ export class CMBuilder {
                 typeName = typeName.replace(/((Styled)|(\()|(\)))/gi, "");
             }
 
-            classNames.forEach((x) => prt.reg(x, idx));
-            prt.reg(typeName, idx);
+            classNames.forEach((x) => componentParent.reg(x, idx));
+            componentParent.reg(typeName, idx);
+            return typeName;
         };
+
         const cloneChild = (children: React.ReactNode): React.ReactNode[] => {
             const queue = React.Children.toArray(children);
             const result: React.ReactNode[] = [];
@@ -187,9 +192,9 @@ export class CMBuilder {
 
                     const childKey = `styled-child-${frag?.key ?? ''}:${child.key ?? idx}`;
                     result.push(
-                        <positionContext.Provider key={`styled-wrapper-${childKey}`} value={{ index: idx, parentId: id }}>
+                        <PositionContext.Provider key={`styled-wrapper-${childKey}`} value={{ index: idx, parentId: id }}>
                             {child}
-                        </positionContext.Provider>
+                        </PositionContext.Provider>
                     );
 
                 } else {
@@ -203,34 +208,35 @@ export class CMBuilder {
             return result;
         };
 
-        prt.total = context.parent?.total ?? childTotal;
-        const mappedChildren = cloneChild(childrenArray);
+
+        const mappedChildren = cloneChild(childrenArray)
+        componentParent.total = context.parent?.total ?? childTotal
 
         const [_styles, keySelectors] = useStyled(
             id,
             context,
             this.__name,
-            prt.index,
-            prt.total,
+            componentParent.index,
+            componentParent.total,
             variant,
-            prt,
+            componentParent,
             themeContext.systemThemes
         );
 
         let cssStyle = React.useMemo(() => {
             if (!_css || _css.trim().length === 0) return undefined;
             return cssTranslator(_css, themeContext.systemThemes);
-        }, [_css, themeContext.systemThemes]);
+        }, [_css, themeContext.systemThemes]) ?? {} as any;
 
         //**
         // style.important override cssStyle and cssStyle.important override the style.important
         // and style tag override all */
         if (_styles && _styles.important)
-            cssStyle = { ...cssStyle, ..._styles.important };
+            cssStyle = Object.assign(cssStyle, _styles.important)
         if (cssStyle.important)
-            cssStyle = { ...cssStyle, ...cssStyle.important };
+            Object.assign(cssStyle, cssStyle.important)
 
-        let styles = (Array.isArray(style)
+        let styles = changedProps ? [style] : (Array.isArray(style)
             ? [_styles, cssStyle, ...style]
             : [_styles, cssStyle, style]
         ).filter(Boolean);
@@ -239,9 +245,10 @@ export class CMBuilder {
             styles.push({ userSelect: "none" });
         }
 
-        if (inspect && ifTrue != false && changedProps && changedProps._deletedItems?.style) {
+        if (inspect && ifTrue != false) {
             styles = flatStyle(styles);
-            devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
+            if (changedProps && changedProps._deletedItems?.style)
+                devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
         }
 
         useEffect(() => {
@@ -266,11 +273,11 @@ export class CMBuilder {
                     children: [],
                     props: {
                         ifTrue,
-                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...(flatStyle(styles)), _props: undefined, transform: undefined, important: undefined }, css }),
+                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...styles, _props: undefined, transform: undefined, important: undefined }, css }),
                         classes: devToolsHandlerContext.withKeysOnly(keySelectors),
                         _viewId: id,
-                        _elementIndex: posContext.index,
-                        _parent_viewId: posContext.parentId ?? "__0__",
+                        _elementIndex: positionContext.index,
+                        _parent_viewId: positionContext.parentId ?? "__0__",
                         ...(typeof children == "string" ? { children } : {})
                     }
                 });
@@ -286,20 +293,13 @@ export class CMBuilder {
         if (ifTrue == false)
             return null;
 
-        if (childTotal === 0) {
-            return <CM dataSet={dataSet} {...internalProps} ref={(c) => {
-                this.setRef(cRef, c);
-                if (inspect)
-                    c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
-            }} style={styles} />;
-        }
 
         return (
             <StyleContext.Provider
                 value={{
                     rules: context.rules,
                     path: fullPath,
-                    parent: prt,
+                    parent: componentParent,
                 }}
             >
                 <CM
@@ -311,7 +311,7 @@ export class CMBuilder {
                             c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
                     }}
                     style={styles}>
-                    {mappedChildren}
+                    {mappedChildren.length > 0 ? mappedChildren : null}
                 </CM>
             </StyleContext.Provider>
         );
