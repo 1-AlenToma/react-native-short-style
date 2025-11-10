@@ -4,14 +4,30 @@ import path from "path";
 export class Settings {
     elementSelection = false;
     webDevToolsIsOpen = false;
-    zoom = 1.5;
+    zoom = 1;
     autoSave = true;
+}
+
+export class Logs {
+    data: any[] = [];
+    add(...items: any[]) {
+        items.forEach(item => {
+            if (this.data.length > 300)
+                this.data.shift();
+            this.data.push(item);
+        });
+    }
+
+    clear(){
+        this.data = [];
+    }
 }
 
 export class ObjectJson<T extends Record<string, any>> {
     data: T;
     fileName: string;
     hasChanged = false;
+    logs: Logs = new Logs();
 
     constructor(data: T, fileName = "AppSettings") {
         this.data = data;

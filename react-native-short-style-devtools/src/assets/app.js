@@ -39,14 +39,14 @@ const propsChanged = {
 
 propsChanged.add("autoSave.Click", (settings) => {
     if (settings.autoSave)
-        document.querySelector(".autoSave").classList.add("selected");
-    else document.querySelector(".autoSave").classList.remove("selected");
+        $(".autoSave").addClass("selected");
+    else $(".autoSave").removeClass("selected");
 })
 
 propsChanged.add("autoSave.Save", (settings) => {
     if (!settings.autoSave && selectedViewId)
-        document.querySelector(".save")?.classList.remove("hidden");
-    else document.querySelector(".save")?.classList.add("hidden");
+        $(".save")?.removeClass("hidden");
+    else $(".save")?.addClass("hidden");
 })
 
 function safeStringify(obj, space = 2) {
@@ -60,24 +60,24 @@ function safeStringify(obj, space = 2) {
     }, space);
 }
 
-let ques = [];
-const parseMessage = (event) => {
-    try {
-        let item = event?.data ?? event;
-        if (typeof item == "string")
-            item = JSON.parse(item);
-        if (!item) return;
+const parseMessage = async (event) => {
+    let item = event?.data ?? event;
+    if (typeof item == "string")
+        item = JSON.parse(item);
+    if (!item) return;
+    item = (Array.isArray(item) ? item : [item]);
 
-        item = Array.isArray(item) ? item : [item];
-        if (htmlScrollPosition.rendering) {
-            ques.push(...item);
-            return;
-        }
-        for (let msg of item) {
+    try {
+        for (let i = 0; i < item.length; i++) {
+            let msg = item[i];
+
             if (!msg || !msg.type)
                 continue;
             if (msg.__To)
                 delete msg.__To;
+
+            // if (i % 100 == 0)
+            //   await sleep(10)
             if (msg.type === 'TREE_DATA') {
                 htmlScrollPosition.loading(true);
                 if (msg.settings) {
@@ -117,44 +117,37 @@ const parseMessage = (event) => {
     } catch (e) {
         console.error(e, event.data)
     } finally {
+        if (htmlScrollPosition.rendering)
+            htmlScrollPosition.restore();
 
-        if (ques.length > 0) {
-            let dt = [...ques];
-            ques = [];
-            htmlScrollPosition.rendering = false;
-            parseMessage(dt);
-        } else {
-            if (htmlScrollPosition.rendering)
-                htmlScrollPosition.restore();
-        }
 
     }
 }
 
-document.querySelector(".modal .title .btn").onclick = () => {
+$(".modal .title .btn").on("click", () => {
     modal.hide();
-}
+});
 
 const sleep = (ms) => new Promise(r => setTimeout(() => {
     r();
-}, ms))
+}, ms));
 const modal = {
-    content: document.querySelector(".modal .center"),
-    container: document.querySelector(".modal"),
-    title: document.querySelector(".modal .title span"),
+    content: $(".modal .center"),
+    container: $(".modal"),
+    title: $(".modal .title span"),
     show: async () => {
-        modal.container.parentElement.style.display = "flex";
+        modal.container.parent().show("flex")
         await sleep(50);
-        modal.container.classList.add("active");
+        modal.container.addClass("active");
 
         return modal;
     },
     hide: async () => {
-        modal.content.textContent = "";
-        modal.container.classList.remove("active");
+        modal.content.clear();
+        modal.container.removeClass("active");
         await sleep(350);
-        modal.container.parentElement.style.display = "none";
-        modal.title.parentElement.querySelectorAll(".btn:not(.close)").forEach(x => x.remove());
+        modal.container.parent().hide()
+        modal.title.parent().findAll(".btn:not(.close)").forEach(x => x.remove());
         return modal;
     }
 }
@@ -163,10 +156,13 @@ modal.hide();
 
 const htmlScrollPosition = {
     rendering: false,
-    loaderEl: document.querySelector(".loader"),
+    loaderEl: $(".loader"),
     loading: (value) => {
+
         clearTimeout(htmlScrollPosition.timer);
-        htmlScrollPosition.loaderEl.style.visibility = value ? "visible" : "hidden";
+        if (htmlScrollPosition.rendering == value)
+            return;
+        htmlScrollPosition.loaderEl.css({ visibility: value ? "visible" : "hidden" });
         htmlScrollPosition.rendering = value;
     },
     timer: undefined,
@@ -174,8 +170,7 @@ const htmlScrollPosition = {
     save: (force) => {
         if (htmlScrollPosition.rendering && !force)
             return;
-        const el = document.querySelector(".container[data-type=Elements] > .left");
-        htmlScrollPosition.data = [el.scrollLeft, el.scrollTop];
+        htmlScrollPosition.data = $(".container[data-type=Elements] > .left").scrollValues()
     },
     restore: () => {
         clearTimeout(htmlScrollPosition.timer);
@@ -184,109 +179,125 @@ const htmlScrollPosition = {
                 htmlScrollPosition.loading(false)
                 return;
             }
-            const el = document.querySelector(".container[data-type=Elements] > .left");
-            el.scrollLeft = htmlScrollPosition.data[0];
-            el.scrollTop = htmlScrollPosition.data[1];
+            $(".container[data-type=Elements] > .left").scroll(htmlScrollPosition.data[0], htmlScrollPosition.data[1]);
             htmlScrollPosition.loading(false)
         }, 1000);
     }
 }
 
-document.querySelector(".container[data-type=Elements] > .left").addEventListener("scroll", () => {
+$(".container[data-type=Elements] > .left").on("scroll", () => {
     htmlScrollPosition.save();
 });
 
 var socketIsOpen = false;
+
 const mock = () => {
-    const socket = new WebSocket("ws://localhost:7780");
+    const item = {
+        worker: undefined,
+        socket: undefined,
 
-    socket.onopen = () => {
-        socketIsOpen = true;
-        socket.send(JSON.stringify({ type: "REGISTER", clientType: "HTML" }));
-        socket.send(JSON.stringify({ type: "TREE", __To: "APP" }));
-    };
-
-    socket.onclose = () => {
-        socketIsOpen = false;
-    }
-
-    socket.onmessage = (e) => {
-        requestIdleCallback(() => {
-            parseMessage(e);
-        })
-
-
-    };
-
-    return {
         postMessage: (type, payload) => {
-            socket.send(JSON.stringify({ type, payload, __To: "APP" }));
-        }
+            if (socketIsOpen) {
+                item.socket.send(JSON.stringify({ type, payload, __To: "APP" }));
+            }
+        },
 
-    }
-}
+        open: () => {
+            if (item.worker) item.worker.terminate();
+            if (item.socket) item.socket.close();
+
+            item.worker = new Worker("worker.js");
+            item.worker.onmessage = e => {
+                //    setTimeout(() => parseMessage(e), 0);
+                parseMessage(e)
+            }
+            item.worker.onerror = e => {
+                try {
+                    console.error(e);
+                } catch { }
+            }
+
+            item.socket = new WebSocket("ws://localhost:7780");
+
+            item.socket.onopen = () => {
+                socketIsOpen = true;
+                item.socket.send(JSON.stringify({ type: "REGISTER", clientType: "HTML" }));
+                item.socket.send(JSON.stringify({ type: "TREE", __To: "APP" }));
+            };
+
+            item.socket.onclose = () => (socketIsOpen = false);
+
+            // Send raw data to worker (no JSON.parse in main thread)
+            item.socket.onmessage = e => item.worker.postMessage(e.data);
+        },
+    };
+
+    return item;
+};
+
 const vscode = mock();
-const tabs = document.querySelector(".tabs");
-tabs.querySelectorAll(".header p").forEach(x => {
-    x.addEventListener("click", (e) => {
-        tabs.querySelector(".header .selected")?.classList.remove("selected");
-        tabs.querySelector(".active")?.classList.remove("active");
-        x.classList.add("selected");
-        let value = x.getAttribute("data-value") ?? x.textContent;
-        tabs.querySelector(`.content> div[data-type=${value}]`)?.classList.add("active");
+const tabs = $(".tabs");
+tabs.findAll(".header p").forEach(x => {
+    x.on("click", (e) => {
+        tabs.find(".header .selected")?.removeClass("selected");
+        tabs.find(".active")?.removeClass("active");
+        x.addClass("selected");
+        let value = x.attr("data-value") ?? x.text();
+        tabs.find(`.content> div[data-type=${value}]`)?.addClass("active");
         searchInput.placeholder = value.startsWith("Elements") ? "Search nodes (name or prop)" : "Search logs";
         if (value.startsWith("Elements"))
-            document.querySelector(".clearLogs").style.display = "none";
-        else document.querySelector(".clearLogs").style.display = "inline-flex";
+            $(".clearLogs")?.hide()
+        else $(".clearLogs")?.show("inline-flex");
         searchedItems = {};
     })
 });
 
-document.querySelector("#zoom").onchange = () => {
-    let value = parseFloat(document.querySelector("#zoom").value);
+$("#zoom").on("change", () => {
+    let value = parseFloat($("#zoom").value);
     if (value >= 1) {
         settings.zoom = value;
         sendSettigs("zoom");
         parseSetting()
     }
-}
+})
 
-document.querySelectorAll("[data-props]:not([data-props=''])").forEach(x => {
-    x.addEventListener("click", function (e) {
+$.findAll("[data-props]:not([data-props=''])").forEach(x => {
+    x.on("click", function (e) {
         sendSettigs(x);
     })
 });
 
-document.querySelector(".reload").addEventListener("click", () => {
+$(".reload").on("click", () => {
     vscode.postMessage("RELOAD", true);
 });
 
-document.querySelectorAll(".lst li a").forEach(x => {
-    x.addEventListener("click", () => {
-        document.querySelector(".lst li .selected")?.classList.remove("selected");
-        x.classList.add("selected");
+$.findAll(".lst li a").forEach(x => {
+    x.on("click", () => {
+        $(".lst li .selected")?.removeClass("selected");
+        x.addClass("selected");
         parseSetting();
     });
 });
 
-document.querySelector(".clearLogs").addEventListener("click", () => {
+$(".clearLogs").on("click", () => {
     settings.consoleData.errors = [];
     settings.consoleData.infos = [];
     settings.consoleData.warnings = [];
     settings.consoleData.logs = [];
+    vscode.postMessage("CLEARLOGS", { payload: true });
     parseConsole();
 });
 
 const sendSettigs = (x) => {
-    let htmlObject = x.getAttribute != undefined;
-    let key = htmlObject ? x.getAttribute("data-props") : x;
+    let htmlObject = x.attr != undefined;
+    let key = htmlObject ? x.attr("data-props") : x;
     value = settings[key];
     if (typeof value === "boolean")
         value = !value;
-    else if (htmlObject) value = x.getAttribute("data-value")
+    else if (htmlObject) value = x.attr("data-value")
     settings[key] = value;
     if (htmlObject)
-        x.setAttribute("data-value", value)
+        x.attr("data-value", value)
     propsChanged.has(key).forEach(x => x());
     vscode.postMessage("PROP", { key, value });
 }
@@ -311,41 +322,38 @@ const parseConsole = (renderedItem) => {
         if (text.endsWith('"'))
             text = text.substring(0, text.length - 1)
 
-        const pre = document.createElement("pre");
-        const code = document.createElement("code");
-        code.setAttribute("id", Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36));
-        pre.className = `console_${type}`.toLowerCase();
-        code.innerHTML = text.replace(/\\n/g, '\n');
-        pre.appendChild(code);
+        const pre = $("<pre />").addClass(`console_${type}`.toLowerCase());
+        const code = $("<code />").attr("id", Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)).html(text.replace(/\\n/g, '\n'));
+        pre.append(code);
         pre.onclick = () => {
-            if (!pre.classList.contains("expand"))
-                pre.classList.add("expand");
+            if (!pre.hasClass("expand"))
+                pre.addClass("expand");
         }
         return pre;
     }
 
     let click = (e) => {
-        document.querySelector(".lst li .selected")?.classList.remove("selected");
+        $(".lst li .selected")?.removeClass("selected");
         e.target.classList.add("selected");
         parseConsole();
     }
-    const tab = document.querySelector("p[data-value=Console]");
-    const messages = document.querySelector(".messages");
-    const infos = document.querySelector(".infos");
-    const logs = document.querySelector(".logs");
-    const errors = document.querySelector(".errors");
-    const warnings = document.querySelector(".warnings");
+    const tab = $("p[data-value=Console]");
+    const messages = $(".messages");
+    const infos = $(".infos");
+    const logs = $(".logs");
+    const errors = $(".errors");
+    const warnings = $(".warnings");
 
     messages.onclick = infos.onclick = logs.onclick = errors.onclick = warnings.onclick = click;
-    const cnl = document.querySelector("[data-type='Console']");
-    const leftPanel = cnl.querySelector(".left .tree-root");
-    const selectedCnl = document.querySelector(".lst li .selected") ?? document.querySelector(".lst li:first-child");
-    selectedCnl.classList.add("selected");
+    const cnl = $("[data-type='Console']");
+    const leftPanel = cnl.find(".left .tree-root");
+    const selectedCnl = $(".lst li .selected") ?? $(".lst li:first-child");
+    selectedCnl.addClass("selected");
     const scrolledToBottom = leftPanel.scrollTop === (leftPanel.scrollHeight - leftPanel.offsetHeight);
     leftPanel.appendElement = (e) => {
-        leftPanel.appendChild(e);
-        if (e.querySelector("code") && e.querySelector("code").offsetHeight <= 70)
-            e.classList.add("expand")
+        leftPanel.append(e);
+        if (e.find("code") && e.find("code").offsetHeight <= 70)
+            e.addClass("expand")
     }
 
     if (renderedItem.length <= 0 || consoleData == undefined) {
@@ -358,27 +366,27 @@ const parseConsole = (renderedItem) => {
         // let scrollTop = leftPanel.scrollTop;
         let tempSelectedConsole = "";
         leftPanel.innerHTML = "";
-        if (selectedCnl.classList.contains("messages")) {
+        if (selectedCnl.hasClass("messages")) {
             tempSelectedConsole = "messages";
             [...consoleData.errors, ...consoleData.info, ...consoleData.log, ...consoleData.warnings].forEach(x => leftPanel.appendElement(x));
         }
 
-        if (selectedCnl.classList.contains("logs")) {
+        if (selectedCnl.hasClass("logs")) {
             tempSelectedConsole = "logs";
             consoleData.log.forEach(x => leftPanel.appendElement(x));
         }
 
-        if (selectedCnl.classList.contains("errors")) {
+        if (selectedCnl.hasClass("errors")) {
             tempSelectedConsole = "errors";
             consoleData.errors.forEach(x => leftPanel.appendElement(x));
         }
 
-        if (selectedCnl.classList.contains("warnings")) {
+        if (selectedCnl.hasClass("warnings")) {
             tempSelectedConsole = "warnings";
             consoleData.warnings.forEach(x => leftPanel.appendElement(x));
         }
 
-        if (selectedCnl.classList.contains("infos")) {
+        if (selectedCnl.hasClass("infos")) {
             tempSelectedConsole = "infos";
             consoleData.info.forEach(x => leftPanel.appendElement(x));
         }
@@ -416,36 +424,34 @@ const parseConsole = (renderedItem) => {
     }
 
     if (tab)
-        tab.querySelector("span").textContent = consoleData.errors.length + consoleData.info.length + consoleData.log.length + consoleData.warnings.length;
+        tab.find("span").textContent = consoleData.errors.length + consoleData.info.length + consoleData.log.length + consoleData.warnings.length;
 
     if (messages) {
-        messages.querySelector("span").textContent = consoleData.errors.length + consoleData.info.length + consoleData.log.length + consoleData.warnings.length;
+        messages.find("span").textContent = consoleData.errors.length + consoleData.info.length + consoleData.log.length + consoleData.warnings.length;
     }
     if (logs) {
-        logs.querySelector("span").textContent = consoleData.log.length;
+        logs.find("span").textContent = consoleData.log.length;
 
     }
 
     if (infos) {
-        infos.querySelector("span").textContent = consoleData.info.length;
+        infos.find("span").textContent = consoleData.info.length;
     }
 
     if (errors) {
-        errors.querySelector("span").textContent = consoleData.errors.length;
+        errors.find("span").textContent = consoleData.errors.length;
     }
 
     if (warnings) {
-        warnings.querySelector("span").textContent = consoleData.warnings.length;
+        warnings.find("span").textContent = consoleData.warnings.length;
     }
 }
 
 const parseSetting = (_parseConsole) => {
     for (let key in settings) {
-        let item = document.querySelector(`[data-props='${key}']`);
-        if (item)
-            item.setAttribute("data-value", settings[key]);
+        $(`[data-props='${key}']`)?.attr("data-value", settings[key]);
     }
-    document.querySelectorAll(".container > .left").forEach(x => x.style.zoom = settings.zoom);
+    $.findAll(".container > .left").forEach(x => x.css({ zoom: settings.zoom }));
     if (_parseConsole)
         parseConsole();
 }
@@ -464,39 +470,30 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
 
 
-    if (!document.getElementById("styleDataListNames")) {
-        let datalist = document.createElement("datalist");
-        datalist.id = "styleDataListNames";
+    if (!$("#styleDataListNames")) {
+        let datalist = $("<datalist />", { id: "styleDataListNames" });
         window.RN_STYLE_PROPS.forEach(x => {
-            let option = document.createElement("option");
-            option.value = x.name;
-            datalist.appendChild(option);
-
+            datalist.append($("<option />", { value: x.name }));
             if (x.values && Array.isArray(x.values)) {
-                let values = document.createElement("datalist");
-                values.id = x.name.toLowerCase();
+                let values = $("<datalist />", { id: x.name.toLowerCase() });
                 x.values.forEach(v => {
-                    let option = document.createElement("option");
-                    option.value = v;
-                    values.appendChild(option);
-                    document.body.appendChild(values);
-                })
+                    values.append($("<option />", { value: v }));
+                });
+                values.mount()
             }
         })
-        document.body.appendChild(datalist);
+        datalist.mount();
     }
 
-    const container = (typeof jsonItem === "object" ? document.createElement("div") : document.querySelector(".props") ?? document.createElement("div"));
-    const buttons = document.createElement("div");
-    buttons.className = "buttons";
-    container.appendChild(buttons);
+    const container = (typeof jsonItem === "object" ? $("<div />") : $(".props") ?? $("<div />"));
+    const buttons = $("<div />", { className: "buttons" }).mount(container);
     container.className = "form " + (typeof jsonItem !== "object" ? "props" : "");
 
 
 
     function createwrapper(...childs) {
-        let div = document.createElement("div");
-        childs.forEach(x => div.appendChild(x))
+        let div = $("<div />");
+        div.append(...childs)
         return div;
     }
 
@@ -504,12 +501,12 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         htmlScrollPosition.loading(true);
         const getKeyValueInput = (el) => {
             let result = [];
-            for (let item of [...el.children]) {
-                const isDeleted = item.closest(".deleted")
-                if (item.classList.contains("buttons")) {
-                    let dataFor = item?.querySelector(".title")?.getAttribute("data-for");
-                    let dataKey = el.parentNode?.querySelector(":scope > .buttons > .title")?.getAttribute("data-for");
-                    if (item.querySelectorAll("input").length > 0 || !dataFor)
+            for (let item of el.children) {
+                const isDeleted = item.parent(".deleted")
+                if (item.hasClass("buttons")) {
+                    let dataFor = item?.find(".title")?.attr("data-for");
+                    let dataKey = el.parent()?.find(":scope > .buttons > .title")?.attr("data-for");
+                    if (item.findAll("input").length > 0 || !dataFor)
                         continue;
 
 
@@ -517,17 +514,17 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                     continue;
 
                 }
-                if (item.classList.contains("form")) {
+                if (item.hasClass("form")) {
                     result.push(...getKeyValueInput(item))
                     continue;
                 }
 
-                let inputs = [...item.querySelectorAll("input")];
+                let inputs = item.findAll("input");
                 //  if (inputs.length < 2)
                 //  continue;
 
-                let dataKey = el.getAttribute("data-key");
-                let dataFor = el.parentNode?.querySelector(":scope > .buttons > .title")?.getAttribute("data-for");
+                let dataKey = el.attr("data-key");
+                let dataFor = el.parent()?.find(":scope > .buttons > .title")?.attr("data-for");
                 if (dataKey && dataFor) {
                     dataKey = `${dataFor}.${dataKey}`
                 }
@@ -542,7 +539,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
         }
 
-        let inputContainers = [...document.querySelector(".props-panel").children].map(getKeyValueInput).flatMap(x => x).sort((a, b) => {
+        let inputContainers = $(".props-panel").children.map(getKeyValueInput).flatMap(x => x).sort((a, b) => {
             const aIsObj = typeof a.value === "object" && a.value !== null;
             const bIsObj = typeof b.value === "object" && b.value !== null;
 
@@ -633,17 +630,14 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         if (colType === "number")
             colType = "number";
         else if (colType != "color") colType = "text";
-        let div = document.createElement("div");
-        let input = document.createElement("input");
 
-        let timer = undefined;
 
         const onChange = (e) => {
             if (!settings.autoSave)
                 return;
             clearTimeout(timer);
             timer = setTimeout(() => {
-                let inputs = e.target.parentElement.parentElement.querySelectorAll("input");
+                let inputs = $(e.target).parent(2).findAll("input");
                 if (inputs.length < 2)
                     return;
                 if (inputs[1].readOnly)
@@ -652,42 +646,47 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                     save();
             }, 500);
         }
-        input.type = "text";
-        input.class
-        input.value = item[index][0];
-        input.readOnly = typeof jsonItem !== "object" || key.length > 0 || isReadOnly;
-        input.setAttribute("name", key);
-        input.placeholder = "key";
-        input.onchange = onChange;
+        let div = $("<div />");
+        let input = $("<input />", {
+            type: "text",
+            value: item[index][0],
+            readOnly: typeof jsonItem !== "object" || key.length > 0 || isReadOnly,
+            placeholder: "key",
+            onchange: onChange,
+            name: key,
+        })
 
+        let timer = undefined;
 
         if (propKey === "style" || !container.classList.contains("props")) {
-            input.setAttribute("list", "styleDataListNames");
+            input.attr("list", "styleDataListNames");
         }
 
-        div.appendChild(createwrapper(input));
+        div.append(createwrapper(input));
 
-        let inputValue = document.createElement("input");
-        inputValue.type = colType;
-        inputValue.disabled = isReadOnly;
-        inputValue.value = colType == "color" ? window.toHex(item[index][1]) : item[index][1];
-        inputValue.setAttribute("name", `${key}_value`);
-        inputValue.readOnly = isReadOnly;
-        inputValue.placeholder = "value";
-        inputValue.setAttribute("value", colType == "color" ? window.toHex(item[index][1]) : item[index][1]);
-        inputValue.onchange = onChange;
+        let inputValue = $("<input />", {
+            type: colType,
+            disabled: isReadOnly,
+            value: colType == "color" ? window.toHex(item[index][1]) : item[index][1],
+            readOnly: isReadOnly,
+            placeholder: "value",
+            onchange: onChange,
+            name: "value",
+            value: colType == "color" ? window.toHex(item[index][1]) : item[index][1]
+        });
 
 
-        if (item[index][0].trim() !== "" && document.querySelector("datalist#" + item[index][0].trim().toLowerCase())) {
-            inputValue.setAttribute("list", key.toLowerCase());
+
+        if (item[index][0].trim() !== "" && $("datalist#" + item[index][0].trim().toLowerCase())) {
+            inputValue.attr("list", key.toLowerCase());
         }
 
         if (colType == "color" && !isReadOnly) {
-            let inputValue2 = document.createElement("input");
-            inputValue2.type = "text";
-            inputValue2.value = item[index][1];
-            inputValue2.setAttribute("name", `${key}_value`);
-            inputValue2.placeholder = "value";
+            let inputValue2 = $("<input />", {
+                type: "text",
+                value: item[index][1],
+                placeholder: "value",
+            }).attr("name", `${key}_value`);
             inputValue2.onchange = inputValue.onchange = (e) => {
                 let inputs = e.target.parentElement.querySelectorAll("input");
                 inputs.forEach(x => {
@@ -696,121 +695,134 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                 });
                 onChange(e)
             };
-            div.appendChild(createwrapper(inputValue, inputValue2));
-        } else div.appendChild(createwrapper(inputValue));
+            div.append(createwrapper(inputValue, inputValue2));
+        } else div.append(createwrapper(inputValue));
 
-        input.addEventListener("input", () => {
+        input.on("input", () => {
             const id = input.value.replace(/\s+/g, "-").toLowerCase();
-            if (id !== "" && document.querySelector("datalist#" + id.toLowerCase())) {
-                inputValue.setAttribute("list", id.toLowerCase());
+            if (id !== "" && $("datalist#" + id.toLowerCase())) {
+                inputValue.attr("list", id.toLowerCase());
             }
         });
 
-        inputValue.addEventListener("input", () => {
-            inputValue.setAttribute("value", inputValue.value);
+        inputValue.on("input", () => {
+            inputValue.attr("value", inputValue.value);
         });
 
         if (!isSingleValue && !isReadOnly) {
-            let btn = document.createElement("button");
-            btn.textContent = "-";
-            btn.className = "btn";
+            let btn = $("<button />", {
+                textContent: "-",
+                className: "btn"
+            });
             btn.onclick = function () {
                 item.splice(index, 1)
-                div.classList.add("deleted");
-                let deletedLine = document.createElement("line");
-                deletedLine.classList.add("deletedProp");
+                div.addClass("deleted");
+                let deletedLine = $("line", {
+                    className: "deletedProp"
+                });
                 div.prepend(deletedLine);
-                div.querySelectorAll("input").forEach(x => x.setAttribute("readonly", true));
+                div.findAll("input").forEach(x => x.attr("readonly", true));
                 if (settings.autoSave)
                     save();
             }
 
-            div.appendChild(btn);
+            div.append(btn);
         }
         if (prependToChild)
             container.prepend(div);
-        else container.appendChild(div);
+        else container.append(div);
 
         return input;
     }
 
 
-    let label = document.createElement("p");
-    label.textContent = typeof jsonItem == "object" ? propKey : "Props";
-    label.className = `title${parent ? " subtitle" : ""}`;
+    let label = $("<p />", {
+        textContent: typeof jsonItem == "object" ? propKey : "Props",
+        className: `title${parent ? " subtitle" : ""}`
+    });
+
     if (typeof jsonItem == "object")
-        label.setAttribute("data-for", propKey);
-    buttons.appendChild(label);
-    const btnContainers = document.createElement("div");
-    btnContainers.style.gap = "5px";
-    buttons.appendChild(btnContainers);
+        label.attr("data-for", propKey);
+    buttons.append(label);
+    const btnContainers = $("<div />").css({ gap: "5px" }).mount(buttons);
 
 
     // add new key
     if (!isSingleValue && !isReadOnly) {
-        let btn = document.createElement("button");
-        btn.textContent = "+";
-        btn.className = "btn";
+        let btn = $("<button />", {
+            textContent: "+",
+            className: "btn"
+        });
         btn.onclick = function () {
             item.push(["", ""]);
             addInput("", item.length - 1, true)?.focus();
         }
-        btnContainers.appendChild(btn);
+        btnContainers.append(btn);
 
     }
 
 
 
-    if (item.length > 0 && !document.querySelector(".props-panel .save")) {
+    if (item.length > 0 && !$(".props-panel .save")) {
         // save 
-        let btn = document.querySelector(".save");
+        let btn = $(".save");
         btn.onclick = function () {
             // save to 
             save();
         }
 
         if (!settings.autoSave)
-            btn.classList.remove("hidden");
-        else btn.classList.add("hidden");
+            btn.removeClass("hidden");
+        else btn.addClass("hidden");
 
 
-        btn = document.querySelector(".json");
+        btn = $(".json");
         btn.onclick = function () {
             let json = save(true);
-            let copy = document.createElement("button");
-            copy.className = "btn copy";
-            copy.innerHTML = `<img src="copy_content.svg" style="height:var(--pathHeight)" />`;
-            copy.onclick = () => {
-                navigator.clipboard.writeText(JSON.stringify(json, undefined, 4));
-                flash(copy)
-                flash(modal.content)
+            let copy = $("<button />", {
+                className: "btn copy"
+            }).html(`<img src="copy_content.svg" style="height:var(--pathHeight)" />`);
+            copy.onclick = (e) => {
+                try {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.focus();
+                    navigator.clipboard.writeText(JSON.stringify(json, undefined, 4));
+                    copy.flash()
+                    modal.content.flash()
+                } catch { }
             }
             if (json.style) {
-                let copyStyle = document.createElement("button");
-                copyStyle.className = "btn copyStyle";
-                copyStyle.innerHTML = `<img src="copy_content.svg" style="height:var(--pathHeight)" /> Style`;
-                copyStyle.onclick = () => {
-                    navigator.clipboard.writeText(JSON.stringify(json.style, undefined, 4));
-                    let prettyJsonStyle = modal.content.querySelector("pretty-json")?.shadowRoot?.querySelector("pretty-json[key=style]")?.shadowRoot?.querySelector(".row");
-                    flash(copyStyle);
-                    if (prettyJsonStyle)
-                        flashByStyle(prettyJsonStyle);
+                let copyStyle = $("<button />", {
+                    className: "btn copyStyle"
+                }).html(`<img src="copy_content.svg" style="height:var(--pathHeight)" /> Style`);
+                copyStyle.onclick = (e) => {
+                    try {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.focus();
+                        navigator.clipboard.writeText(JSON.stringify(json.style, undefined, 4));
+                        let prettyJsonStyle = modal.content.find("pretty-json")?.shadowRoot?.find("pretty-json[key=style]")?.shadowRoot?.find(".row");
+                        copyStyle.flash();
+                        if (prettyJsonStyle)
+                            prettyJsonStyle.flash();
+                    } catch { }
                 }
-                modal.title.parentElement.appendChild(copyStyle);
+                modal.title.parent().append(copyStyle);
             }
-            let pre = document.createElement("pre");
-            let code = document.createElement("pretty-json");
-            code.setAttribute("expand", "5");
-            code.textContent = JSON.stringify(json, undefined, 4);
-            pre.appendChild(code);
-            modal.title.parentElement.appendChild(copy);
-            modal.title.textContent = "Json Viewer";
-            modal.content.appendChild(pre);
+            let pre = $("<pre />");
+            let code = $("<pretty-json />", {
+                textContent: JSON.stringify(json, undefined, 4)
+            }).attr("expand", "5");
+            pre.append(code);
+            modal.title.parent().append(copy);
+            modal.title.text("Json Viewer");
+            modal.content.append(pre);
             modal.show()
         }
-        btn.classList.remove("hidden");
+        btn.removeClass("hidden");
     } else {
-        document.querySelectorAll(".save, .json").forEach(x => x.classList.add("hidden"));
+        $.findAll(".save, .json").forEach(x => x.addClass("hidden"));
         // propsChanged.remove("autoSave.Save");
     }
     for (let key of item) {
@@ -821,9 +833,9 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
     }
 
     if (typeof jsonItem === "object")
-        container.setAttribute("data-key", propKey);
+        container.attr("data-key", propKey);
 
-    (parent ?? document.querySelector(".props-panel")).appendChild(container);
+    (parent ?? $(".props-panel")).append(container);
 }
 
 
@@ -928,13 +940,13 @@ function flash(node, index, byStyle) {
 }
 
 function searchLogs(fromEnter) {
-    let datas = document.querySelectorAll("div[data-type=Console] .left code");
+    let datas = $.findAll("div[data-type=Console] .left code");
     for (let item of datas) {
         const id = item.id;
-        let txt = item.textContent.trim();
+        let txt = item.text().trim();
         if (txt.toLowerCase().includes(searchValue.toLowerCase()) && !(id && searchedItems[id]?.includes(txt))) {
             item.scrollIntoView({ block: "center", inline: "nearest" });
-            flash(item);
+            item.flash();
 
             if (!searchedItems[id]) searchedItems[id] = [];
             searchedItems[id].push(txt);
@@ -946,9 +958,9 @@ function searchLogs(fromEnter) {
 function searchHtml(fromEnter = false) {
     if (searchValue.length <= 1) return;
 
-    const nodes = [...document.querySelectorAll(".node-name,.node-props")];
+    const nodes = $.findAll(".node-name,.node-props");
     for (let item of nodes) {
-        let txt = item.textContent.trim();
+        let txt = item.text().trim();
         let id = item._viewId;
 
         if (
@@ -956,7 +968,7 @@ function searchHtml(fromEnter = false) {
             !(id && searchedItems[id]?.includes(txt))
         ) {
             item.scrollIntoView({ block: "center", inline: "nearest" });
-            flash(item);
+            item.flash();
 
             if (!searchedItems[id]) searchedItems[id] = [];
             searchedItems[id].push(txt);
@@ -1080,6 +1092,7 @@ function partialRerender(_parent_viewId) {
     if (!parentLi) return;
 
     const childUl = parentLi.querySelector('ul.rn-tree');
+    const isNew = childUl == null
 
     // if (childUl) childUl.remove();
 
@@ -1088,15 +1101,13 @@ function partialRerender(_parent_viewId) {
         newUl.className = 'rn-tree';
 
         parentNode.children.forEach((child, idx) => {
-            const childLi = renderNodeRecursive(
-                child,
-                [...pathString.split('.').map(Number), idx]
-            );
+            const childLi = renderNodeRecursive(child, [...pathString.split('.').map(Number), idx]);
             newUl.appendChild(childLi);
         });
-        if (childUl)
-            childUl.replaceWith(newUl)
-        else {
+
+        if (childUl) {
+            childUl.replaceWith(newUl);
+        } else if (isNew) {
             parentLi.appendChild(newUl);
             parentLi.querySelector(".node-closer").textContent = ">";
             let closer = document.createElement("span");
@@ -1109,6 +1120,10 @@ function partialRerender(_parent_viewId) {
 
 
 }
+
+
+
+
 
 function deleteNode(_viewId) {
     // 1. Remove the actual DOM/element reference if it exists
@@ -1175,6 +1190,7 @@ function insertNewNode(patchNode, _parent_viewId) {
 function renderNodeRecursive(node, pathArray) {
     const _viewId = node.props._viewId;
     const li = document.createElement('li');
+    li.id = _viewId;
     li.className = 'node-container';
     const nodeEl = document.createElement('div');
     nodeEl.className = 'node';
@@ -1478,3 +1494,4 @@ document.addEventListener("mouseup", () => {
         document.body.style.userSelect = "auto";
     }
 });
+vscode.open();

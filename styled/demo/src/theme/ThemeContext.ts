@@ -64,7 +64,7 @@ const getWebStorage = () => {
 }
 
 
-export const devToolsHandlerContext = StateBuilder<DevtoolsHandler>(new DevtoolsHandler()).ignore("ws", "que", "components").globalBuild();
+export const devToolsHandlerContext = StateBuilder<DevtoolsHandler>(new DevtoolsHandler()).ignore("ws", "que", "components", "treeQue").globalBuild();
 
 
 export const globalData = StateBuilder<GlobalState>(() => ({

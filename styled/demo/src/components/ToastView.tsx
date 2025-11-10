@@ -121,7 +121,7 @@ export const ToastView = () => {
                     extrapolate: "clamp"
                 })
             }]
-        }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(10000).joinRight(data.css)}>
+        }} css={x => x.cls("_toast").joinRight(typeInfo.css).zI(999).joinRight(data.css)}>
             <View>
                 <View css={x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC(".co-transparent")}>
                     <TouchableOpacity onPress={() => state.visible = false} css="wi-15">

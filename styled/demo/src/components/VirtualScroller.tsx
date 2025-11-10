@@ -6,6 +6,7 @@ import { useTimer, useDeferredMemo } from "../hooks";
 import { globalData } from "../theme/ThemeContext";
 import { LayoutChangeEvent } from "react-native";
 import { View, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
+import { SmartScheduler } from "../constant";
 // Context used to share scroll state and layout handling
 
 type ScrollSettings = {
@@ -212,13 +213,15 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
     const effectiveItems = state.estimatedItemSize === 0 ? props.items.slice(0, numColumns) : props.items;
     const prepaireItems = async () => {
         renderTimer(async () => {
-            const rows = { children: [], rows: new Map<number, any[]>() }
+            SmartScheduler.run(() => {
+                const rows = { children: [], rows: new Map<number, any[]>() }
 
-            for (let i = 0; i < effectiveItems.length; i += numColumns) {
-                rows.rows.set(i, effectiveItems.slice(i, i + numColumns));
-                rows.children.push(<VirtualScrollerView key={i} startIndex={i} />);
-            }
-            state.items = rows;
+                for (let i = 0; i < effectiveItems.length; i += numColumns) {
+                    rows.rows.set(i, effectiveItems.slice(i, i + numColumns));
+                    rows.children.push(<VirtualScrollerView key={i} startIndex={i} />);
+                }
+                state.items = rows;
+            });
         }, effectiveItems.length <= 5 ? 0 : undefined)
     }
 

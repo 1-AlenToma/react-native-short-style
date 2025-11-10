@@ -9,6 +9,7 @@ import { parseSelector } from "../config/CssSelectorParser";
 import { svgSelect } from "../constant";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
 import { sleep } from "react-smart-state";
+import { useTimer } from "../hooks";
 
 
 const StaticItem = ({ onMounted, id, item }: any) => {
@@ -174,14 +175,21 @@ export const DevToolLayoutSelector = () => {
     try {
         devToolsHandlerContext.hook("data.settings.elementSelection", "data.isOpened");
         const positionsRef = React.useRef<Map<any, Size>>(new Map());
-
-        devToolsHandlerContext.useEffect(() => {
-            if (devToolsHandlerContext.data.settings.elementSelection)
-                positionsRef.current = new Map();
-        }, "data.settings.elementSelection")
-
         const [highlight, setHighlight] = React.useState<Size | null>(null);
         const [clicked, setClicked] = React.useState<Size | null>(null);
+        const timer = useTimer(1)
+
+        devToolsHandlerContext.useEffect(() => {
+            if (devToolsHandlerContext.data.settings.elementSelection) {
+                positionsRef.current = new Map();
+                if (highlight)
+                    setHighlight(null);
+                if (clicked)
+                    setClicked(null);
+            }
+        }, "data.settings.elementSelection")
+
+
 
         const measure = (el: NativeView) => {
 
@@ -231,13 +239,13 @@ export const DevToolLayoutSelector = () => {
                             smallestArea = area;
                             closestComponent = id;
                             closestRect = position;
-                            devToolsHandlerContext.select(closestComponent);
+                            //  devToolsHandlerContext.select(closestComponent);
                         }
                     }
                 }
 
                 if (closestComponent) {
-                    //  devToolsHandlerContext.select(closestComponent);
+                    devToolsHandlerContext.select(closestComponent);
                     setClicked(closestRect);
                 } else {
                     setClicked(null);
@@ -288,15 +296,19 @@ export const DevToolLayoutSelector = () => {
         // Touch handler (mobile)
         const handleSelection = (event: GestureResponderEvent) => {
             const { pageX, pageY } = event.nativeEvent;
+            timer(() => {
+                selectComponentAt(pageX, pageY);
+            });
             // console.log(pageX, pageY)
-            selectComponentAt(pageX, pageY);
+
         };
 
 
         // Mouse handler (web)
         const handleMouseMove = (event: React.MouseEvent) => {
-
-            selectComponentAtWeb(event.clientX, event.clientY)
+            timer(() => {
+                selectComponentAtWeb(event.clientX, event.clientY);
+            });
         };
 
         const handleMouseLeave = () => setHighlight(null);
@@ -340,7 +352,7 @@ export const DevToolLayoutSelector = () => {
             <>
                 <View
                     noneDevtools={true}
-                    css={"._touchOverlay"}
+                    css={"._touchOverlay zi-9999"}
                     onStartShouldSetResponder={() => true}
                     onResponderRelease={handleSelection}
                     onMoveShouldSetResponderCapture={() => false} // allow scrolling
@@ -405,8 +417,8 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         devToolsHandlerContext.hook("data.rerender").on(() => devToolsHandlerContext.data.rerender != undefined)
     }
 
-    if (devToolsHandlerContext.data.isOpened == false && __DEV__)
-        console.info("Consider installing react-native-short-style-devtools to be able to inspect the rendered style and css.");
+    // if (devToolsHandlerContext.data.isOpened == false && __DEV__)
+    //   console.info("Consider installing react-native-short-style-devtools to be able to inspect the rendered style and css.");
     if (__DEV__)
         devToolsHandlerContext.useEffect(() => {
             if (devtoolOpend.current != devToolsHandlerContext.data.isOpened) {
@@ -415,7 +427,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
                     if (devtoolOpend.current)
                         devToolsHandlerContext.open(); // try to open it once
                 }
-                else console.info(`react-native-short-style-devtools is online.\nnote when using the devtool the app will be a little slower depending on our pc, so use it only to design your app`);
+                //     else console.info(`react-native-short-style-devtools is online.\nnote when using the devtool the app will be a little slower depending on our pc, so use it only to design your app`);
 
             }
             devtoolOpend.current = devToolsHandlerContext.data.isOpened;

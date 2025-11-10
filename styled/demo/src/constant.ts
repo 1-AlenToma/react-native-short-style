@@ -23,7 +23,7 @@ export class SmartScheduler {
         // On Web, try using requestIdleCallback if supported
         if (typeof (globalThis as any).requestIdleCallback === "function") {
             (globalThis as any).requestIdleCallback(fn);
-            console.log("requestIdleCallback")
+            //   console.log("requestIdleCallback")
             return;
         }
 
@@ -57,6 +57,34 @@ export class SmartScheduler {
         }
 
         SmartScheduler.run(processNextChunk);
+    }
+
+    /**
+ * Same as runInChunks, but awaits each chunk (useful if chunk processing is async)
+ */
+    static async runInChunksAndGroupAsync<T>(
+        items: T[],
+        chunkSize: number,
+        callback: (item: T[]) => void | Promise<void>
+    ) {
+        let index = 0;
+
+        const processChunk = async () => {
+            const end = Math.min(index + chunkSize, items.length);
+            let group: T[] = [];
+            for (; index < end; index++) {
+                group.push(items[index])
+
+            }
+            if (group.length > 0)
+                await callback(group);
+            if (index < items.length) {
+                await new Promise<void>((r) => SmartScheduler.run(r));
+                await processChunk();
+            }
+        };
+
+        await processChunk();
     }
 
     /**

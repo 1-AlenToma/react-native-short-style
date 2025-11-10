@@ -62,7 +62,7 @@ export const DevtoolsIframe = ({ children }) => {
             </View>
             <div ref={containerRef} className="iframeDevContainer">
                 <div className="resizer" ref={resize} onMouseDown={mouseDown} />
-                <iframe id="devtools-iframe" src={devToolsHandlerContext.webUrl} />
+                <iframe id="devtools-iframe" allow="clipboard-read; clipboard-write; fullscreen" sandbox="allow-scripts allow-same-origin" src={devToolsHandlerContext.webUrl} />
             </div>
         </View>
     )

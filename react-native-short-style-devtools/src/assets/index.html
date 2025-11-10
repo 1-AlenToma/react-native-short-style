@@ -7,6 +7,7 @@
   <title>React Native Short Style Inspector</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <script defer src="pretty-json.js"></script>
+  <script src="DomElement.js"></script>
   <script>
     window.appMode = "WebTest";
   </script>
@@ -29,7 +30,6 @@
     <button id="deleteNode">deleteNode</button>
     <div class="node-count" id="nodeCount">— nodes</div>
     <div style="margin-left: auto; display: flex; gap:4">
-      <span class="loader"></span>
       <input type="search" id="search" placeholder="Search nodes (name or prop)" />
     </div>
   </div>
@@ -44,6 +44,7 @@
       <p data-value="Console"><span class="nr">No</span>Console</p>
       <input type="range" id="zoom" name="zoom" min="1" max="2" value="{{zoom}}" step="0.1" />
       <div style="margin-left:auto">
+        <span class="loader"></span>
         <a class="info"
           title="Changing those values will override the component props. you will have to reload the app to revert it. Style is the rendered style eg css + style+ stylesheet">
           <img src="info.svg" />

@@ -510,7 +510,8 @@
 
 
 
-    .scrollAble {
+    .scrollAble,
+    .expand {
         /* still scrollable */
         scrollbar-width: none;
         /* Firefox */
@@ -521,7 +522,8 @@
         /* IE/Edge (legacy) */
     }
 
-    .scrollAble::-webkit-scrollbar {
+    .scrollAble::-webkit-scrollbar,
+    .expand::-webkit-scrollbar {
         display: none;
         /* Chrome, Safari, Opera */
     }
@@ -540,15 +542,12 @@
         position: relative;
     }
 
-    .node-container:has(>.rn-tree)::before {
+    /* .node-container:has(>.rn-tree)::before {
         content: "";
         position: absolute;
         top: calc(1em + 2px);
-        /* just below the opening tag */
         bottom: calc(1em);
-        /* just above the closing tag */
         left: -6px;
-        /* center horizontally */
         transform: translateX(-50%);
         border-left: 1px dotted var(--border);
         border-radius: 4px;
@@ -556,10 +555,21 @@
         opacity: 0.8;
         width: 12px;
         min-height: 77%;
-    }
+    }*/
 
     .node-container:has(>.selected):has(>.rn-tree)::before {
-        border-left-color: white !important;
+        content: "";
+        position: absolute;
+        top: calc(1em + 2px);
+        bottom: calc(1em);
+        left: -6px;
+        transform: translateX(-50%);
+        border-left: 1px dotted var(--border);
+        border-radius: 4px;
+        pointer-events: none;
+        opacity: 0.8;
+        width: 12px;
+        min-height: 77%;
     }
 
     .icon {
@@ -623,6 +633,8 @@
         font-size: 0.9em;
         margin-top: 5px !important;
         display: inline-block;
+        width: 100%;
+        min-width: fit-content;
 
     }
 
@@ -634,7 +646,7 @@
     .expand {
         max-height: none !important;
         height: auto !important;
-        overflow: visible !important;
+        overflow: auto !important;
     }
 
 
@@ -697,7 +709,8 @@
 
     .loader {
         width: 24px;
-        height: 25px;
+        height: 17px;
+        display: inline-block;
         background: linear-gradient(#0000 calc(1 * 100% / 6), #fff 0 calc(3 * 100% / 6), #0000 0), linear-gradient(#0000 calc(2 * 100% / 6), #fff 0 calc(4 * 100% / 6), #0000 0), linear-gradient(#0000 calc(3 * 100% / 6), #fff 0 calc(5 * 100% / 6), #0000 0);
         background-size: 4px 400%;
         background-repeat: no-repeat;

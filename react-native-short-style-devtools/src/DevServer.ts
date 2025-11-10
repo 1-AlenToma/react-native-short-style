@@ -144,6 +144,11 @@ export class DevServer {
                         }
                         console.log(`Registered ${wsItem.clientType}`);
                         wsItem.ws.send(JSON.stringify(this.appSettings.ObjectValue()));
+                        if (this.appSettings.logs.data.length > 0 && wsItem.clientType == "HTML")
+                            wsItem.ws.send(JSON.stringify(this.appSettings.logs.data));
+                        return;
+                    } else if (msg.type == "CLEARLOGS") {
+                        this.appSettings.logs.clear();
                         return;
                     }
                     this.send(msg);
@@ -160,16 +165,18 @@ export class DevServer {
     }
 
     // 💬 App → HTML
-    send(data: { __To: "HTML" | "APP" } | { __To: "HTML" | "APP" }[]) {
+    send(data: { __To: "HTML" | "APP", type: string, payload: any } | { type: string, payload: any, __To: "HTML" | "APP" }[]) {
         try {
-            const items = Array.isArray(data) ? data : [data]; // normalize to array
+            const items = (Array.isArray(data) ? data : [data]); // normalize to array
             const appItems = JSON.stringify(items.filter(x => x.__To == "APP"));
             const htmlItems = JSON.stringify(items.filter(x => x.__To == "HTML"));
-            items.filter((x: any) => x.type == "PROP").forEach((x: any) => {
-                if (x.payload?.key != undefined) {
-                    this.appSettings.setKeyValue(x.payload.key as any, x.payload.value);
+            items.filter(({ type }) => type == "PROP").forEach(({ payload }) => {
+                if (payload?.key != undefined) {
+                    this.appSettings.setKeyValue(payload.key, payload.value);
                 }
             });
+
+            this.appSettings.logs.add(...items.filter(({ type }) => ["ERROR", "LOG", "INFO", "WARNING"].includes(type)))
 
             if (this.appSettings.hasChanged)
                 this.appSettings.save();
@@ -179,9 +186,7 @@ export class DevServer {
                     c.ws.send(appItems);
                 if (c.clientType === "HTML" && c.ws.readyState === WebSocket.OPEN)
                     c.ws.send(htmlItems);
-
             }
-
         } catch (e) {
             console.error("send() error:", e);
         }

@@ -246,7 +246,7 @@ export class CMBuilder {
         }
 
         if (inspect && ifTrue != false) {
-            styles = flatStyle(styles);
+            //styles = flatStyle(styles);
             if (changedProps && changedProps._deletedItems?.style)
                 devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
         }
@@ -273,7 +273,7 @@ export class CMBuilder {
                     children: [],
                     props: {
                         ifTrue,
-                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...styles, _props: undefined, transform: undefined, important: undefined }, css }),
+                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles), _props: undefined, transform: undefined, important: undefined }, css }),
                         classes: devToolsHandlerContext.withKeysOnly(keySelectors),
                         _viewId: id,
                         _elementIndex: positionContext.index,
