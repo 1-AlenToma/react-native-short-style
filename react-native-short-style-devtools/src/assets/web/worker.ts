@@ -1,8 +1,10 @@
 // worker.js
+importScripts("msgpackr.js");
+
 
 let queue = [];
 let busy = false;
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 50;
 
 function safeParse(json) {
     try {
@@ -10,6 +12,41 @@ function safeParse(json) {
     } catch (e) {
         console.error("Worker JSON parse error:", e);
         return null;
+    }
+}
+
+
+async function decodeAny(data: any) {
+    try {
+        if (data instanceof Blob) {
+            data = await data.arrayBuffer();
+        }
+
+        if (data instanceof ArrayBuffer) {
+            data = new Uint8Array(data);
+        }
+
+        if (data instanceof Uint8Array) {
+            // Try MsgPack first
+            try {
+                let item = msgpackr.decode(data);
+                return item;
+            } catch (err) {
+                //  console.warn("MsgPack decode failed, trying JSON...");
+                const text = new TextDecoder().decode(data);
+                return JSON.parse(text);
+            }
+        }
+
+        if (typeof data === "string") {
+            return JSON.parse(data);
+        }
+
+        // Fallback
+        return data;
+    } catch (e) {
+        console.error(e);
+        return [];
     }
 }
 
@@ -70,11 +107,10 @@ function processView(operation) {
 }
 
 
-onmessage = (event) => {
+onmessage = async (event) => {
     let raw = event.data;
     if (!raw) return;
-    if (typeof raw == "string")
-        raw = safeParse(raw);
+    raw = await decodeAny(raw);
 
     raw = (Array.isArray(raw) ? raw : [raw]).filter(Boolean);
     // Always enqueue
@@ -91,9 +127,10 @@ function flushQueue() {
         // Process up to 100 messages per batch
         const batch = [];
         while (batch.length < BATCH_SIZE && queue.length > 0) {
-            let item = processView(queue.shift());
-            if (item)
-                batch.push(item);
+            /* let item = processView(queue.shift());
+             if (item)
+                 batch.push(item);*/
+            batch.push(queue.shift());
         }
 
         if (batch.length > 0) {
@@ -107,6 +144,7 @@ function flushQueue() {
         // If there are more queued messages, flush again soon
         if (queue.length > 0) {
             // Give main thread a breath before next flush
+            //flushQueue();
             setTimeout(flushQueue, 0);
         }
     }

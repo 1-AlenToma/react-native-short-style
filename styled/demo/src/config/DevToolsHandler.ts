@@ -1,9 +1,11 @@
 import { newId, sleep } from "react-smart-state";
 import { ElementTool } from "../Typse";
 import React from "react";
+import { UniversalWebSocket } from "./UniversalWebSocket";
+import { NetworkLogger } from "./NetworkLogger";
 //import { WebSocket } from "ws"
 type LogTypes = "ERROR" | "LOG" | "WARNING" | "INFO";
-type Types = ("TREE_DATA" | "PATCH_NODE" | "PATCH_DELETE" | "PATCH_SELECT" | "PROP") | LogTypes;
+type Types = ("TREE_DATA" | "PATCH_NODE" | "PATCH_DELETE" | "PATCH_SELECT" | "PROP" | "FETCH") | LogTypes;
 const _logTypes = ["ERROR", "LOG", "WARNING", "INFO"]
 type ChangedProps = { _viewId: string, style?: string, css?: string };
 const treeData = new Map<string, { type: Types, payload: ElementTool, settings?: any }>();
@@ -28,16 +30,6 @@ export class DevToolsData {
 }
 
 
-function safeStringify(obj, space = undefined) {
-    const seen = new WeakSet();
-    return JSON.stringify(obj, function (key, value) {
-        if (typeof value === "object" && value !== null) {
-            if (seen.has(value)) return "[Circular]";
-            seen.add(value);
-        }
-        return value;
-    }, space);
-}
 
 
 export class DevtoolsHandler {
@@ -45,11 +37,13 @@ export class DevtoolsHandler {
     renderingTree: boolean = false;
     que: { __To: "APP" | "HTML", payload: ElementTool | string, type: Types }[] = [];
     treeQue: Map<string, { __To: "APP" | "HTML", payload: ElementTool | string, type: Types }> = new Map();
-    ws: WebSocket = undefined;
-    thisServer: WebSocket;
+    ws: UniversalWebSocket = undefined;
     data: DevToolsData = new DevToolsData();
     components: Map<string, React.ReactElement> = new Map();
     timer: any = undefined;
+    networkLogger: NetworkLogger = new NetworkLogger((item) => {
+        this.pushItem("FETCH", item);
+    });
 
     get webUrl() {
         return `http://${this.host}:7778/index.html?q=IFRAME`;
@@ -68,33 +62,34 @@ export class DevtoolsHandler {
     async open() {
         if (!this._host || this._host == "" || !__DEV__)
             return;
-        this.ws = new WebSocket(`ws://${this._host}:7780`);
+        this.ws = new UniversalWebSocket(`ws://${this._host}:7780`);
 
-        this.ws.onopen = () => {
+        this.ws.onOpen = () => {
             //  if (this.data.isOpened != this.data.isOpened)
             try {
-                this.ws.send(JSON.stringify({ type: "REGISTER", clientType: "APP" }));
+                this.ws.send({ type: "REGISTER", clientType: "APP" });
                 this.data.isOpened = true;
+                this.networkLogger.enable();
 
-                // console.info("connected to react-native-short-style-devtools")
+                //console.info("connected to react-native-short-style-devtools")
             } catch (e) {
                 console.error(e);
             }
         };
 
-        this.ws.onclose = (ev) => {
+        this.ws.onClose = (ev) => {
             if (this.data.isOpened != this.data.isOpened)
                 this.data.isOpened = false;
             this.ws = undefined;
-            console.info("disconnected from react-native-short-style-devtools", ev)
+            //console.info("disconnected from react-native-short-style-devtools", ev)
             /*  setTimeout(() => {// try again
                   this.open();
               }, 1000);*/
         }
 
-        this.ws.onmessage = async (event) => {
+        this.ws.onMessage = (async (data) => {
             try {
-                let item = JSON.parse(event.data);
+                let item = await this.ws.safeDecode(data);
                 let items = (Array.isArray(item) ? item : [item]).flatMap(x => x);
                 for (let data of items) {
                     if (data.type == "TREE") {
@@ -107,7 +102,7 @@ export class DevtoolsHandler {
                         else {
 
                             //this.que = this.que.filter(x => !_logTypes.includes(x.type))
-                            await this.ws.send(safeStringify(datas));
+                            await this.ws.send(datas);
                             //  
 
                         }
@@ -132,13 +127,13 @@ export class DevtoolsHandler {
                         this.data.changedProps.clear();
                         this.data.propsUpdated = newId();
                     } else {
-                        console.warn("type could not be found ", event.data)
+                        console.warn("type could not be found ", data)
                     }
                 }
             } catch (e) {
                 console.error(e);
             }
-        };
+        });
     }
 
 
@@ -162,7 +157,7 @@ export class DevtoolsHandler {
 
     async simpleSend(type?: Types, payload?: any) {
         try {
-            await this.ws.send(safeStringify({ type, payload, ...wsTypes }));
+            await this.ws.send({ type, payload, ...wsTypes });
         } catch (e) { console.error(e); }
     }
 
@@ -188,7 +183,7 @@ export class DevtoolsHandler {
             const dta = [...this.que.splice(0, 30), ...removed.map(([_, value]) => value)];
             //this.treeQue.clear();
             if (dta.length > 0)
-                await this.ws.send(safeStringify(dta));
+                await this.ws.send(dta);
         } catch (e) {
             console.error(e);
         } finally {
@@ -210,6 +205,7 @@ export class DevtoolsHandler {
     async sendTree(tree: ElementTool) {
         treeData.clear();
         treeData.set(tree.props._viewId, { ...wsTypes, type: "TREE_DATA", payload: tree });
+        this.que = this.que.filter(x => !_logTypes.includes(x.type));
         this.treeQue.clear();
         await this.send("TREE_DATA", tree);
     }
@@ -220,11 +216,12 @@ export class DevtoolsHandler {
 
     async delete(viewId: string) {
         treeData.delete(viewId);
-        this.pushItem("PATCH_NODE", viewId, false, viewId).timerSend();
+        //  this.que = this.que.filter(x => x.type != "PATCH_NODE" || (x.payload as ElementTool).props._viewId !== viewId);
+        this.pushItem("PATCH_DELETE", viewId).timerSend();
     }
 
     async select(viewId: string) {
-        this.pushItem("PATCH_SELECT", viewId, false, viewId).timerSend();
+        this.pushItem("PATCH_SELECT", viewId).timerSend();
     }
 
     SKIP_KEYS = new Set(["style", "css"]);

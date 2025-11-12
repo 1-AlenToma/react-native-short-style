@@ -6,13 +6,14 @@
   <meta name="viewport" content="width=device-width" />
   <title>React Native Short Style Inspector</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <script defer src="pretty-json.js"></script>
-  <script src="DomElement.js"></script>
+  <script src="web/msgpackr.js"></script>
+  <script defer src="web/pretty-json.js"></script>
+  <script src="web/DomElement.js"></script>
   <script>
     window.appMode = "WebTest";
   </script>
-  <script src="data.js"></script>
-  <link href="style.css" rel="stylesheet" />
+  <script src="web/data.js"></script>
+  <link href="web/style.css" rel="stylesheet" />
   <script>
 
     window.appSettings = undefined;
@@ -33,15 +34,14 @@
       <input type="search" id="search" placeholder="Search nodes (name or prop)" />
     </div>
   </div>
-  <div class="path hideScroll">
-    Path: App > View
-  </div>
+  <div class="path hideScroll"></div>
   <div class="tabs">
     <div class="header">
       <a class="icon" data-props="elementSelection" data-value="{{elementSelection}}"
         title="Select an element in the app and it will be selected here"><img src="gesture_select.svg" /></a>
       <p class="selected" data-value="Elements">Elements</p>
       <p data-value="Console"><span class="nr">No</span>Console</p>
+      <p data-value="Network">Network</p>
       <input type="range" id="zoom" name="zoom" min="1" max="2" value="{{zoom}}" step="0.1" />
       <div style="margin-left:auto">
         <span class="loader"></span>
@@ -112,7 +112,8 @@
       <div class="center">test center</div>
     </div>
   </div>
-  <script src="app.js"></script>
+  <script src="web/htmlViewer.js"></script>
+  <script src="web/app.js"></script>
 </body>
 
 </html>

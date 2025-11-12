@@ -273,7 +273,7 @@ export class CMBuilder {
                     children: [],
                     props: {
                         ifTrue,
-                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles), _props: undefined, transform: undefined, important: undefined }, css }),
+                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
                         classes: devToolsHandlerContext.withKeysOnly(keySelectors),
                         _viewId: id,
                         _elementIndex: positionContext.index,

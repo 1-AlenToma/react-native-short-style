@@ -21,7 +21,7 @@
     "dist"
   ],
   "scripts": {
-    "copy-assets": "cpx \"src/assets/**/*\" dist/assets",
+    "copy-assets": "cpx \"src/assets/**/*.{png,jpg,jpeg,gif,svg,css,json,html,txt,ico,js}\" dist/assets",
     "compile": "tsc -p ./",
     "build": "npm run compile && npm run copy-assets",
     "local": "node ./dist/localServer.js"
@@ -33,7 +33,10 @@
     "typescript": "*"
   },
   "dependencies": {
+    "install": "^0.13.0",
     "mime": "*",
+    "msgpackr": "^1.11.5",
+    "npm": "^11.6.2",
     "ws": "*"
   }
 }

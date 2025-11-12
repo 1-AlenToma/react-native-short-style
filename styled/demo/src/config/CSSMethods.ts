@@ -1,6 +1,6 @@
 import { globalData } from "../theme/ThemeContext";
 
-export const flatStyle = (style: any) => {
+export const flatStyle = function <T>(style: T, ...removeKeys: (keyof T | string)[]) {
     if (style && Array.isArray(style) && typeof style == "object")
         style = style.reduce((a, v) => {
             if (v)
@@ -8,7 +8,9 @@ export const flatStyle = (style: any) => {
             return a;
         }, {});
 
-    return style ?? {};
+    let item : any = style ?? {};
+    removeKeys.forEach(x => delete item[x]);
+    return item;
 }
 
 export const removeProps = (item: any, ...props: string[]) => {

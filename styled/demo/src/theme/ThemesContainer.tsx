@@ -466,7 +466,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
             devToolsHandlerContext.data.rerender = undefined;
     }
 
-    if (!ready && devToolsHandlerContext.data.isOpened)
+    if (!ready && devToolsHandlerContext.data.isOpened && __DEV__)
         return null;
 
     return (

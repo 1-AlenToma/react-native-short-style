@@ -6,6 +6,35 @@ import http from "http";
 import mime from "mime";
 import { WebSocketServer, WebSocket } from "ws";
 import { ObjectJson, Settings } from "./ObjectJson";
+import { pack, unpack } from "msgpackr";
+
+async function decodeData(data: any) {
+    if (data instanceof Blob) {
+        data = await data.arrayBuffer();
+    }
+
+    if (data instanceof ArrayBuffer) {
+        data = new Uint8Array(data);
+    }
+
+    if (data instanceof Uint8Array) {
+        // Try MsgPack first
+        try {
+            return unpack(data);
+        } catch (err) {
+            //  console.warn("MsgPack decode failed, trying JSON...");
+            const text = new TextDecoder().decode(data);
+            return JSON.parse(text);
+        }
+    }
+
+    if (typeof data === "string") {
+        return JSON.parse(data);
+    }
+
+    // Fallback
+    return data;
+}
 
 export interface DevServerOptions {
     root?: string;
@@ -13,15 +42,6 @@ export interface DevServerOptions {
     wsPort?: number;
 }
 
-
-
-
-const assetsFiles: Record<string, string> = {
-    "style.css": "path",
-    "app.js": "path",
-    "data.js": "path",
-    "selection.png": "path"
-}
 
 class WsClient {
     ws: WebSocket;
@@ -63,6 +83,7 @@ export class DevServer {
 
     private createHttpServer() {
         const assetsDir = path.join(this.root, 'assets');
+        const webDir = path.join(assetsDir, "web");
         this.httpServer = http.createServer((req, res) => {
             try {
                 // Parse URL to ignore query string
@@ -70,6 +91,10 @@ export class DevServer {
                 const pathname = reqUrl.pathname || '/';
 
                 let filePath = path.join(assetsDir, pathname === '/' ? 'index.html' : pathname);
+                const ext = path.extname(filePath);
+                const isText = ['.html', '.js', '.css', '.json', '.txt'].includes(ext);
+
+
                 if (!fs.existsSync(filePath)) {
                     res.writeHead(404);
                     res.end('Not found');
@@ -77,8 +102,7 @@ export class DevServer {
                 }
 
                 // Basic content type handling
-                const ext = path.extname(filePath);
-                const isText = ['.html', '.js', '.css', '.json', '.txt'].includes(ext);
+
                 const type = mime.getType(filePath) || "application/octet-stream";
                 // For binary files (images, fonts, etc.), read as buffer
 
@@ -97,12 +121,6 @@ export class DevServer {
                         .replace(/WebTest/gi, "")
                         .replace("{#}", "Default")
                         .replace("appSettings = undefined", `appSettings = ${JSON.stringify(this.appSettings.data)}`);
-
-
-                    // Replace VSCode URIs with relative asset paths
-                    for (let assetName in assetsFiles) {
-                        content = content.replace(assetName, assetName);
-                    }
 
                     // Optionally inject Chrome indicator
                     content = content.replace(
@@ -130,11 +148,11 @@ export class DevServer {
         this.wsServer.on("connection", (ws) => {
             let wsItem = new WsClient(ws);
             this.clients.add(wsItem);
-            console.log("🔌 Dev UI connected");
+            console.log("🔌 Dev UI connected", "clients connected:", this.clients.size);
 
-            ws.on("message", (data) => {
+            ws.on("message", async (data) => {
                 try {
-                    const msg = JSON.parse(data.toString());
+                    const msg = await decodeData(data);
                     // If client is registering itself
                     if (msg.type === "REGISTER") {
                         wsItem.clientType = msg.clientType;   // "app" or "html"
@@ -143,9 +161,9 @@ export class DevServer {
                             this.appSettings.save();
                         }
                         console.log(`Registered ${wsItem.clientType}`);
-                        wsItem.ws.send(JSON.stringify(this.appSettings.ObjectValue()));
+                        wsItem.ws.send(pack(this.appSettings.ObjectValue()));
                         if (this.appSettings.logs.data.length > 0 && wsItem.clientType == "HTML")
-                            wsItem.ws.send(JSON.stringify(this.appSettings.logs.data));
+                            wsItem.ws.send(pack(this.appSettings.logs.data));
                         return;
                     } else if (msg.type == "CLEARLOGS") {
                         this.appSettings.logs.clear();
@@ -168,8 +186,8 @@ export class DevServer {
     send(data: { __To: "HTML" | "APP", type: string, payload: any } | { type: string, payload: any, __To: "HTML" | "APP" }[]) {
         try {
             const items = (Array.isArray(data) ? data : [data]); // normalize to array
-            const appItems = JSON.stringify(items.filter(x => x.__To == "APP"));
-            const htmlItems = JSON.stringify(items.filter(x => x.__To == "HTML"));
+            const appItems = pack(items.filter(x => x.__To == "APP"));
+            const htmlItems = pack(items.filter(x => x.__To == "HTML"));
             items.filter(({ type }) => type == "PROP").forEach(({ payload }) => {
                 if (payload?.key != undefined) {
                     this.appSettings.setKeyValue(payload.key, payload.value);

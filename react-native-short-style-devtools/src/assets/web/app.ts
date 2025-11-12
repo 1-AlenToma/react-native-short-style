@@ -1,4 +1,6 @@
-const ignoreAttrs = ["_viewId", "_parent_viewId", "_elementIndex"]
+
+const $ = window.$;
+const $$ = window.$$;
 const settings = Object.assign({
     elementSelection: false,
     zoom: 1,
@@ -44,8 +46,8 @@ propsChanged.add("autoSave.Click", (settings) => {
 })
 
 propsChanged.add("autoSave.Save", (settings) => {
-    if (!settings.autoSave && selectedViewId)
-        $(".save")?.removeClass("hidden");
+    if (!settings.autoSave && viewer.selectedViewId)
+        window.$(".save")?.removeClass("hidden");
     else $(".save")?.addClass("hidden");
 })
 
@@ -60,7 +62,7 @@ function safeStringify(obj, space = 2) {
     }, space);
 }
 
-const parseMessage = async (event) => {
+const parseMessage = async (event: any) => {
     let item = event?.data ?? event;
     if (typeof item == "string")
         item = JSON.parse(item);
@@ -94,12 +96,12 @@ const parseMessage = async (event) => {
             else if (msg.type === 'PATCH_NODE') {
                 htmlScrollPosition.loading(true)
                 // msg.payload = { _viewId: number, props?: object, children?: array }
-                apply_viewIdPatch(msg.payload);
+                viewer.renderNode(msg.payload);
             } else if (msg.type === "PATCH_DELETE") {
                 htmlScrollPosition.loading(true)
-                deleteNode(msg.payload) // viewid
+                viewer.deleteNode(msg.payload) // viewid
             } else if (msg.type === "PATCH_SELECT") {
-                selectById(msg.payload) // viewId
+                viewer.selectNode(msg.payload, true) // viewId
             } else if (msg.type == "ERROR") {
                 settings.consoleData.errors.push(msg);
                 parseConsole(msg);
@@ -112,6 +114,8 @@ const parseMessage = async (event) => {
             } else if (msg.type == "WARNING") {
                 settings.consoleData.warnings.push(msg);
                 parseConsole(msg);
+            } else if (msg.type == "FETCH") {
+                console.log("fetch data, not implemented yet", msg.payload);
             }
         }
     } catch (e) {
@@ -128,7 +132,7 @@ $(".modal .title .btn").on("click", () => {
     modal.hide();
 });
 
-const sleep = (ms) => new Promise(r => setTimeout(() => {
+const sleep = (ms) => new Promise((r: Function) => setTimeout(() => {
     r();
 }, ms));
 const modal = {
@@ -167,10 +171,10 @@ const htmlScrollPosition = {
     },
     timer: undefined,
     data: [], //left, top,
-    save: (force) => {
+    save: (force?: boolean) => {
         if (htmlScrollPosition.rendering && !force)
             return;
-        htmlScrollPosition.data = $(".container[data-type=Elements] > .left").scrollValues()
+        htmlScrollPosition.data = viewer.container.parent()?.scrollValues();
     },
     restore: () => {
         clearTimeout(htmlScrollPosition.timer);
@@ -179,63 +183,19 @@ const htmlScrollPosition = {
                 htmlScrollPosition.loading(false)
                 return;
             }
-            $(".container[data-type=Elements] > .left").scroll(htmlScrollPosition.data[0], htmlScrollPosition.data[1]);
+            viewer.container.parent().scroll(htmlScrollPosition.data[0], htmlScrollPosition.data[1]);
             htmlScrollPosition.loading(false)
-        }, 1000);
+        }, 500);
     }
 }
 
-$(".container[data-type=Elements] > .left").on("scroll", () => {
+$(".container[data-type='Elements'] .left > .scrollAble").on("scroll", () => {
     htmlScrollPosition.save();
 });
 
 var socketIsOpen = false;
 
-const mock = () => {
-    const item = {
-        worker: undefined,
-        socket: undefined,
 
-        postMessage: (type, payload) => {
-            if (socketIsOpen) {
-                item.socket.send(JSON.stringify({ type, payload, __To: "APP" }));
-            }
-        },
-
-        open: () => {
-            if (item.worker) item.worker.terminate();
-            if (item.socket) item.socket.close();
-
-            item.worker = new Worker("worker.js");
-            item.worker.onmessage = e => {
-                //    setTimeout(() => parseMessage(e), 0);
-                parseMessage(e)
-            }
-            item.worker.onerror = e => {
-                try {
-                    console.error(e);
-                } catch { }
-            }
-
-            item.socket = new WebSocket("ws://localhost:7780");
-
-            item.socket.onopen = () => {
-                socketIsOpen = true;
-                item.socket.send(JSON.stringify({ type: "REGISTER", clientType: "HTML" }));
-                item.socket.send(JSON.stringify({ type: "TREE", __To: "APP" }));
-            };
-
-            item.socket.onclose = () => (socketIsOpen = false);
-
-            // Send raw data to worker (no JSON.parse in main thread)
-            item.socket.onmessage = e => item.worker.postMessage(e.data);
-        },
-    };
-
-    return item;
-};
-
-const vscode = mock();
 const tabs = $(".tabs");
 tabs.findAll(".header p").forEach(x => {
     x.on("click", (e) => {
@@ -243,8 +203,8 @@ tabs.findAll(".header p").forEach(x => {
         tabs.find(".active")?.removeClass("active");
         x.addClass("selected");
         let value = x.attr("data-value") ?? x.text();
-        tabs.find(`.content> div[data-type=${value}]`)?.addClass("active");
-        searchInput.placeholder = value.startsWith("Elements") ? "Search nodes (name or prop)" : "Search logs";
+        tabs.find(`.content> div[data-type="${value}"]`)?.addClass("active");
+        viewer.searchInput.placeholder = value.startsWith("Elements") ? "Search nodes (name or prop)" : "Search logs";
         if (value.startsWith("Elements"))
             $(".clearLogs")?.hide()
         else $(".clearLogs")?.show("inline-flex");
@@ -261,17 +221,17 @@ $("#zoom").on("change", () => {
     }
 })
 
-$.findAll("[data-props]:not([data-props=''])").forEach(x => {
+$$("[data-props]:not([data-props=''])").forEach(x => {
     x.on("click", function (e) {
         sendSettigs(x);
     })
 });
 
 $(".reload").on("click", () => {
-    vscode.postMessage("RELOAD", true);
+    viewer.socket.postMessage("RELOAD", true);
 });
 
-$.findAll(".lst li a").forEach(x => {
+$$(".lst li a").forEach(x => {
     x.on("click", () => {
         $(".lst li .selected")?.removeClass("selected");
         x.addClass("selected");
@@ -284,14 +244,14 @@ $(".clearLogs").on("click", () => {
     settings.consoleData.infos = [];
     settings.consoleData.warnings = [];
     settings.consoleData.logs = [];
-    vscode.postMessage("CLEARLOGS", { payload: true });
+    viewer.socket.postMessage("CLEARLOGS", { payload: true });
     parseConsole();
 });
 
-const sendSettigs = (x) => {
+const sendSettigs = (x?: any) => {
     let htmlObject = x.attr != undefined;
     let key = htmlObject ? x.attr("data-props") : x;
-    value = settings[key];
+    let value = settings[key];
     if (typeof value === "boolean")
         value = !value;
     else if (htmlObject) value = x.attr("data-value")
@@ -299,13 +259,13 @@ const sendSettigs = (x) => {
     if (htmlObject)
         x.attr("data-value", value)
     propsChanged.has(key).forEach(x => x());
-    vscode.postMessage("PROP", { key, value });
+    viewer.socket.postMessage("PROP", { key, value });
 }
 
 let selectedConsole = undefined;
 let consoleData = undefined;
 
-const parseConsole = (renderedItem) => {
+const parseConsole = (renderedItem?: any) => {
     renderedItem = (Array.isArray(renderedItem) ? renderedItem : [renderedItem]).filter(x => x != undefined)
     const createConsoleItem = ({ type, payload }) => {
         let text = payload;
@@ -337,7 +297,7 @@ const parseConsole = (renderedItem) => {
         e.target.classList.add("selected");
         parseConsole();
     }
-    const tab = $("p[data-value=Console]");
+    const tab = $("p[data-value='Console']");
     const messages = $(".messages");
     const infos = $(".infos");
     const logs = $(".logs");
@@ -350,13 +310,14 @@ const parseConsole = (renderedItem) => {
     const selectedCnl = $(".lst li .selected") ?? $(".lst li:first-child");
     selectedCnl.addClass("selected");
     const scrolledToBottom = leftPanel.scrollTop === (leftPanel.scrollHeight - leftPanel.offsetHeight);
-    leftPanel.appendElement = (e) => {
+    const appendElement = (e) => {
         leftPanel.append(e);
         if (e.find("code") && e.find("code").offsetHeight <= 70)
             e.addClass("expand")
     }
 
     if (renderedItem.length <= 0 || consoleData == undefined) {
+        leftPanel.html("");
         consoleData = {
             errors: settings.consoleData.errors.map(x => createConsoleItem(x)),
             info: settings.consoleData.infos.map(x => createConsoleItem(x)),
@@ -368,27 +329,27 @@ const parseConsole = (renderedItem) => {
         leftPanel.innerHTML = "";
         if (selectedCnl.hasClass("messages")) {
             tempSelectedConsole = "messages";
-            [...consoleData.errors, ...consoleData.info, ...consoleData.log, ...consoleData.warnings].forEach(x => leftPanel.appendElement(x));
+            [...consoleData.errors, ...consoleData.info, ...consoleData.log, ...consoleData.warnings].forEach(x => appendElement(x));
         }
 
         if (selectedCnl.hasClass("logs")) {
             tempSelectedConsole = "logs";
-            consoleData.log.forEach(x => leftPanel.appendElement(x));
+            consoleData.log.forEach(x => appendElement(x));
         }
 
         if (selectedCnl.hasClass("errors")) {
             tempSelectedConsole = "errors";
-            consoleData.errors.forEach(x => leftPanel.appendElement(x));
+            consoleData.errors.forEach(x => appendElement(x));
         }
 
         if (selectedCnl.hasClass("warnings")) {
             tempSelectedConsole = "warnings";
-            consoleData.warnings.forEach(x => leftPanel.appendElement(x));
+            consoleData.warnings.forEach(x => appendElement(x));
         }
 
         if (selectedCnl.hasClass("infos")) {
             tempSelectedConsole = "infos";
-            consoleData.info.forEach(x => leftPanel.appendElement(x));
+            consoleData.info.forEach(x => appendElement(x));
         }
 
         // if (selectedConsole == tempSelectedConsole)
@@ -417,7 +378,7 @@ const parseConsole = (renderedItem) => {
                     consoleData.errors.push(item);
             }
 
-            leftPanel.appendElement(item);
+            appendElement(item);
             if (scrolledToBottom)
                 item.scrollIntoView();
         }
@@ -447,11 +408,11 @@ const parseConsole = (renderedItem) => {
     }
 }
 
-const parseSetting = (_parseConsole) => {
+const parseSetting = (_parseConsole?: boolean) => {
     for (let key in settings) {
         $(`[data-props='${key}']`)?.attr("data-value", settings[key]);
     }
-    $.findAll(".container > .left").forEach(x => x.css({ zoom: settings.zoom }));
+    $$(".container > .left").forEach(x => x.css({ zoom: settings.zoom }));
     if (_parseConsole)
         parseConsole();
 }
@@ -459,7 +420,7 @@ parseSetting(true);
 
 
 
-function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly, parentKey) {
+function inputForm(propKey: string, jsonItem: any, viewId?: string, isSingleValue?: boolean, parent?: any, isReadOnly?: boolean, parentKey?: string) {
     const fullkeyName = parentKey ? `${parentKey}.${propKey}` : propKey;
     let item = Object.keys(typeof jsonItem == "object" ? jsonItem : [propKey].reduce((c, v) => {
         c[v] = jsonItem;
@@ -497,7 +458,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         return div;
     }
 
-    const save = (dataOnly) => {
+    const save = (dataOnly?: boolean) => {
         htmlScrollPosition.loading(true);
         const getKeyValueInput = (el) => {
             let result = [];
@@ -618,14 +579,14 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
             }
         }
         if (!dataOnly)
-            vscode.postMessage('SAVE_NODE_PROP', { ...json, _deletedItems: getDeletedJson(deleteJson) });
+            viewer.socket.postMessage('SAVE_NODE_PROP', { ...json, _deletedItems: getDeletedJson(deleteJson) });
         htmlScrollPosition.loading(false);
         return json;
     }
 
 
 
-    function addInput(key, index, prependToChild) {
+    function addInput(key: string, index: number, prependToChild?: any) {
         let colType = window.RN_STYLE_PROPS.find(x => x.name.toLowerCase() === key.toLowerCase())?.type ?? "text";
         if (colType === "number")
             colType = "number";
@@ -671,8 +632,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
             readOnly: isReadOnly,
             placeholder: "value",
             onchange: onChange,
-            name: "value",
-            value: colType == "color" ? window.toHex(item[index][1]) : item[index][1]
+            name: "value"
         });
 
 
@@ -688,10 +648,11 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                 placeholder: "value",
             }).attr("name", `${key}_value`);
             inputValue2.onchange = inputValue.onchange = (e) => {
-                let inputs = e.target.parentElement.querySelectorAll("input");
+                let target = $(e.target);
+                let inputs = target.parent().findAll("input");
                 inputs.forEach(x => {
-                    if (x !== e.target && x.value !== e.target.value)
-                        x.value = window.toHex(e.target.value)
+                    if (x !== e.target && x.value !== target.value)
+                        x.value = window.toHex(target.value)
                 });
                 onChange(e)
             };
@@ -778,8 +739,8 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
         btn = $(".json");
         btn.onclick = function () {
-            let json = save(true);
-            let copy = $("<button />", {
+            let json: any = save(true);
+            let copy: IDomElement = $("<button />", {
                 className: "btn copy"
             }).html(`<img src="copy_content.svg" style="height:var(--pathHeight)" />`);
             copy.onclick = (e) => {
@@ -802,7 +763,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
                         e.stopPropagation();
                         window.focus();
                         navigator.clipboard.writeText(JSON.stringify(json.style, undefined, 4));
-                        let prettyJsonStyle = modal.content.find("pretty-json")?.shadowRoot?.find("pretty-json[key=style]")?.shadowRoot?.find(".row");
+                        let prettyJsonStyle = modal.content.find("pretty-json")?.shadowRoot?.find("pretty-json[key='style']")?.shadowRoot?.find(".row");
                         copyStyle.flash();
                         if (prettyJsonStyle)
                             prettyJsonStyle.flash();
@@ -822,7 +783,7 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
         }
         btn.removeClass("hidden");
     } else {
-        $.findAll(".save, .json").forEach(x => x.addClass("hidden"));
+        $$(".save, .json").forEach(x => x.addClass("hidden"));
         // propsChanged.remove("autoSave.Save");
     }
     for (let key of item) {
@@ -842,54 +803,49 @@ function inputForm(propKey, jsonItem, viewId, isSingleValue, parent, isReadOnly,
 
 
 // Current state
-let currentTree = null;
-let selectedNodePath = null; // array of indices path
-let selectedViewId = null;
-let flatNodes = []; // for counts/search
+const viewer = new HtmlViewer(inputForm, parseMessage, htmlScrollPosition);
 let searchValue = "";
 const elementBy_viewId = new WeakMap(); // element -> _viewId
 const _viewIdToElement = {}; // _viewId -> element
 let searchedItems = {} // id and element
-const treeRootEl = document.getElementById('treeRoot');
-const propsPanel = document.getElementById('propsPanel');
-const nodeCountEl = document.getElementById('nodeCount');
-const searchInput = document.getElementById('search');
+
 
 const renderPayload = (msg) => {
-    currentTree = msg.payload;
-    flatNodes = [];
-    selectedNodePath = null;
-    selectedViewId = null;
-    showProps(); // clear
-    renderTree();
+    viewer.clear().renderNode(msg.payload)
+    viewer.showProps(); // clear
 }
 
 
 
 // Delegated click handling for nodes
-treeRootEl.addEventListener('click', (ev) => {
-    const dataPath = ev.target.getAttribute("data-path");
-    const nodeEl = ev.target.closest('.node') ?? document.querySelector(`div[data-path='${dataPath}']`);
-
-    if (!nodeEl || (nodeEl.classList.contains("selected") && !ev.target.classList.contains('expander'))) return false
-    const path = nodeEl.getAttribute('data-path');
-    if (!path) return false
-    const isExpander = ev.target.classList.contains('expander');
-    if (isExpander) {
-        toggleNode(path);
-        return false
+viewer.container.on('click', (ev) => {
+    let target = $(ev.target);
+    if (target.hasClass("node-text")) {
+        if (!target.hasClass("expand"))
+            target.addClass("expand");
+        return;
     }
-    selectNode(path);
+    if (!target.hasClass("expander") && !target.parent().hasClass("expander")) {
+        if (!target.attr("data-id"))
+            target = target.parent("[data-id]:not([data-id=''])");
+        if (!target)
+            return;
+        const viewId = target.attr("data-id");
+
+        viewer.selectNode(viewId);
+    } else {
+        viewer.collabsNode((target.hasClass("expander") ? target : target.parent()).id);
+    }
     return false
 });
 
 // Search
-searchInput.addEventListener('input', (ev) => {
+viewer.searchInput.on('input', (ev) => {
     searchValue = ev.target.value.trim().toLowerCase();
     searchedItems = {};
 });
 
-searchInput.addEventListener('keydown', (e) => {
+viewer.searchInput.on('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault(); // block unintended form behavior
         if (document.querySelector(".container.active")?.getAttribute("data-type") == "Elements" || !document.querySelector(".header p.selected") || document.querySelector(".header p.selected")?.getAttribute("data-value") == ("Elements"))
@@ -899,51 +855,14 @@ searchInput.addEventListener('keydown', (e) => {
     }
 });
 
-function flashByStyle(node, index, byStyle = {}) {
-    if (!node || !(node instanceof HTMLElement)) return;
-
-    // Save original styles so we can restore them later
-    const originalTransition = node.style.transition;
-    const originalBoxShadow = node.style.boxShadow;
-    const originalBackground = node.style.backgroundColor;
-
-    // Merge provided styles with default flash effect
-    const flashStyle = {
-        transition: "all 0.3s ease",
-        boxShadow: "0 0 20px rgba(255, 255, 0, 0.9)",
-        backgroundColor: "rgba(255, 255, 0, 0.2)",
-        ...byStyle
-    };
-
-    // Apply flash styles
-    Object.assign(node.style, flashStyle);
-
-    // Animate back to normal
-    setTimeout(() => {
-        node.style.transition = "all 0.5s ease";
-        node.style.boxShadow = originalBoxShadow || "";
-        node.style.backgroundColor = originalBackground || "";
-    }, 300);
-
-    // Fully restore transition timing after flash ends
-    setTimeout(() => {
-        node.style.transition = originalTransition || "";
-    }, 1000);
-}
 
 
-function flash(node, index, byStyle) {
-    node.classList.add("flash")
-    setTimeout(() => {
-        node.classList.remove("flash")
-    }, 1000);
-}
 
 function searchLogs(fromEnter) {
-    let datas = $.findAll("div[data-type=Console] .left code");
+    let datas = $$("div[data-type='Console'] .left code");
     for (let item of datas) {
         const id = item.id;
-        let txt = item.text().trim();
+        let txt = item.text().toString().trim();
         if (txt.toLowerCase().includes(searchValue.toLowerCase()) && !(id && searchedItems[id]?.includes(txt))) {
             item.scrollIntoView({ block: "center", inline: "nearest" });
             item.flash();
@@ -958,7 +877,7 @@ function searchLogs(fromEnter) {
 function searchHtml(fromEnter = false) {
     if (searchValue.length <= 1) return;
 
-    const nodes = $.findAll(".node-name,.node-props");
+    const nodes = $$(".node-name,.node-props");
     for (let item of nodes) {
         let txt = item.text().trim();
         let id = item._viewId;
@@ -983,443 +902,11 @@ function searchHtml(fromEnter = false) {
     }
 }
 
-// Utilities
-function makePathAttr(pathArray) {
-    return pathArray.join('.') ?? "0";
-}
 
-function getNodeByPath(pathString) {
-    if (!currentTree) return null;
-    if (!pathString) return null;
-    const idxs = pathString.split('.').map(s => parseInt(s, 10));
-    let node = currentTree;
-    for (let i = 0; i < idxs.length; i++) {
-        if (!node || !node.children) return null;
-        node = node.children[idxs[i]];
-    }
-    return node;
-}
 
-function findNodeBy_viewId(node, _viewId) {
-    if (node.props._viewId === _viewId) return node;
 
-    if (node.children && node.children.length > 0) {
-        for (const child of node.children) {
-            const found = findNodeBy_viewId(child, _viewId);
-            if (found) return found;
-        }
-    }
-    return null;
-}
 
 
-function apply_viewIdPatch(patch) {
-    if (!patch || !patch.props || typeof patch.props._viewId === 'undefined' || !currentTree) return;
-
-    const _viewId = patch.props._viewId;
-    const _parent_viewId = patch.props._parent_viewId;
-
-    // Check if the node already exists in currentTree
-    const existingNode = findNodeBy_viewId(currentTree, _viewId);
-
-    if (existingNode) {
-        // ✅ Update props only
-        existingNode.props = {
-            ...existingNode.props,
-            ...patch.props,
-        };
-
-        // ✅ Replace children if provided
-        if (Array.isArray(patch.children)) {
-            existingNode.children = patch.children;
-        }
-
-        // ✅ Re-render ONLY this branch
-        partialRerender(existingNode.props._parent_viewId);
-
-        if (selectedViewId == existingNode.props._viewId && _viewIdToElement[selectedViewId])
-            selectNode(_viewIdToElement[selectedViewId].getAttribute('data-path'))
-        return;
-    }
-
-    // ✅ Otherwise it's a new node → insert under its parent
-    insertNewNode(patch, _parent_viewId);
-    if (selectedViewId == _viewId && _viewIdToElement[selectedViewId])
-        selectNode(_viewIdToElement[selectedViewId].getAttribute('data-path'))
-}
-
-
-function renderTree() {
-    treeRootEl.innerHTML = '';
-    if (!currentTree) {
-        treeRootEl.innerHTML = '<div class="empty">No component tree received yet.</div>';
-        nodeCountEl.textContent = '0 nodes';
-        return;
-    }
-    flatNodes = [];
-    const ul = document.createElement('ul');
-    ul.className = 'rn-tree';
-    // We'll render children of the root inside top ul, but also show root node itself as first node
-    const rootLi = renderNodeRecursive(currentTree, []);
-    ul.appendChild(rootLi);
-    treeRootEl.appendChild(ul);
-
-    nodeCountEl.textContent = flatNodes.length + ' nodes';
-    //scrollToItem();
-}
-
-
-function partialRerender(_parent_viewId) {
-    const parentEl = _viewIdToElement[_parent_viewId];
-    if (!parentEl) {
-        renderTree();
-        return;
-    }
-
-    const pathString = parentEl.getAttribute('data-path');
-    let parentNode = getNodeByPath(pathString);
-    if (!parentNode) {
-        if (currentTree) {
-            if (currentTree.children?.length <= 1)
-                renderTree();
-            else parentNode = currentTree;
-
-        } else
-            return;
-    }
-
-    const parentLi = parentEl.closest('li.node-container');
-    if (!parentLi) return;
-
-    const childUl = parentLi.querySelector('ul.rn-tree');
-    const isNew = childUl == null
-
-    // if (childUl) childUl.remove();
-
-    if (parentNode?.children?.length > 0) {
-        const newUl = document.createElement('ul');
-        newUl.className = 'rn-tree';
-
-        parentNode.children.forEach((child, idx) => {
-            const childLi = renderNodeRecursive(child, [...pathString.split('.').map(Number), idx]);
-            newUl.appendChild(childLi);
-        });
-
-        if (childUl) {
-            childUl.replaceWith(newUl);
-        } else if (isNew) {
-            parentLi.appendChild(newUl);
-            parentLi.querySelector(".node-closer").textContent = ">";
-            let closer = document.createElement("span");
-            closer.className = "node-name";
-            closer.setAttribute("data-path", parentLi.querySelector(".node").getAttribute("data-path"));
-            closer.textContent = `<${parentNode.name} />`
-            parentLi.appendChild(closer);
-        }
-    } else childUl?.remove();
-
-
-}
-
-
-
-
-
-function deleteNode(_viewId) {
-    // 1. Remove the actual DOM/element reference if it exists
-    const el = _viewIdToElement[_viewId];
-    if (el) {
-        delete _viewIdToElement[_viewId]; // fixed wrong key usage
-        el.remove();
-    }
-
-    // 2. Remove the node from your tree structure
-    const node = findNodeBy_viewId(currentTree, _viewId);
-    if (node && node.props._parent_viewId) {
-        // find the parent node
-        const parentNode = findNodeBy_viewId(currentTree, node.props._parent_viewId);
-        if (parentNode && Array.isArray(parentNode.children)) {
-            // remove the node from parent children
-            parentNode.children = parentNode.children.filter(
-                child => child.props._viewId !== _viewId
-            );
-
-            const parentEl = _viewIdToElement[node.props._parent_viewId];
-
-            if (parentEl && parentNode.children.length <= 0) {
-                parentEl.parentNode.querySelectorAll(".rn-tree, :scope > .node-name").forEach(x => x.remove());
-                parentEl.querySelector(".node-closer").textContent = " />"
-            }
-        }
-
-
-    } else if (node && !node.props._parent_viewId) {
-        // this means it's the root or a top-level node
-        // remove it directly from the top-level tree if needed
-        if (Array.isArray(currentTree.children)) {
-            currentTree.children = currentTree.children.filter(
-                child => child.props._viewId !== _viewId
-            );
-        }
-    }
-}
-
-
-
-function insertNewNode(patchNode, _parent_viewId) {
-    if (!_parent_viewId) return;
-    const _elementIndex = patchNode.props._elementIndex;
-    const parentNode = findNodeBy_viewId(currentTree, _parent_viewId);
-    if (!parentNode) return;
-
-    if (!parentNode.children) parentNode.children = [];
-    if (_elementIndex === undefined) {
-        parentNode.children.push({
-            name: patchNode.name,
-            props: patchNode.props,
-            children: patchNode.children || []
-        });
-    } else parentNode.children.splice(_elementIndex, 0, patchNode);
-    // ✅ Just re-render this subtree
-    partialRerender(_parent_viewId);
-}
-
-
-
-// Each node gets: data-path attribute (e.g., "0.1.2"), a .node class, optional "selected"
-function renderNodeRecursive(node, pathArray) {
-    const _viewId = node.props._viewId;
-    const li = document.createElement('li');
-    li.id = _viewId;
-    li.className = 'node-container';
-    const nodeEl = document.createElement('div');
-    nodeEl.className = 'node';
-    let dataPath = makePathAttr(pathArray);
-
-    nodeEl.setAttribute('data-path', dataPath);
-
-    nodeEl._viewId = _viewId;
-    elementBy_viewId.set(nodeEl, _viewId);
-    _viewIdToElement[_viewId] = nodeEl;
-
-
-    // determine if has children
-    const hasChildren = node.children && node.children.length > 0;
-    if (pathArray.length > 0) {
-
-        const expander = document.createElement('span');
-        expander.className = 'expander';
-        expander.textContent = hasChildren ? (isCollapsed(pathArray) ? '▸' : '▾') : '';
-        nodeEl.appendChild(expander);
-    }
-
-    const label = document.createElement('div');
-    label.className = 'label';
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'node-name';
-    nameSpan.textContent = `<${node.name || '(anonymous)'}`;
-    nameSpan._viewId = node.props._viewId;
-    label.appendChild(nameSpan);
-
-    const propsSpan = document.createElement('span');
-    propsSpan.className = 'node-props';
-    propsSpan._viewId = node.props._viewId;
-    // Show some props preview if exists
-    const propsPreview = summarizeProps(node.props);
-    if (propsPreview && propsPreview.length > 0) {
-        propsSpan.textContent = propsPreview;
-        label.appendChild(propsSpan);
-    }
-
-    const labelCloser = document.createElement('span');
-    labelCloser.className = 'node-closer';
-    labelCloser.textContent = isCollapsed(pathArray) || !hasChildren ? " />" : ">";
-    label.appendChild(labelCloser);
-
-    nodeEl.appendChild(label);
-
-    // If this node is selected, mark
-    if (selectedNodePath === makePathAttr(pathArray)) {
-        nodeEl.classList.add('selected');
-    }
-
-    li.appendChild(nodeEl);
-
-    // Track flatNodes for search/metrics
-    flatNodes.push({ path: makePathAttr(pathArray), node });
-
-    // Children
-    if (hasChildren) {
-        // if collapsed => hide children
-        if (!isCollapsed(pathArray)) {
-            const childUl = document.createElement('ul');
-            childUl.className = 'rn-tree';
-            node.children.forEach((child, idx) => {
-                const childLi = renderNodeRecursive(child, [...pathArray, idx]);
-                childUl.appendChild(childLi);
-            });
-            li.appendChild(childUl);
-            const nameSpanEnd = document.createElement('span');
-            nameSpanEnd.className = 'node-name';
-            nameSpanEnd.setAttribute('data-path', makePathAttr(pathArray));
-            nameSpanEnd.textContent = `</${node.name || '(anonymous)'}>`;
-            nameSpanEnd._viewId = node.props._viewId;
-            li.appendChild(nameSpanEnd);
-        }
-    }
-
-    // add data path attribute to the outermost node container for event delegation
-    li.querySelector('.node').setAttribute('data-path', makePathAttr(pathArray));
-    return li;
-}
-
-// simple collapsed state stored in a Set keyed by path strings
-const collapsedSet = new Set();
-function isCollapsed(pathArray) {
-    const key = makePathAttr(pathArray);
-    return collapsedSet.has(key);
-}
-
-function toggleNode(pathString) {
-    if (!pathString) return;
-    if (collapsedSet.has(pathString)) collapsedSet.delete(pathString);
-    else collapsedSet.add(pathString);
-    renderTree();
-}
-
-function pathName(pathString) {
-    // Notify extension as before
-    const viewPath = [];
-    let tempNode = currentTree;
-    const indices = pathString.split('.').map(s => parseInt(s, 10));
-    for (let i = 0; i < indices.length + 1; i++) {
-        if (!tempNode) break;
-        viewPath.push(tempNode.name || '(anonymous)');
-        tempNode = tempNode.children?.[indices[i]];
-    }
-
-    return viewPath;
-}
-
-function selectById(viewId) {
-    let el = _viewIdToElement[viewId];
-    if (el) {
-        let path = el.getAttribute("data-path");
-        if (path) {
-            selectNode(path);
-        }
-        el.scrollIntoView({ block: "center", inline: "nearest" });
-        setTimeout(() => {
-            htmlScrollPosition.save(true)
-        }, 100);
-        flash(el);
-    }
-}
-
-function selectNode(pathString) {
-    document.querySelectorAll(".selected").forEach(x => x.classList.remove("selected"));
-    const node = getNodeByPath(pathString);
-    if (node) {
-        selectedNodePath = pathString;
-        //  renderTree();
-        selectedViewId = node.props._viewId;
-        showProps(node, pathString);
-        document.querySelectorAll(`[data-path='${pathString}']`).forEach(x => x.classList.add("selected"))
-
-        // notify extension
-        // vscode.postMessage({ type: 'NODE_SELECTED', payload: { path: pathString, node } });
-    }
-}
-
-function showProps(node, path) {
-    propsPanel.innerHTML = '';
-    if (!node) {
-        propsPanel.innerHTML = '<div class="empty">No node selected</div>';
-        return;
-    }
-
-    /* const header = document.createElement('div');
-     header.className = 'props-card';
-     header.innerHTML = `<h3>Selected: <span style="color:#fff">${node.name || '(anonymous)'}</span></h3>`;
-     propsPanel.appendChild(header);*/
-    (document.querySelector(".path") ?? {}).textContent = `${pathName(path).join(' > ')}`
-
-
-    const keys = node.props ? Object.keys(node.props) : [];
-    if (keys.length === 0) {
-
-        // propsCard.innerHTML = '<div class="empty">No props</div>';
-    } else {
-        propsPanel.innerHTML = "";
-        keys.forEach(key => {
-            let value = node.props[key];
-            let readOnly = currentTree.readOnlyProps?.some(x => x.startsWith(key))
-            if (!ignoreAttrs.includes(key) && (key == "style" || !Array.isArray(value))) {
-
-                if (key == "style" && Array.isArray(value)) {
-                    value = value.reduce((c, v) => ({ ...c, ...(v ?? {}) }), {});
-                }
-
-                try {
-                    if (typeof value == "object" && key !== "children") {
-                        inputForm(key, value, node.props._viewId, false, undefined, readOnly)
-                    }
-                    else if (typeof value !== "object") {
-                        inputForm(key, value, node.props._viewId, true, undefined, readOnly)
-                    }
-                } catch (e) {
-                    console.error(e)
-                    //  v.textContent = String(value);
-                }
-            }
-        });
-    }
-}
-
-function renderStyle(item) {
-    if (item && Array.isArray(item)) {
-        item = item.reduce((c, v) => {
-            c = { ...c, ...(v ?? {}) }
-        }, {})
-    }
-
-    let str = [];
-    for (let key in item ?? {}) {
-        str.push(`${key}:${item[key]}`)
-    }
-
-    return str.join("; ")
-}
-
-function summarizeProps(props) {
-    if (!props) return '';
-    const keys = Object.keys(props || {});
-    if (keys.length === 0) return '';
-    // try to make a compact preview: show first 2 small props
-    const small = [];
-    for (const k of keys) {
-        if (ignoreAttrs.includes(k))
-            continue;
-        const v = props[k];
-        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-            small.push(`${k}="${String(v)}"`);
-        } else if (typeof v === 'object' && v !== null) {
-            if (k == "style") {
-                small.push(`${k}="${renderStyle(v)}"`);
-                continue;
-            }
-            // show if it's a small object with few keys
-            if (Object.keys(v).length <= 2) {
-                small.push(`${k}="Big([Object])"`);
-            }
-        }
-        //if (small.length >= 2) break;
-    }
-    return small.join(" ");
-}
-
-// initial empty state
-renderTree();
 
 // Optional: respond to keyboard navigation (j/k)
 window.addEventListener('keydown', (ev) => {
@@ -1428,29 +915,21 @@ window.addEventListener('keydown', (ev) => {
     }
 });
 
-// Expose a simple API for debugging in webview console:
-window.__rnInspector = {
-    setTree: (tree) => {
-        currentTree = tree; flatNodes = []; selectedNodePath = null; renderTree();
-    },
-    getFlatNodes: () => flatNodes
-};
 
-
-let toolBar = document.querySelector(".toolbar");
-if (window.location.href.indexOf("IFRAME") !== -1 && toolBar) {
-    toolBar.style.display = "none";
+let toolBar: DomElement = $(".toolbar");
+if (viewer.isIframe && toolBar) {
+    toolBar.hide()
     document.documentElement.style.setProperty('--toolbarHeight', "2px");
 
-    document.querySelector(".header").appendChild(document.querySelector("#search"));
-    document.querySelector("#search").style.marginLeft = "5px";
+    $(".header").append(viewer.searchInput);
+    viewer.searchInput.css({ marginLeft: "5px" });;
 } else {
     document.querySelector(".exit")?.remove();
 }
 
 
 let isResizing = false;
-let leftDivs = document.querySelectorAll(".left");
+let leftDivs = $$(".left");
 let currentZoom = 1;
 
 function getZoom(el) {
@@ -1460,13 +939,15 @@ function getZoom(el) {
 }
 
 leftDivs.forEach(x => {
-    const resizers = x.querySelectorAll(".resizer");
+    const resizers = x.findAll(".resizer");
     resizers.forEach(r => {
-        r.addEventListener("mousedown", (e) => {
+        r.on("mousedown", (e) => {
             isResizing = true;
-            currentZoom = getZoom(x); // 🔥 get zoom factor on mousedown
+            currentZoom = getZoom(x.el); // 🔥 get zoom factor on mousedown
             document.body.style.cursor = "ew-resize";
             document.body.style.userSelect = "none";
+            viewer.container.el.style.userSelect = "none"; // optional if you want text not interfering
+            viewer.container.el.style.pointerEvents = "none"; // optional if you want text not interfering
         });
     });
 });
@@ -1483,7 +964,7 @@ document.addEventListener("mousemove", (e) => {
     const maxWidth = window.innerWidth * 0.8;
 
     if (newWidth >= minWidth && newWidth <= maxWidth) {
-        leftDivs.forEach(x => (x.style.width = newWidth + "px"));
+        leftDivs.forEach(x => (x.css({ width: newWidth + "px" })));
     }
 });
 
@@ -1492,6 +973,8 @@ document.addEventListener("mouseup", () => {
         isResizing = false;
         document.body.style.cursor = "auto";
         document.body.style.userSelect = "auto";
+        viewer.container.el.style.userSelect = ""; // optional if you want text not interfering
+        viewer.container.el.style.pointerEvents = ""; // optional if you want text not interfering
     }
 });
-vscode.open();
+viewer.socket.open();

@@ -1,15 +1,19 @@
-class DomElement {
-    constructor(tag = "div", attrs) {
-        this.el = typeof tag === "string"
+type IDomElement = DomElement & HTMLElement & HTMLInputElement;
+class DomElement<T = IDomElement> {
+    el: HTMLElement;
+    _viewId?: string;
+    constructor(tag: any = "div", attrs?: any) {
+        this.el = (typeof tag === "string"
             ? document.createElement(tag)
             : tag instanceof HTMLElement || tag instanceof DocumentFragment
                 ? tag
-                : document.createElement("div");
+                : tag instanceof DomElement ? tag.el : document.createElement("div")) as any;
+
         if (attrs)
             this.attr(attrs);
     }
 
-    flash(byStyle = {}) {
+    flash(byStyle: any = {}): this {
         let node = this.el;
         if (!node || !(node instanceof HTMLElement)) return;
 
@@ -44,19 +48,19 @@ class DomElement {
         return this;
     }
 
-    hasValue() {
-        if (!this.el || !this.el.parentElement)
-            return false;
-        return true;
+    added() {
+        return !!(this.el && this.el.parentElement);
+
     }
 
 
-    hasClass(cls) {
+    hasClass(cls: string) {
         return this.el.classList.contains(cls)
     }
 
+
     // Set or get attributes
-    attr(name, value) {
+    attr(name: any, value?: any): any {
         if (typeof name === "string" && value === undefined)
             return this.el.getAttribute(name);
 
@@ -68,7 +72,7 @@ class DomElement {
                     if (k in this)
                         this.el[k] = v;
                     else
-                        this.el.setAttribute(k, v);
+                        this.el.setAttribute(k, v as string);
 
                 }
             }
@@ -76,10 +80,8 @@ class DomElement {
         return this;
     }
 
-
-
     // Add inline styles
-    css(styles) {
+    css(styles: any): this {
         if (typeof styles === "string")
             this.el.style.cssText += ";" + styles;
         else
@@ -88,38 +90,39 @@ class DomElement {
     }
 
     // Add one or more classes
-    addClass(...cls) {
+    addClass(...cls: string[]): this {
         this.el.classList.add(...cls);
         return this;
     }
 
-    removeClass(...cls) {
+    removeClass(...cls: string[]): this {
         this.el.classList.remove(...cls);
         return this;
     }
 
-    toggleClass(cls, force) {
+    toggleClass(cls: string, force?: boolean): this {
         this.el.classList.toggle(cls, force);
         return this;
     }
 
-    option(key, value) {
+    option(key: string, value?: any): this {
         this.el[key] = value;
+        return this;
     }
 
     // Add event listener
-    on(event, handler, options) {
+    on(event: string, handler: any, options?: any): this {
         this.el.addEventListener(event, handler, options);
         return this;
     }
 
-    off(event, handler) {
+    off(event, handler): this {
         this.el.removeEventListener(event, handler);
         return this;
     }
 
     // Add or clear children
-    append(...children) {
+    append(...children: any[]): this {
         for (let child of children) {
             if (!child) continue;
             if (child instanceof DomElement) child = child.el;
@@ -130,7 +133,7 @@ class DomElement {
         return this;
     }
 
-    prepend(...children) {
+    prepend(...children: any[]): this {
         for (let child of children) {
             if (!child) continue;
             if (child instanceof DomElement) child = child.el;
@@ -141,75 +144,84 @@ class DomElement {
         return this;
     }
 
-    clear() {
+    clear(): this {
         this.el.textContent = "";
         return this;
     }
 
     // Insert into DOM
-    mount(parent = document.body) {
+    mount(parent: DomElement | HTMLElement = document.body): this {
         const p = parent instanceof DomElement ? parent.el : parent;
         p.appendChild(this.el);
         return this;
     }
 
-    remove() {
-        this.el.remove();
+    remove(selector?: string): this {
+        if (!selector)
+            this.el.remove();
+        else this.findAll(selector).forEach(x => x.remove());
         return this;
     }
 
+    insertAt(child: DomElement, index: number, selector?: string | ((el: DomElement) => (DomElement | undefined))) {
+        const beforeNode = !selector ? (this.el.children[index] || null) : (typeof selector == "function" ? selector(this as any)?.el ?? null : this.findAll(selector)[index]?.el ?? null) // null = append at end
+        beforeNode ? this.el.insertBefore(child.el, beforeNode) : this.el.appendChild(child.el);
+        return this;
+    }
+
+
     // Shortcut for query inside element
-    find(selector) {
+    find(selector: string): T {
         let item = this.el.querySelector(selector);
         if (item)
-            return new DomElement(item);
+            return new DomElement(item) as any;
         return undefined;
     }
 
-    findAll(selector) {
-        return [...this.el.querySelectorAll(selector)].map(el => new DomElement(el));
+    findAll(selector: string): (this & IDomElement)[] {
+        return [...this.el.querySelectorAll(selector)].map(el => new DomElement(el)) as any;
     }
 
     get children() {
         return [...this.el.children].map(x => new DomElement(x))
     }
 
-    parent(selector) {
+    parent(selector?: string | number): this {
         let item = null;
 
         if (selector && typeof selector == "string")
             item = this.el.closest(selector);
         else if (selector == undefined) item = this.el.parentElement;
-        else for (let i = 0; i < selector; i++) {
+        else if (typeof selector == "number") for (let i = 0; i < selector; i++) {
             item = (item ?? this.el).parentElement;
         }
 
         if (item)
-            return new DomElement(item);
+            return new DomElement(item) as any;
 
         return undefined;
 
     }
 
-    text(value) {
+    text(value?: string): any {
         if (value === undefined) return this.el.textContent;
         this.el.textContent = value;
         return this;
     }
 
-    html(value) {
+    html(value?: string) {
         if (value === undefined) return this.el.innerHTML;
         this.el.innerHTML = value;
-        return this;
+        return this as any;
     }
 
-    hide(value) {
+    hide(value?: string) {
         if (value)
             this.css({ display: value });
         else this.css({ display: "none" });
     }
 
-    show(value) {
+    show(value?: string) {
         if (value)
             this.css({ display: value });
         else this.css({ display: "block" });
@@ -219,6 +231,22 @@ class DomElement {
         this.el.scrollIntoView(option);
         return this;
     }
+
+    scrollIntoViewIfNeeded(container: DomElement, behavior: ScrollBehavior = "smooth") {
+        if (!container) return;
+
+        const containerRect = container.el.getBoundingClientRect();
+        const elementRect = this.el.getBoundingClientRect();
+
+        const isVisible =
+            elementRect.top >= containerRect.top &&
+            elementRect.bottom <= containerRect.bottom;
+
+        if (!isVisible) {
+            this.el.scrollIntoView({ behavior, block: "center", inline: "nearest" });
+        }
+    }
+
 
     scrollValues() {
         return [this.el.scrollLeft, this.el.scrollTop];
@@ -233,13 +261,17 @@ class DomElement {
         return this.el.shadowRoot ? new DomElement(this.el.shadowRoot) : this.el.shadowRoot;
     }
 
-    scroll(left, top) {
+    scroll(left?: number, top?: number) {
         if (left)
             this.el.scrollLeft = left;
         if (top)
             this.el.scrollTop = top;
 
         return this;
+    }
+
+    getBoundingClientRect() {
+        return this.el.getBoundingClientRect();
     }
 }
 
@@ -253,6 +285,7 @@ const getterAndSetter = [
     "scrollHeight",
     "scrollWidth",
     "classList",
+    "innerHTML",
     "value",
     "id",
     "style",
@@ -260,11 +293,16 @@ const getterAndSetter = [
     "className",
     "readOnly",
     "disabled",
-    "textContent"];
+    "textContent",
+    "src",
+    "dataset"];
 getterAndSetter.forEach(x => {
     Object.defineProperty(DomElement.prototype, x, {
         get: function () {
-            return this.el[x];
+            let v = this.el[x];
+            if (typeof v == "function" && v)
+                v.bind(this.el);
+            return v;
         },
         set: function (value) {
             this.el[x] = value;
@@ -273,7 +311,6 @@ getterAndSetter.forEach(x => {
     })
 })
 
-
 window.$ = function (tag, attrs) {
     if (tag && typeof tag == "string") {
         tag = tag.trim();
@@ -281,22 +318,16 @@ window.$ = function (tag, attrs) {
             tag = tag.substring(1, tag.length - 2).trim();
             tag = document.createElement(tag);
         }
-        else if (/[\.\#\>\s:()\[\]]/.test(tag)) {
+        else if (/[\.\#\>\s:\(\)\[\]]/.test(tag)) {
             tag = document.querySelector(tag);
         }
     }
     if (tag)
-        return new DomElement(tag, attrs);
+        return new DomElement(tag, attrs) as any;
     return undefined;
 }
 
-$.find = (selector) => {
-    let item = document.querySelector(selector);
-    if (item)
-        return new DomElement(item);
-    return undefined;
+window.$$ = function (selector) {
+    return [...document.querySelectorAll(selector)].map(el => new DomElement(el)) as any;
 }
 
-$.findAll = (selector) => {
-    return [...document.querySelectorAll(selector)].map(el => new DomElement(el));
-}
