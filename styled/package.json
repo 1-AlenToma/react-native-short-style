@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "type": "module",
@@ -20,7 +20,9 @@
     "react-native css"
   ],
   "scripts": {
-    "build": "rmdir /s /q dist && tsc && cd demo && npm run export",
+    "clean": "rmdir /s /q dist",
+    "build": "tsc && cd demo && npm run export",
+    "ready": "npm run clean && npm run build",
     "web": "cd demo && npx expo start",
     "test": "tsc  && jest tsx ./dist/test/Methods.test.js"
   },
