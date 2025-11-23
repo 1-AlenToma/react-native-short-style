@@ -21,12 +21,9 @@ const TabBarContext = React.createContext({});
 export class TabView extends React.PureComponent {
     render() {
         const props = this.props;
-        const context = this.context;
-        let css = optionalStyle(props.css);
-        return (_jsx(View, Object.assign({ inspectDisplayName: "TabView" }, props, { css: `TabView fl:1 wi:100% he:100% bac-transparent ${css.c} ` })));
+        return (_jsx(View, Object.assign({ inspectDisplayName: "TabView" }, props, { css: x => x.joinRight("TabView fl:1 wi:100% he:100% bac-transparent").joinRight(props.css) })));
     }
 }
-TabView.contextType = TabBarContext;
 const TabBarMenu = ({ children }) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     const context = React.useContext(TabBarContext);

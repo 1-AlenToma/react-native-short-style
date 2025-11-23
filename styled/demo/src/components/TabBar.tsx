@@ -9,7 +9,6 @@ import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactN
 import {
     ifSelector,
     optionalStyle,
-    measure,
     newId
 } from "../config";
 import { useAnimate, useTimer } from "../hooks";
@@ -19,7 +18,6 @@ import StateBuilder from "../States";
 import { Icon } from "./Icon";
 import { globalData } from "../theme/ThemeContext";
 import { Loader } from "./Loader";
-import { sleep, updater } from "react-smart-state";
 
 
 type ITabBarContext = {
@@ -34,13 +32,10 @@ type ITabBarContext = {
 const TabBarContext = React.createContext<ITabBarContext>({} as any)
 
 export class TabView extends React.PureComponent<TabItemProps, {}> {
-    static contextType = TabBarContext;
     render(): React.ReactNode {
         const props = this.props;
-        const context: ITabBarContext = this.context as any;
-        let css = optionalStyle(props.css);
         return (
-            <View inspectDisplayName="TabView" {...props} css={`TabView fl:1 wi:100% he:100% bac-transparent ${css.c} `} />
+            <View inspectDisplayName="TabView" {...props} css={x=> x.joinRight("TabView fl:1 wi:100% he:100% bac-transparent").joinRight(props.css)} />
         )
     }
 

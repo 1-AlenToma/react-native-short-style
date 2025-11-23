@@ -22,11 +22,13 @@
   "scripts": {
     "clean": "rmdir /s /q dist",
     "build": "tsc && cd demo && npm run export",
-    "ready": "npm run clean && npm run build",
+    "assets": "cpx \"demo/assets/**/*\" dist/demo/assets && cpx \"demo/src/assets/**/*\" dist/demo/src/assets",
+    "ready": "npm run clean && npm run build && npm run assets",
     "web": "cd demo && npx expo start",
     "test": "tsc  && jest tsx ./dist/test/Methods.test.js"
   },
   "peerDependencies": {
+    "msgpackr": "*",
     "react": "*",
     "react-native": "*"
   },
@@ -34,6 +36,7 @@
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-native": "*",
+    "cpx": "*",
     "typescript": "*"
   },
   "files": [
