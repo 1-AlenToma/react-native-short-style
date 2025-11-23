@@ -1,7 +1,0 @@
-{
-  "name": "react-native-short-style",
-  "private": true,
-  "workspaces": [
-    "styled"
-  ]
-}
