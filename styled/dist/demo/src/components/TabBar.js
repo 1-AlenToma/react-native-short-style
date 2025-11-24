@@ -365,10 +365,10 @@ export const TabBar = (props) => {
                         backgroundColor: "transparent"
                     }, children: [x.props.head, !props.disableScrolling && !x.props.disableScrolling ? (_jsx(NativeAcrollView, { style: {
                                 width: "100%",
-                            }, contentContainerStyle: React.useMemo(() => ({
+                            }, contentContainerStyle: {
                                 flexGrow: 1,
                                 width: "100%",
                                 maxWidth: "100%"
-                            }), []), children: getView(i, x) })) : (getView(i, x))] }, i))) })), position !== "Top" ? (tabMenu) : null, props.footer] }));
+                            }, children: getView(i, x) })) : (getView(i, x))] }, i))) })), position !== "Top" ? (tabMenu) : null, props.footer] }));
 };
 //# sourceMappingURL=TabBar.js.map

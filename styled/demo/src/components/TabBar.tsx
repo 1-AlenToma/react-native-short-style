@@ -522,12 +522,12 @@ export const TabBar = (props: TabBarProps) => {
                                 style={{
                                     width: "100%",
                                 }}
-                                contentContainerStyle={React.useMemo(() => (
+                                contentContainerStyle={
                                     {
                                         flexGrow: 1,
                                         width: "100%",
                                         maxWidth: "100%"
-                                    }), [])
+                                    }
                                 }>
                                 {getView(i, x)}
                             </NativeAcrollView>
