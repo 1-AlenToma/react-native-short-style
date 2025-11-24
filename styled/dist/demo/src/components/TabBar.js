@@ -8,11 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { PanResponder, Platform } from "react-native";
+import { PanResponder, Platform, View as NativeView, ScrollView as NativeAcrollView, Easing } from "react-native";
 import * as React from "react";
-import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
-import { ifSelector, optionalStyle, newId } from "../config";
-import { useAnimate, useTimer } from "../hooks";
+import { View, AnimatedView, Text, TouchableOpacity } from "./ReactNativeComponents";
+import { ifSelector, optionalStyle } from "../config";
+import { useAnimate } from "../hooks";
 import StateBuilder from "../States";
 import { Icon } from "./Icon";
 import { globalData } from "../theme/ThemeContext";
@@ -24,7 +24,7 @@ export class TabView extends React.PureComponent {
         return (_jsx(View, Object.assign({ inspectDisplayName: "TabView" }, props, { css: x => x.joinRight("TabView fl:1 wi:100% he:100% bac-transparent").joinRight(props.css) })));
     }
 }
-const TabBarMenu = ({ children }) => {
+const TabBarMenu = React.memo(({ children }) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     const context = React.useContext(TabBarContext);
     const position = (_a = context.props.position) !== null && _a !== void 0 ? _a : "Bottom";
@@ -136,21 +136,21 @@ const TabBarMenu = ({ children }) => {
                         // state.selectedIndex = i;
                         context.onMenuChange(i);
                     }, children: [x.props.icon ? getIcon(x.props.icon, Object.assign(Object.assign({}, menuText), { height: i == state.selectedIndex ? 15 : 18, fontSize: i == state.selectedIndex ? 15 : 18 }), i) : null, x.props.title ? (_jsx(Text, { style: [Object.assign({}, menuText), header.textStyle.o, state.selectedIndex == i ? header === null || header === void 0 ? void 0 : header.selectedTextStyle.o : null], css: `fos-sm ${state.selectedIndex == i ? header === null || header === void 0 ? void 0 : header.selectedTextStyle.o : ""} ${header.textStyle.c}`, children: x.props.title })) : null] }, i))) }), position == "Top" ? border : null] }));
-};
+});
 export const TabBar = (props) => {
     var _a, _b, _c, _d;
-    const children = Array.isArray(props.children) ? props.children : [props.children];
+    const children = React.useMemo(() => Array.isArray(props.children) ? props.children : [props.children], [props.children]);
     const position = (_a = props.position) !== null && _a !== void 0 ? _a : "Bottom";
     const visibleChildren = children.filter(x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon));
-    const { animate, animateX, currentValue } = useAnimate();
-    const menuAnimation = useAnimate();
+    const { animate, animateX, currentValue } = useAnimate({ easing: Easing.out(Easing.cubic) });
+    const menuAnimation = useAnimate({ easing: Easing.out(Easing.cubic) });
     const temp = {};
     temp[(_b = props.selectedTabIndex) !== null && _b !== void 0 ? _b : 0] = true;
     const state = StateBuilder(() => {
         var _a;
         return ({
             index: (_a = props.selectedTabIndex) !== null && _a !== void 0 ? _a : 0,
-            updater: "",
+            size: { width: 0, height: 0 },
             refItem: {
                 rItems: children.map(x => { }),
                 loadedViews: temp,
@@ -160,21 +160,18 @@ export const TabBar = (props) => {
                 handled: false,
                 interpolate: [],
                 panResponse: undefined,
-                container: undefined,
-                size: { width: 0, height: 0 },
             }
         });
-    }).ignore("refItem").build();
-    const timer = useTimer(100);
+    }).ignore("refItem", "size").build();
     //globalData.hook("window");
     const getWidth = (index) => {
         var _a;
-        let v = index * ((_a = state.refItem.size.width) !== null && _a !== void 0 ? _a : 0);
+        let v = index * ((_a = state.size.width) !== null && _a !== void 0 ? _a : 0);
         if (isNaN(v))
             return 0;
         return v;
     };
-    const getInputRange = React.useCallback(() => {
+    const getInputRange = () => {
         let item = children
             .map((x, i) => {
             return {
@@ -184,15 +181,14 @@ export const TabBar = (props) => {
         })
             .sort((a, b) => a.value - b.value);
         return item;
-    }, [state.refItem.size.width, children.length]);
-    state.refItem.interpolate = React.useMemo(getInputRange, [getInputRange()]);
+    };
+    state.refItem.interpolate = getInputRange();
     const tAnimate = (index, speed, fn) => {
-        var _a, _b;
-        let value = (_b = (_a = state.refItem.interpolate.find(x => x.index == index)) === null || _a === void 0 ? void 0 : _a.value) !== null && _b !== void 0 ? _b : 0;
+        let value = index * -state.size.width;
         if (state.refItem.menuInterpolate && state.refItem.menuInterpolate.length > 0)
             menuAnimation.animateX(state.refItem.menuInterpolate[index], undefined, speed);
         animateX(value, () => {
-            timer(() => fn === null || fn === void 0 ? void 0 : fn());
+            fn === null || fn === void 0 ? void 0 : fn();
         }, speed);
     };
     const animateLeft = (index) => __awaiter(void 0, void 0, void 0, function* () {
@@ -227,10 +223,13 @@ export const TabBar = (props) => {
             (_a = props.onTabChange) === null || _a === void 0 ? void 0 : _a.call(props, state.index);
             (_b = contextValue.onChange) === null || _b === void 0 ? void 0 : _b.call(contextValue, state.index);
         }
-        //assign();
     }, "index");
+    const windowChanged = () => {
+        requestAnimationFrame(() => { tAnimate(state.index, 0); });
+    };
+    globalData.useEffect(windowChanged, "window");
     React.useEffect(() => {
-        state.refItem.interpolate = getInputRange();
+        windowChanged();
     }, [children]);
     const assign = () => {
         const onRelease = (evt, gestureState) => {
@@ -245,7 +244,7 @@ export const TabBar = (props) => {
             menuAnimation.currentValue.x = undefined;
             let newValue = gestureState.dx;
             let diff = newValue - state.refItem.startValue;
-            let width = state.refItem.size.width;
+            let width = state.size.width;
             let i = (_a = state.index) !== null && _a !== void 0 ? _a : 0;
             let speed = 200;
             menuAnimation.animate.flattenOffset();
@@ -335,44 +334,41 @@ export const TabBar = (props) => {
         props: props,
         lazyLoading: (_c = props.lazyLoading) !== null && _c !== void 0 ? _c : false,
         selectedIndex: (_d = state.index) !== null && _d !== void 0 ? _d : 0,
-        size: state.refItem.size,
+        size: state.size,
         animated: menuAnimation.animate
     };
-    const interpolate = React.useMemo(() => state.refItem.interpolate.map(x => x.value), [state.refItem.interpolate]);
-    return (_jsx(View, { ref: x => state.refItem.container = x, onLayout: ({ nativeEvent }) => {
-            state.refItem.size = nativeEvent.layout;
-            state.refItem.interpolate = getInputRange();
-            tAnimate(state.index, 0, () => state.index == 0 ? state.updater = newId() : undefined);
-        }, css: React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css]), style: props.style, children: _jsxs(TabBarContext.Provider, { value: contextValue, children: [position === "Top" && visibleChildren.length > 1 ? (_jsx(TabBarMenu, { children: children })) : null, _jsx(AnimatedView, Object.assign({ css: `_tabBarContainer`, style: [
-                        (visibleChildren.length <= 1 ? {
-                            minHeight: null,
-                            height: null
-                        } : null),
-                        {
-                            flex: 1,
-                            flexGrow: 1,
-                            transform: [
-                                {
-                                    translateX: animate.x.interpolate({
-                                        inputRange: interpolate,
-                                        outputRange: interpolate,
-                                        extrapolate: "clamp"
-                                    })
-                                }
-                            ],
-                            width: (100 * children.length) + "%"
-                        }
-                    ] }, state.refItem.panResponse.panHandlers, { children: children.map((x, i) => (_jsxs(View, { style: {
-                            maxWidth: `${100 / children.length}%`,
-                            width: `${100 / children.length}%`,
-                            flexGrow: 1,
-                            backgroundColor: "transparent"
-                        }, children: [x.props.head, !props.disableScrolling && !x.props.disableScrolling ? (_jsx(ScrollView, { style: {
-                                    width: "100%",
-                                }, contentContainerStyle: {
-                                    flexGrow: 1,
-                                    width: "100%",
-                                    maxWidth: "100%"
-                                }, children: getView(i, x) })) : (getView(i, x))] }, i))) })), position !== "Top" && visibleChildren.length > 1 ? (_jsx(TabBarMenu, { children: children })) : null, props.footer] }) }));
+    const interpolate = state.refItem.interpolate.map(x => x.value);
+    const tabMenu = visibleChildren.length > 1 ? (_jsx(TabBarContext.Provider, { value: contextValue, children: _jsx(TabBarMenu, { children: children }) })) : null;
+    return (_jsxs(AnimatedView, { onLayout: (_a) => __awaiter(void 0, [_a], void 0, function* ({ nativeEvent }) {
+            state.size = nativeEvent.layout;
+            windowChanged();
+        }), css: React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css]), style: props.style, children: [position === "Top" ? (tabMenu) : null, _jsx(AnimatedView, Object.assign({ css: `_tabBarContainer`, style: [
+                    (visibleChildren.length <= 1 ? {
+                        minHeight: null,
+                        height: null
+                    } : null),
+                    {
+                        transform: [
+                            {
+                                translateX: animate.x.interpolate({
+                                    inputRange: interpolate,
+                                    outputRange: interpolate,
+                                    extrapolate: "clamp"
+                                })
+                            }
+                        ],
+                        width: state.size.width
+                    }
+                ] }, state.refItem.panResponse.panHandlers, { children: children.map((x, i) => (_jsxs(NativeView, { style: {
+                        width: state.size.width,
+                        height: '100%',
+                        backgroundColor: "transparent"
+                    }, children: [x.props.head, !props.disableScrolling && !x.props.disableScrolling ? (_jsx(NativeAcrollView, { style: {
+                                width: "100%",
+                            }, contentContainerStyle: React.useMemo(() => ({
+                                flexGrow: 1,
+                                width: "100%",
+                                maxWidth: "100%"
+                            }), []), children: getView(i, x) })) : (getView(i, x))] }, i))) })), position !== "Top" ? (tabMenu) : null, props.footer] }));
 };
 //# sourceMappingURL=TabBar.js.map

@@ -107,7 +107,7 @@ export const globalData = StateBuilder<GlobalState>(() => ({
     window: Dimensions.get("window"),
     appStart: () => {
         let timer = undefined;
-        const $this: GlobalState = globalData as any;
+        const $this: GlobalState = globalData;
         let onSizeChanged = ({ window, screen }) => {
             clearTimeout(timer);
             timer = setTimeout(() => {

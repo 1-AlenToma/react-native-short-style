@@ -1,7 +1,10 @@
 import {
     Animated,
     PanResponder,
-    Platform
+    Platform,
+    View as NativeView,
+    ScrollView as NativeAcrollView,
+    Easing
 } from "react-native";
 import * as React from "react";
 
@@ -35,13 +38,13 @@ export class TabView extends React.PureComponent<TabItemProps, {}> {
     render(): React.ReactNode {
         const props = this.props;
         return (
-            <View inspectDisplayName="TabView" {...props} css={x=> x.joinRight("TabView fl:1 wi:100% he:100% bac-transparent").joinRight(props.css)} />
+            <View inspectDisplayName="TabView" {...props} css={x => x.joinRight("TabView fl:1 wi:100% he:100% bac-transparent").joinRight(props.css)} />
         )
     }
 
 }
 
-const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
+const TabBarMenu = React.memo(({ children }: { children: MenuChildren[] }) => {
     const context = React.useContext(TabBarContext);
     const position = context.props.position ?? "Bottom";
 
@@ -214,21 +217,21 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
             {position == "Top" ? border : null}
         </View>
     );
-}
+});
 
 export const TabBar = (props: TabBarProps) => {
-    const children = Array.isArray(props.children) ? props.children : [props.children];
+    const children = React.useMemo(() => Array.isArray(props.children) ? props.children : [props.children], [props.children]);
     const position = props.position ?? "Bottom";
     const visibleChildren = children.filter(
         x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon)
     );
-    const { animate, animateX, currentValue } = useAnimate();
-    const menuAnimation = useAnimate();
+    const { animate, animateX, currentValue } = useAnimate({ easing: Easing.out(Easing.cubic) });
+    const menuAnimation = useAnimate({ easing: Easing.out(Easing.cubic) });
     const temp = {};
     temp[props.selectedTabIndex ?? 0] = true;
     const state = StateBuilder(() => ({
         index: props.selectedTabIndex ?? 0,
-        updater: "",
+        size: { width: 0, height: 0 } as Size,
         refItem: {
             rItems: children.map(x => { }) as any as MenuChildren[],
             loadedViews: temp,
@@ -238,19 +241,17 @@ export const TabBar = (props: TabBarProps) => {
             handled: false,
             interpolate: [],
             panResponse: undefined,
-            container: undefined as typeof View | undefined,
-            size: { width: 0, height: 0 } as Size,
+
         }
 
-    })).ignore("refItem").build();
-    const timer = useTimer(100)
+    })).ignore("refItem", "size").build();
     //globalData.hook("window");
     const getWidth = (index: number) => {
-        let v = index * (state.refItem.size.width ?? 0);
+        let v = index * (state.size.width ?? 0);
         if (isNaN(v)) return 0;
         return v;
     };
-    const getInputRange = React.useCallback(() => {
+    const getInputRange = () => {
         let item = children
             .map((x, i) => {
                 return {
@@ -261,29 +262,33 @@ export const TabBar = (props: TabBarProps) => {
             .sort((a, b) => a.value - b.value);
 
         return item;
-    }, [state.refItem.size.width, children.length]);
+    }
 
-    state.refItem.interpolate = React.useMemo(getInputRange, [getInputRange()]);
+    state.refItem.interpolate = getInputRange();
     const tAnimate = (
         index: number,
         speed?: number,
         fn?: any
     ) => {
 
-        let value = state.refItem.interpolate.find(x => x.index == index)?.value ?? 0;
+        let value = index * -state.size.width;
+
         if (state.refItem.menuInterpolate && state.refItem.menuInterpolate.length > 0)
             menuAnimation.animateX(
                 state.refItem.menuInterpolate[index],
                 undefined,
                 speed
             );
+
         animateX(
             value,
             () => {
-                timer(() => fn?.());
+                fn?.();
+
             },
             speed
         );
+
     };
 
     const animateLeft = async (index: number) => {
@@ -320,14 +325,18 @@ export const TabBar = (props: TabBarProps) => {
             props.onTabChange?.(state.index);
             contextValue.onChange?.(state.index);
         }
-
-        //assign();
     }, "index");
 
 
+    const windowChanged = () => {
+        requestAnimationFrame(() => { tAnimate(state.index, 0) })
+
+    }
+
+    globalData.useEffect(windowChanged, "window")
 
     React.useEffect(() => {
-        state.refItem.interpolate = getInputRange();
+        windowChanged();
     }, [children]);
 
     const assign = () => {
@@ -346,7 +355,7 @@ export const TabBar = (props: TabBarProps) => {
             menuAnimation.currentValue.x = undefined;
             let newValue = gestureState.dx;
             let diff = newValue - state.refItem.startValue;
-            let width = state.refItem.size.width;
+            let width = state.size.width;
             let i = state.index ?? 0;
             let speed = 200;
             menuAnimation.animate.flattenOffset();
@@ -457,82 +466,81 @@ export const TabBar = (props: TabBarProps) => {
         props: props,
         lazyLoading: props.lazyLoading ?? false,
         selectedIndex: state.index ?? 0,
-        size: state.refItem.size,
+        size: state.size,
         animated: menuAnimation.animate
     };
 
-    const interpolate = React.useMemo(() => state.refItem.interpolate.map(x => x.value), [state.refItem.interpolate])
+    const interpolate = state.refItem.interpolate.map(x => x.value);
+
+    const tabMenu = visibleChildren.length > 1 ? (
+        <TabBarContext.Provider value={contextValue}>
+            <TabBarMenu children={children} />
+        </TabBarContext.Provider>
+    ) : null
 
     return (
-        <View ref={x => state.refItem.container = x as any} onLayout={({ nativeEvent }) => {
-            state.refItem.size = nativeEvent.layout;
-            state.refItem.interpolate = getInputRange();
-            tAnimate(state.index, 0, () => state.index == 0 ? state.updater = newId() : undefined);
-        }} css={React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css])} style={props.style}>
-            <TabBarContext.Provider value={contextValue}>
-                {position === "Top" && visibleChildren.length > 1 ? (
-                    <TabBarMenu children={children} />
-                ) : null}
-                <AnimatedView
-                    css={`_tabBarContainer`}
-                    style={[
-                        (visibleChildren.length <= 1 ? {
-                            minHeight: null,
-                            height: null
-                        } : null),
-                        {
-                            flex: 1,
-                            flexGrow: 1,
-                            transform: [
-                                {
-                                    translateX: animate.x.interpolate(
-                                        {
-                                            inputRange: interpolate,
-                                            outputRange: interpolate,
-                                            extrapolate: "clamp"
-                                        }
-                                    )
-                                }
-                            ],
-                            width: (100 * children.length) + "%"
-                        }
-                    ]}
-                    {...state.refItem.panResponse.panHandlers}>
-                    {children.map((x, i) => (
-                        <View
-                            style={{
-                                maxWidth: `${100 / children.length}%`,
-                                width: `${100 / children.length}%`,
-                                flexGrow: 1,
-                                backgroundColor: "transparent"
-                            }}
-                            key={i}>
-                            {x.props.head}
-                            {!props.disableScrolling && !x.props.disableScrolling ? (
-                                <ScrollView
-                                    style={{
+        <AnimatedView
+            onLayout={async ({ nativeEvent }) => {
+                state.size = nativeEvent.layout;
+                windowChanged();
+            }} css={React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css])} style={props.style}>
+            {position === "Top" ? (
+                tabMenu
+            ) : null}
+            <AnimatedView
+                css={`_tabBarContainer`}
+                style={[
+                    (visibleChildren.length <= 1 ? {
+                        minHeight: null,
+                        height: null
+                    } : null),
+                    {
+                        transform: [
+                            {
+                                translateX: animate.x.interpolate({
+                                    inputRange: interpolate,
+                                    outputRange: interpolate,
+                                    extrapolate: "clamp"
+                                })
+                            }
+                        ],
+                        width: state.size.width
+                    }
+                ]}
+                {...state.refItem.panResponse.panHandlers}>
+                {children.map((x, i) => (
+                    <NativeView
+                        style={{
+                            width: state.size.width,
+                            height: '100%',
+                            backgroundColor: "transparent"
+                        }}
+                        key={i}>
+                        {x.props.head}
+                        {!props.disableScrolling && !x.props.disableScrolling ? (
+                            <NativeAcrollView
+                                style={{
+                                    width: "100%",
+                                }}
+                                contentContainerStyle={React.useMemo(() => (
+                                    {
+                                        flexGrow: 1,
                                         width: "100%",
-                                    }}
-                                    contentContainerStyle={
-                                        {
-                                            flexGrow: 1,
-                                            width: "100%",
-                                            maxWidth: "100%"
-                                        }
-                                    }>
-                                    {getView(i, x)}
-                                </ScrollView>
-                            ) : (
-                                getView(i, x)
-                            )}
-                        </View>
-                    ))}
-                </AnimatedView>
-                {position !== "Top" && visibleChildren.length > 1 ? (
-                    <TabBarMenu children={children} />
-                ) : null}
-                {props.footer}
-            </TabBarContext.Provider>
-        </View>
+                                        maxWidth: "100%"
+                                    }), [])
+                                }>
+                                {getView(i, x)}
+                            </NativeAcrollView>
+                        ) : (
+                            getView(i, x)
+                        )}
+                    </NativeView>
+                ))}
+            </AnimatedView>
+            {position !== "Top" ? (
+                tabMenu
+            ) : null}
+            {props.footer}
+        </AnimatedView>
     );
 }
