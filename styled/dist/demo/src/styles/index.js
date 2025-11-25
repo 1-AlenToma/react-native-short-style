@@ -193,11 +193,11 @@ export class CMBuilder {
         const mappedChildren = cloneChild(childrenArray);
         componentParent.total = (_g = (_f = context.parent) === null || _f === void 0 ? void 0 : _f.total) !== null && _g !== void 0 ? _g : childTotal;
         const [_styles, keySelectors] = useStyled(id, context, this.__name, componentParent.index, componentParent.total, variant, componentParent, themeContext.systemThemes);
-        let cssStyle = (_h = React.useMemo(() => {
+        let cssStyle = Object.assign({}, ((_h = React.useMemo(() => {
             if (!_css || _css.trim().length === 0)
                 return undefined;
             return cssTranslator(_css, themeContext.systemThemes);
-        }, [_css, themeContext.systemThemes])) !== null && _h !== void 0 ? _h : {};
+        }, [_css, themeContext.systemThemes])) !== null && _h !== void 0 ? _h : {}));
         //**
         // style.important override cssStyle and cssStyle.important override the style.important
         // and style tag override all */

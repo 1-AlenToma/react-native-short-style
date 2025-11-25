@@ -163,7 +163,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
     if (isVertical && position == "Bottom")
         handleStyle.top = 8;
 
-    const _css = React.useMemo(() => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue(), [props.css]);
+    const _css : any = () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
 
     const renderUpdate = () => {
         let Handle = Platform.OS == "web" ? TouchableOpacity : View;

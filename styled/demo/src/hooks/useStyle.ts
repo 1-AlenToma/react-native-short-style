@@ -237,6 +237,7 @@ function matchSelector(
 
 // --- useStyled ---
 export function useStyled(parentId: string, context: StyleContextType, type: string, index: number, total: number, variant?: string, thisParent?: IParent, systemTheme?: any) {
+    try{
     const id = `${parentId}_useStyled`;
     const current = variant ? `${type}.${variant}` : type;
     const classNames = thisParent?.classPath ?? [];
@@ -317,6 +318,10 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
     }
 
     return [{ ...merged, important }, keyStyle] as [Record<string, any> & { important: typeof important }, Record<string, any>];
+}catch(e){
+    console.error("usestyle error");
+    throw e;
+}
 }
 
 

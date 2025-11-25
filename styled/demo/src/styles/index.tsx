@@ -223,10 +223,10 @@ export class CMBuilder {
             themeContext.systemThemes
         );
 
-        let cssStyle = React.useMemo(() => {
+        let cssStyle = {...(React.useMemo(() => {
             if (!_css || _css.trim().length === 0) return undefined;
             return cssTranslator(_css, themeContext.systemThemes);
-        }, [_css, themeContext.systemThemes]) ?? {} as any;
+        }, [_css, themeContext.systemThemes]) ?? {} as any)};
 
         //**
         // style.important override cssStyle and cssStyle.important override the style.important

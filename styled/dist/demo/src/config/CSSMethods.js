@@ -7,6 +7,7 @@ export const flatStyle = function (style, ...removeKeys) {
             return a;
         }, {});
     let item = style !== null && style !== void 0 ? style : {};
+    item = Object.assign({}, item);
     removeKeys.forEach(x => delete item[x]);
     return item;
 };

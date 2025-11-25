@@ -126,6 +126,7 @@ const css_translator = (
   styleFile?: any,
   id?: string
 ): object & { _props: any, important?: any } => {
+  try{
   let important = {};
   let cssItem = { _props: {} };
   if (!css || css.trim().length <= 0) return cssItem;
@@ -192,6 +193,9 @@ const css_translator = (
         CSS[c] = { ...style } // so as to not parse it again
       }
 
+      if (typeof style == "object")
+        style = {...style}
+
       if (style) {
         if (style._props) {
           Object.assign(cssItem._props, style._props)
@@ -209,6 +213,10 @@ const css_translator = (
     Storage.set(id, { ...cssItem, important: { ...important } });
   else TStorage.set(css, { ...cssItem, important: { ...important } });
   return { ...cssItem, important: { ...important } }
+}catch(e){
+  console.error("css translator error", css, e);
+  throw e
+}
 };
 
 export default css_translator;

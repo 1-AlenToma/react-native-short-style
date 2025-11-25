@@ -269,77 +269,83 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
 // --- useStyled ---
 export function useStyled(parentId, context, type, index, total, variant, thisParent, systemTheme) {
     var _a;
-    const id = `${parentId}_useStyled`;
-    const current = variant ? `${type}.${variant}` : type;
-    const classNames = (_a = thisParent === null || thisParent === void 0 ? void 0 : thisParent.classPath) !== null && _a !== void 0 ? _a : [];
-    const idDev = devToolsHandlerContext.data.isOpened && __DEV__;
-    React.useEffect(() => {
-        return () => clearCss(id);
-    });
-    const fullPath = expandFullPath(context.parent, current, classNames);
-    //console.log(fullPath)
-    // Build indices, totals, typeIndex, totalTypes, props
-    const { indices, totals, typeIndex, totalTypes, props } = buildNodeMeta(fullPath, context.parent, thisParent, type, index, total);
-    let merged = {};
-    let important = {};
-    let keyStyle = {};
-    for (const rule of context.rules) {
-        let keySelector = {};
-        let keySelectorImportant = {};
-        for (const item of rule.parsedSelector) {
-            //const selectorParts = parseSelector(selStr);
-            //  const selectorParts = selStr.
-            const lastPart = item[item.length - 1];
-            if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
-                continue;
-            /*  if (rule.selectors.find(x => x.indexOf("virtualItemSelector:nth") !== -1) && fullPath.find(x => x.indexOf("virtualItemSelector") != -1)) {
-                  console.log(rule)
-      
-              }*/
-            if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
-                continue;
-            // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
-            //   console.log("here")
-            if (typeof rule.style === "string") {
-                let st = cssTranslator(rule.style, systemTheme);
-                merged = Object.assign(Object.assign({}, merged), st);
-                if (merged.important)
-                    important = Object.assign(Object.assign({}, important), cleanStyle(merged.important));
-                merged = cleanStyle(merged);
-                if (idDev) {
-                    keySelector = (Object.assign(Object.assign({}, keySelector), st));
-                    if (keySelector.important)
-                        keySelectorImportant = Object.assign(Object.assign({}, keySelectorImportant), cleanStyle(keySelector.important));
-                    keySelector = cleanStyle(keySelector);
-                }
-            }
-            else {
-                const isWholeImportant = rule.style["!important"] === true;
-                for (const [key, value] of Object.entries(rule.style)) {
-                    if (key === "!important")
-                        continue;
-                    if (typeof value === "string" && value.endsWith("!important")) {
-                        important[key] = value.replace(/(\-)?!important/gi, "").trim();
-                        if (idDev)
-                            keySelectorImportant[key] = important[key];
-                    }
-                    else if (isWholeImportant) {
-                        important[key] = value;
-                        if (idDev)
-                            keySelectorImportant[key] = value;
-                    }
-                    else {
-                        if (!(key in important))
-                            merged[key] = value;
-                        if (idDev && !(key in keySelectorImportant))
-                            keySelectorImportant[key] = value;
+    try {
+        const id = `${parentId}_useStyled`;
+        const current = variant ? `${type}.${variant}` : type;
+        const classNames = (_a = thisParent === null || thisParent === void 0 ? void 0 : thisParent.classPath) !== null && _a !== void 0 ? _a : [];
+        const idDev = devToolsHandlerContext.data.isOpened && __DEV__;
+        React.useEffect(() => {
+            return () => clearCss(id);
+        });
+        const fullPath = expandFullPath(context.parent, current, classNames);
+        //console.log(fullPath)
+        // Build indices, totals, typeIndex, totalTypes, props
+        const { indices, totals, typeIndex, totalTypes, props } = buildNodeMeta(fullPath, context.parent, thisParent, type, index, total);
+        let merged = {};
+        let important = {};
+        let keyStyle = {};
+        for (const rule of context.rules) {
+            let keySelector = {};
+            let keySelectorImportant = {};
+            for (const item of rule.parsedSelector) {
+                //const selectorParts = parseSelector(selStr);
+                //  const selectorParts = selStr.
+                const lastPart = item[item.length - 1];
+                if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
+                    continue;
+                /*  if (rule.selectors.find(x => x.indexOf("virtualItemSelector:nth") !== -1) && fullPath.find(x => x.indexOf("virtualItemSelector") != -1)) {
+                      console.log(rule)
+          
+                  }*/
+                if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
+                    continue;
+                // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
+                //   console.log("here")
+                if (typeof rule.style === "string") {
+                    let st = cssTranslator(rule.style, systemTheme);
+                    merged = Object.assign(Object.assign({}, merged), st);
+                    if (merged.important)
+                        important = Object.assign(Object.assign({}, important), cleanStyle(merged.important));
+                    merged = cleanStyle(merged);
+                    if (idDev) {
+                        keySelector = (Object.assign(Object.assign({}, keySelector), st));
+                        if (keySelector.important)
+                            keySelectorImportant = Object.assign(Object.assign({}, keySelectorImportant), cleanStyle(keySelector.important));
+                        keySelector = cleanStyle(keySelector);
                     }
                 }
+                else {
+                    const isWholeImportant = rule.style["!important"] === true;
+                    for (const [key, value] of Object.entries(rule.style)) {
+                        if (key === "!important")
+                            continue;
+                        if (typeof value === "string" && value.endsWith("!important")) {
+                            important[key] = value.replace(/(\-)?!important/gi, "").trim();
+                            if (idDev)
+                                keySelectorImportant[key] = important[key];
+                        }
+                        else if (isWholeImportant) {
+                            important[key] = value;
+                            if (idDev)
+                                keySelectorImportant[key] = value;
+                        }
+                        else {
+                            if (!(key in important))
+                                merged[key] = value;
+                            if (idDev && !(key in keySelectorImportant))
+                                keySelectorImportant[key] = value;
+                        }
+                    }
+                }
             }
+            keyStyle[rule.selectors.join(",")] = Object.assign(Object.assign({}, keySelector), keySelectorImportant);
         }
-        keyStyle[rule.selectors.join(",")] = Object.assign(Object.assign({}, keySelector), keySelectorImportant);
+        return [Object.assign(Object.assign({}, merged), { important }), keyStyle];
     }
-    return [Object.assign(Object.assign({}, merged), { important }), keyStyle];
+    catch (e) {
+        console.error("usestyle error");
+        throw e;
+    }
 }
 export const cleanStyle = (style, parse) => {
     if (parse)

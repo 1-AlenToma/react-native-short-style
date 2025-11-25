@@ -44,7 +44,7 @@ export default function App() {
     const debug = false;
     if (state.loading)
         return null;
-    return (_jsx(ThemeContainer, { localIp: "localhost", icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? (_jsx(View, { css: "texto-!important", children: _jsxs(Text, { children: ["hej jkhkjhasd ", _jsx(Text, { children: "test" })] }) })) : (_jsxs(TabBar, { ifTrue: false, lazyLoading: true, position: 'Bottom', header: {
+    return (_jsx(ThemeContainer, { icons: icons, selectedIndex: state.selectedTheme, themes: themes, defaultTheme: GlobalStyles, children: debug ? (_jsx(View, { css: "texto-!important", children: _jsxs(Text, { children: ["hej jkhkjhasd ", _jsx(Text, { children: "test" })] }) })) : (_jsxs(TabBar, { ifTrue: false, lazyLoading: true, position: 'Bottom', header: {
                 selectedIconStyle: "color:red",
                 style: x => x.baC("#ffffff"),
                 textStyle: x => x.co("#000"),

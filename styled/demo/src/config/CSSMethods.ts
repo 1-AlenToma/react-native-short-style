@@ -9,6 +9,7 @@ export const flatStyle = function <T>(style: T, ...removeKeys: (keyof T | string
         }, {});
 
     let item : any = style ?? {};
+    item={...item}
     removeKeys.forEach(x => delete item[x]);
     return item;
 }
