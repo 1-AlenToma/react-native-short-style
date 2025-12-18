@@ -104,16 +104,16 @@ const parseMessage = async (event: any) => {
                 viewer.selectNode(msg.payload, true) // viewId
             } else if (msg.type == "ERROR") {
                 settings.consoleData.errors.push(msg);
-                parseConsole(msg);
+                consoleRender.parseItems(msg);
             } else if (msg.type == "LOG") {
                 settings.consoleData.logs.push(msg);
-                parseConsole(msg);
+                consoleRender.parseItems(msg);
             } else if (msg.type == "INFO") {
                 settings.consoleData.infos.push(msg);
-                parseConsole(msg);
+                consoleRender.parseItems(msg);
             } else if (msg.type == "WARNING") {
                 settings.consoleData.warnings.push(msg);
-                parseConsole(msg);
+                consoleRender.parseItems(msg);
             } else if (msg.type == "FETCH") {
                 console.log("fetch data, not implemented yet", msg.payload);
             }
@@ -208,7 +208,6 @@ tabs.findAll(".header p").forEach(x => {
         if (value.startsWith("Elements"))
             $(".clearLogs")?.hide()
         else $(".clearLogs")?.show("inline-flex");
-        searchedItems = {};
     })
 });
 
@@ -245,7 +244,7 @@ $(".clearLogs").on("click", () => {
     settings.consoleData.warnings = [];
     settings.consoleData.logs = [];
     viewer.socket.postMessage("CLEARLOGS", { payload: true });
-    parseConsole();
+    consoleRender.clear();
 });
 
 const sendSettigs = (x?: any) => {
@@ -255,158 +254,17 @@ const sendSettigs = (x?: any) => {
     if (typeof value === "boolean")
         value = !value;
     else if (htmlObject) value = x.attr("data-value")
+    if (key == "webDevToolsIsOpen" && value == false)
+        settings.elementSelection = false;
     settings[key] = value;
     if (htmlObject)
         x.attr("data-value", value)
     propsChanged.has(key).forEach(x => x());
     viewer.socket.postMessage("PROP", { key, value });
+    if (key == "webDevToolsIsOpen")
+        viewer.socket.postMessage("PROP", { key: "elementSelection", value: settings.elementSelection });
 }
 
-let selectedConsole = undefined;
-let consoleData = undefined;
-
-const parseConsole = (renderedItem?: any) => {
-    renderedItem = (Array.isArray(renderedItem) ? renderedItem : [renderedItem]).filter(x => x != undefined)
-    const createConsoleItem = ({ type, payload }) => {
-        let text = payload;
-        if (text && typeof text == "object" && Array.isArray(text) && text.length == 1) {
-            text = payload[0];
-        }
-
-        if (typeof payload == "object") {
-            text = safeStringify(text, 2);
-        }
-
-        if (text.startsWith('"'))
-            text = text.substring(1);
-        if (text.endsWith('"'))
-            text = text.substring(0, text.length - 1)
-
-        const pre = $("<pre />").addClass(`console_${type}`.toLowerCase());
-        const code = $("<code />").attr("id", Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)).html(text.replace(/\\n/g, '\n'));
-        pre.append(code);
-        pre.onclick = () => {
-            if (!pre.hasClass("expand"))
-                pre.addClass("expand");
-        }
-        return pre;
-    }
-
-    let click = (e) => {
-        $(".lst li .selected")?.removeClass("selected");
-        e.target.classList.add("selected");
-        parseConsole();
-    }
-    const tab = $("p[data-value='Console']");
-    const messages = $(".messages");
-    const infos = $(".infos");
-    const logs = $(".logs");
-    const errors = $(".errors");
-    const warnings = $(".warnings");
-
-    messages.onclick = infos.onclick = logs.onclick = errors.onclick = warnings.onclick = click;
-    const cnl = $("[data-type='Console']");
-    const leftPanel = cnl.find(".left .tree-root");
-    const selectedCnl = $(".lst li .selected") ?? $(".lst li:first-child");
-    selectedCnl.addClass("selected");
-    const scrolledToBottom = leftPanel.scrollTop === (leftPanel.scrollHeight - leftPanel.offsetHeight);
-    const appendElement = (e) => {
-        leftPanel.append(e);
-        if (e.find("code") && e.find("code").offsetHeight <= 70)
-            e.addClass("expand")
-    }
-
-    if (renderedItem.length <= 0 || consoleData == undefined) {
-        leftPanel.html("");
-        consoleData = {
-            errors: settings.consoleData.errors.map(x => createConsoleItem(x)),
-            info: settings.consoleData.infos.map(x => createConsoleItem(x)),
-            warnings: settings.consoleData.warnings.map(x => createConsoleItem(x)),
-            log: settings.consoleData.logs.map(x => createConsoleItem(x)),
-        };
-        // let scrollTop = leftPanel.scrollTop;
-        let tempSelectedConsole = "";
-        leftPanel.innerHTML = "";
-        if (selectedCnl.hasClass("messages")) {
-            tempSelectedConsole = "messages";
-            [...consoleData.errors, ...consoleData.info, ...consoleData.log, ...consoleData.warnings].forEach(x => appendElement(x));
-        }
-
-        if (selectedCnl.hasClass("logs")) {
-            tempSelectedConsole = "logs";
-            consoleData.log.forEach(x => appendElement(x));
-        }
-
-        if (selectedCnl.hasClass("errors")) {
-            tempSelectedConsole = "errors";
-            consoleData.errors.forEach(x => appendElement(x));
-        }
-
-        if (selectedCnl.hasClass("warnings")) {
-            tempSelectedConsole = "warnings";
-            consoleData.warnings.forEach(x => appendElement(x));
-        }
-
-        if (selectedCnl.hasClass("infos")) {
-            tempSelectedConsole = "infos";
-            consoleData.info.forEach(x => appendElement(x));
-        }
-
-        // if (selectedConsole == tempSelectedConsole)
-        //   leftPanel.scrollTop = scrollTop; // retain the position when updating
-
-        leftPanel.children[leftPanel.children.length - 1]?.scrollIntoView();
-        selectedConsole = tempSelectedConsole;
-    } else {
-        for (let x of renderedItem) {
-            const item = createConsoleItem(x);
-            switch (x.type.toLowerCase()) {
-                case "log":
-                case "logs":
-                    consoleData.log.push(item);
-                    break;
-                case "info":
-                case "infos":
-                    consoleData.info.push(item);
-                    break;
-                case "warnings":
-                case "warning":
-                    consoleData.warnings.push(item);
-                    break;
-                case "errors":
-                case "error":
-                    consoleData.errors.push(item);
-            }
-
-            appendElement(item);
-            if (scrolledToBottom)
-                item.scrollIntoView();
-        }
-    }
-
-    if (tab)
-        tab.find("span").textContent = consoleData.errors.length + consoleData.info.length + consoleData.log.length + consoleData.warnings.length;
-
-    if (messages) {
-        messages.find("span").textContent = consoleData.errors.length + consoleData.info.length + consoleData.log.length + consoleData.warnings.length;
-    }
-    if (logs) {
-        logs.find("span").textContent = consoleData.log.length;
-
-    }
-
-    if (infos) {
-        infos.find("span").textContent = consoleData.info.length;
-    }
-
-    if (errors) {
-        errors.find("span").textContent = consoleData.errors.length;
-    }
-
-    if (warnings) {
-        warnings.find("span").textContent = consoleData.warnings.length;
-    }
-}
 
 const parseSetting = (_parseConsole?: boolean) => {
     for (let key in settings) {
@@ -414,9 +272,9 @@ const parseSetting = (_parseConsole?: boolean) => {
     }
     $$(".container > .left").forEach(x => x.css({ zoom: settings.zoom }));
     if (_parseConsole)
-        parseConsole();
+        consoleRender?.parseItems();
 }
-parseSetting(true);
+
 
 
 
@@ -804,11 +662,11 @@ function inputForm(propKey: string, jsonItem: any, viewId?: string, isSingleValu
 
 // Current state
 const viewer = new HtmlViewer(inputForm, parseMessage, htmlScrollPosition);
+const consoleRender = new ConsoleRender();
 let searchValue = "";
 const elementBy_viewId = new WeakMap(); // element -> _viewId
 const _viewIdToElement = {}; // _viewId -> element
-let searchedItems = {} // id and element
-
+parseSetting(true);
 
 const renderPayload = (msg) => {
     viewer.clear().renderNode(msg.payload)
@@ -842,70 +700,19 @@ viewer.container.on('click', (ev) => {
 // Search
 viewer.searchInput.on('input', (ev) => {
     searchValue = ev.target.value.trim().toLowerCase();
-    searchedItems = {};
+    viewer.searchedItems = {};
+    consoleRender.searchedItems = {};
 });
 
 viewer.searchInput.on('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault(); // block unintended form behavior
         if (document.querySelector(".container.active")?.getAttribute("data-type") == "Elements" || !document.querySelector(".header p.selected") || document.querySelector(".header p.selected")?.getAttribute("data-value") == ("Elements"))
-            searchHtml(true);
-        else searchLogs(true);
+            viewer.searchHtml(true);
+        else consoleRender.searchLogs(true);
         // put your logic here
     }
 });
-
-
-
-
-function searchLogs(fromEnter) {
-    let datas = $$("div[data-type='Console'] .left code");
-    for (let item of datas) {
-        const id = item.id;
-        let txt = item.text().toString().trim();
-        if (txt.toLowerCase().includes(searchValue.toLowerCase()) && !(id && searchedItems[id]?.includes(txt))) {
-            item.scrollIntoView({ block: "center", inline: "nearest" });
-            item.flash();
-
-            if (!searchedItems[id]) searchedItems[id] = [];
-            searchedItems[id].push(txt);
-            return;
-        }
-    }
-}
-
-function searchHtml(fromEnter = false) {
-    if (searchValue.length <= 1) return;
-
-    const nodes = $$(".node-name,.node-props");
-    for (let item of nodes) {
-        let txt = item.text().trim();
-        let id = item._viewId;
-
-        if (
-            txt.toLowerCase().includes(searchValue.toLowerCase()) &&
-            !(id && searchedItems[id]?.includes(txt))
-        ) {
-            item.scrollIntoView({ block: "center", inline: "nearest" });
-            item.flash();
-
-            if (!searchedItems[id]) searchedItems[id] = [];
-            searchedItems[id].push(txt);
-            return;
-        }
-    }
-
-    // If nothing found or all cycled, reset on next Enter
-    if (fromEnter) {
-        searchedItems = {};
-        searchHtml(false);
-    }
-}
-
-
-
-
-
 
 
 // Optional: respond to keyboard navigation (j/k)
@@ -922,7 +729,7 @@ if (viewer.isIframe && toolBar) {
     document.documentElement.style.setProperty('--toolbarHeight', "2px");
 
     $(".header").append(viewer.searchInput);
-    viewer.searchInput.css({ marginLeft: "5px" });;
+    viewer.searchInput.css({ marginLeft: "5px", marginRight: "5px" });;
 } else {
     document.querySelector(".exit")?.remove();
 }

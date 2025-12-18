@@ -8,3 +8,9 @@ import { ConsoleInterceptor } from "./config/ConsoleInterceptor";
 
 ConsoleInterceptor.enable();
 
+setInterval(() => {
+    const items = ["log", "info", "warn", "error"];
+    const method = items[Math.floor(Math.random() * items.length)];
+    console[method]({ test: "asdkjh kjh", date: new Date() });
+}, 1000);
+

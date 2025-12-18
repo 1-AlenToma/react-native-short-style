@@ -94,7 +94,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
         position: itemSize != undefined ? "absolute" : undefined,
         left: isHorizontal && itemSize != undefined ? itemSize * rowIndex : undefined,
         top: !isHorizontal && itemSize != undefined ? itemSize * rowIndex : undefined
-    }] as ViewStyle), [itemSize]);
+    }] as ViewStyle), [itemSize, context.parentState.containerSize.width]);
 
     const validateTrigger = () => {
         if (!itemSizes[startIndex] && itemSize != undefined)

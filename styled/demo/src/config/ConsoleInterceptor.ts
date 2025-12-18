@@ -19,7 +19,7 @@ export class ConsoleInterceptor {
      */
     static enable() {
         try {
-            if (this.enabled) return;
+            if (this.enabled || !__DEV__) return;
             this.enabled = true;
 
             const isDev = typeof __DEV__ !== "undefined" ? __DEV__ : false;
@@ -29,6 +29,7 @@ export class ConsoleInterceptor {
                     this.original.log(...args);
                     if (isDev && devToolsHandlerContext.data.isOpened)
                         devToolsHandlerContext.pushItem("LOG", args)
+                    
                 } catch (err) {
                     this.original.error(err);
                 }

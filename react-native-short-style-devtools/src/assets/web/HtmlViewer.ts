@@ -23,6 +23,7 @@ class HtmlViewer {
     collapsedNodes: Record<string, boolean> = {};
     loader: any;
     platform?: string;
+    searchedItems = {};
     constructor(inputform: Function, parseMessage: (event: any) => void | Promise<void>, loader: any) {
         this.loader = loader;
         this.inputForm = inputform as any;
@@ -49,6 +50,34 @@ class HtmlViewer {
             }
         });
         this.createSocket();
+    }
+
+    searchHtml(fromEnter = false) {
+        let searchValue = this.searchInput.value;
+        if (searchValue.length <= 1) return;
+
+        const nodes = $$(".node-name,.node-props, .node-text");
+        for (let item of nodes) {
+            let txt = item.text().trim();
+            let id = item.parent("[data-id]:not([data-id=''])").attr("data-id");
+
+            if (txt.toLowerCase().includes(searchValue.toLowerCase()) &&
+                !(id && this.searchedItems[id]?.includes(txt))
+            ) {
+                item.scrollIntoView({ block: "center", inline: "nearest" });
+                item.flash();
+
+                if (!this.searchedItems[id]) this.searchedItems[id] = [];
+                this.searchedItems[id].push(txt);
+                return;
+            }
+        }
+
+        // If nothing found or all cycled, reset on next Enter
+        if (fromEnter) {
+            this.searchedItems = {};
+            this.searchHtml(false);
+        }
     }
 
     calcPath(viewId: string) {
@@ -143,18 +172,27 @@ class HtmlViewer {
         return this;
     }
 
-    selectNode(viewId: string, scrollToView?: boolean) {
-        this.container.findAll(`div.node.selected, span.node-name.selected`).forEach(x => x.removeClass("selected"));
-        let htmlNode = this.container.findAll(`div.node[data-id="${viewId}"], span.node-name[data-id="${viewId}"]`);
-        htmlNode.forEach(x => x.addClass("selected"));
-        if (htmlNode.length > 0 && scrollToView)
-            htmlNode[0]?.scrollIntoViewIfNeeded(this.container.parent());
-        if (this.selectedViewId != viewId || this.propsPanel.find(".empty"))
-            this.showProps(this.trees[viewId]);
+    selectNodeScrollTimer = undefined;
 
-        this.selectedViewId = viewId;
-        this.calcPath(viewId);
-        this.path.find(`span[data-id="${viewId}"]`).addClass("selected")
+    selectNode(viewId: string, scrollToView?: boolean) {
+        clearTimeout(this.selectNodeScrollTimer)
+        this.selectNodeScrollTimer = setTimeout(() => {
+
+
+            this.container.findAll(`div.node.selected, span.node-name.selected`).forEach(x => x.removeClass("selected"));
+            let htmlNode = this.container.findAll(`div.node[data-id="${viewId}"], span.node-name[data-id="${viewId}"]`);
+            htmlNode.forEach(x => x.addClass("selected"));
+            if (htmlNode.length > 0 && scrollToView) {
+                htmlNode[0]?.scrollIntoViewIfNeeded(this.container.parent());
+         
+            }
+            if (this.selectedViewId != viewId || this.propsPanel.find(".empty"))
+                this.showProps(this.trees[viewId]);
+
+            this.selectedViewId = viewId;
+            this.calcPath(viewId);
+            this.path.find(`span[data-id="${viewId}"]`).addClass("selected")
+        }, 100);
     }
 
     showProps(node?: ElementTool) {
@@ -314,7 +352,7 @@ class HtmlViewer {
                 return;
 
             const parentNode = firstNode ? undefined : this.trees[node.props._parent_viewId];
-            if ((!firstNode && !parentNode)  || this.collapsedNodes[node.props._parent_viewId]) {
+            if ((!firstNode && !parentNode) || this.collapsedNodes[node.props._parent_viewId]) {
                 return;
             }
 

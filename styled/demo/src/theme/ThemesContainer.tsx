@@ -3,7 +3,7 @@ import * as React from "react";
 import { IThemeContext, Rule, Size } from "../Typse";
 import StateBuilder from "../States";
 import { newId, clearAllCss, currentTheme } from "../config";
-import { View, AlertView, ToastView, TouchableOpacity } from "../components";
+import { View, AlertView, ToastView, TouchableOpacity, Text } from "../components";
 import { GestureResponderEvent, Platform, StyleSheet, View as NativeView, Image } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
 import { svgSelect } from "../constant";
@@ -321,9 +321,10 @@ export const DevToolLayoutSelector = () => {
                     e.preventDefault();
                     e.stopPropagation();
                     devToolsHandlerContext.batch(async () => {
-                        if (!devToolsHandlerContext.data.settings.elementSelection && !devToolsHandlerContext.data.settings.webDevToolsIsOpen)
+                        if (!devToolsHandlerContext.data.settings.webDevToolsIsOpen)
                             devToolsHandlerContext.data.settings.webDevToolsIsOpen = true;
-                        devToolsHandlerContext.data.settings.elementSelection = !devToolsHandlerContext.data.settings.elementSelection;
+                        if (!devToolsHandlerContext.data.settings.elementSelection)
+                            devToolsHandlerContext.data.settings.elementSelection = !devToolsHandlerContext.data.settings.elementSelection;
 
                         await devToolsHandlerContext.sendProp("elementSelection", "webDevToolsIsOpen");
                     });
@@ -333,15 +334,14 @@ export const DevToolLayoutSelector = () => {
                     top: 10,
                     right: 15,
                     width: 30,
-                    height: 30,
+                    height: 20,
                     zIndex: 99999,
-                    backgroundColor: devToolsHandlerContext.data.settings.elementSelection ? "red" : "transparent"
+                    backgroundColor: "#000",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "row"
                 }}>
-                <Image
-                    source={{ uri: svgSelect }}
-                    style={{ width: 30, height: 30 }}
-                    resizeMode="contain"
-                />
+                <Text css="co-white fow-bold fos-12 tea-center"> {"</>"}</Text>
             </TouchableOpacity>
         )
 

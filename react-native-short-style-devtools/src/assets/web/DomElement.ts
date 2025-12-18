@@ -231,21 +231,35 @@ class DomElement<T = IDomElement> {
         this.el.scrollIntoView(option);
         return this;
     }
+    scrollIntoViewIfNeeded(scrollableContainer: DomElement, behavior: ScrollBehavior = "instant") {
+        const container = scrollableContainer.el;
+        const el = this.el;
+        if (!container || !el) return;
 
-    scrollIntoViewIfNeeded(container: DomElement, behavior: ScrollBehavior = "smooth") {
-        if (!container) return;
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
 
-        const containerRect = container.el.getBoundingClientRect();
-        const elementRect = this.el.getBoundingClientRect();
+        // element top relative to container
+        const elTopRelative = elRect.top - containerRect.top + container.scrollTop;
 
-        const isVisible =
-            elementRect.top >= containerRect.top &&
-            elementRect.bottom <= containerRect.bottom;
+        const viewTop = container.scrollTop;
+        const viewHeight = container.clientHeight;
 
-        if (!isVisible) {
-            this.el.scrollIntoView({ behavior, block: "center", inline: "nearest" });
+        const centerMin = viewTop + viewHeight * 0.4;
+        const centerMax = viewTop + viewHeight * 0.6;
+
+        const isTopCentered =
+            elTopRelative >= centerMin &&
+            elTopRelative <= centerMax;
+
+        if (!isTopCentered) {
+            container.scrollTo({
+                top: elTopRelative - viewHeight / 2,
+                behavior
+            });
         }
     }
+
 
 
     scrollValues() {
@@ -280,6 +294,8 @@ const getterAndSetter = [
     "onchange",
     "offsetHeight",
     "offsetWidth",
+    "clientHeight",
+    "clientWidth",
     "scrollLeft",
     "scrollTop",
     "scrollHeight",
