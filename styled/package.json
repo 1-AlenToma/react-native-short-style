@@ -45,7 +45,7 @@
   ],
   "dependencies": {
     "@miblanchard/react-native-slider": "*",
-    "react-native-short-style-devtools": "file:../react-native-short-style-devtools",
+    "react-native-short-style-devtools": "*",
     "react-smart-state": "*"
   }
 }
