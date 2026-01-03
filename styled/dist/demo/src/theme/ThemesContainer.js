@@ -12,10 +12,9 @@ import { ThemeContext, globalData, InternalThemeContext, StyleContext, devToolsH
 import * as React from "react";
 import StateBuilder from "../States";
 import { newId, currentTheme } from "../config";
-import { View, AlertView, ToastView, TouchableOpacity } from "../components";
-import { Platform, Image } from "react-native";
+import { View, AlertView, ToastView, TouchableOpacity, Text } from "../components";
+import { Platform } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
-import { svgSelect } from "../constant";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
 import { useTimer } from "../hooks";
 const StaticItem = ({ onMounted, id, item }) => {
@@ -257,9 +256,10 @@ export const DevToolLayoutSelector = () => {
                 e.preventDefault();
                 e.stopPropagation();
                 devToolsHandlerContext.batch(() => __awaiter(void 0, void 0, void 0, function* () {
-                    if (!devToolsHandlerContext.data.settings.elementSelection && !devToolsHandlerContext.data.settings.webDevToolsIsOpen)
+                    if (!devToolsHandlerContext.data.settings.webDevToolsIsOpen)
                         devToolsHandlerContext.data.settings.webDevToolsIsOpen = true;
-                    devToolsHandlerContext.data.settings.elementSelection = !devToolsHandlerContext.data.settings.elementSelection;
+                    if (!devToolsHandlerContext.data.settings.elementSelection)
+                        devToolsHandlerContext.data.settings.elementSelection = !devToolsHandlerContext.data.settings.elementSelection;
                     yield devToolsHandlerContext.sendProp("elementSelection", "webDevToolsIsOpen");
                 }));
             }), style: {
@@ -268,10 +268,13 @@ export const DevToolLayoutSelector = () => {
                 top: 10,
                 right: 15,
                 width: 30,
-                height: 30,
+                height: 20,
                 zIndex: 99999,
-                backgroundColor: devToolsHandlerContext.data.settings.elementSelection ? "red" : "transparent"
-            }, children: _jsx(Image, { source: { uri: svgSelect }, style: { width: 30, height: 30 }, resizeMode: "contain" }) }));
+                backgroundColor: "#000",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row"
+            }, children: _jsxs(Text, { css: "co-white fow-bold fos-12 tea-center", children: [" ", "</>"] }) }));
         if (!devToolsHandlerContext.data.settings.elementSelection)
             return __DEV__ && devToolsHandlerContext.data.isOpened ? selector : null;
         return (_jsxs(_Fragment, { children: [_jsx(View, { noneDevtools: true, css: "._touchOverlay zi-9999", onStartShouldSetResponder: () => true, onResponderRelease: handleSelection, onMoveShouldSetResponderCapture: () => false, 
