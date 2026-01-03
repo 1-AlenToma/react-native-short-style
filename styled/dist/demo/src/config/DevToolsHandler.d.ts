@@ -1,7 +1,6 @@
 import { ElementTool } from "../Typse";
 import React from "react";
 import { UniversalWebSocket } from "./UniversalWebSocket";
-import { NetworkLogger } from "./NetworkLogger";
 type LogTypes = "ERROR" | "LOG" | "WARNING" | "INFO";
 type Types = ("TREE_DATA" | "PATCH_NODE" | "PATCH_DELETE" | "PATCH_SELECT" | "PROP" | "FETCH") | LogTypes;
 type ChangedProps = {
@@ -39,7 +38,6 @@ export declare class DevtoolsHandler {
     data: DevToolsData;
     components: Map<string, React.ReactElement>;
     timer: any;
-    networkLogger: NetworkLogger;
     get webUrl(): string;
     get host(): string | undefined;
     set host(value: string | undefined);

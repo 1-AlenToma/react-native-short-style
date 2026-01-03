@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { newId } from "react-smart-state";
 import { UniversalWebSocket } from "./UniversalWebSocket";
-import { NetworkLogger } from "./NetworkLogger";
 const _logTypes = ["ERROR", "LOG", "WARNING", "INFO"];
 const treeData = new Map();
 const wsTypes = {
@@ -42,11 +41,11 @@ export class DevtoolsHandler {
         this.data = new DevToolsData();
         this.components = new Map();
         this.timer = undefined;
-        this.networkLogger = new NetworkLogger((item) => {
-            this.pushItem("FETCH", item);
-        });
         this.SKIP_KEYS = new Set(["style", "css"]);
     }
+    /*  networkLogger: NetworkLogger = new NetworkLogger((item) => {
+          this.pushItem("FETCH", item);
+      });*/
     get webUrl() {
         return `http://${this.host}:7778/index.html?q=IFRAME`;
     }
@@ -67,7 +66,7 @@ export class DevtoolsHandler {
                 try {
                     this.ws.send({ type: "REGISTER", clientType: "APP" });
                     this.data.isOpened = true;
-                    this.networkLogger.enable();
+                    //  this.networkLogger.enable();
                     //console.info("connected to react-native-short-style-devtools")
                 }
                 catch (e) {

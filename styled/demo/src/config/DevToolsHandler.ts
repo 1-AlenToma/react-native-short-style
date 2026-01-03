@@ -2,7 +2,7 @@ import { newId, sleep } from "react-smart-state";
 import { ElementTool } from "../Typse";
 import React from "react";
 import { UniversalWebSocket } from "./UniversalWebSocket";
-import { NetworkLogger } from "./NetworkLogger";
+//import { NetworkLogger } from "./NetworkLogger";
 //import { WebSocket } from "ws"
 type LogTypes = "ERROR" | "LOG" | "WARNING" | "INFO";
 type Types = ("TREE_DATA" | "PATCH_NODE" | "PATCH_DELETE" | "PATCH_SELECT" | "PROP" | "FETCH") | LogTypes;
@@ -41,9 +41,9 @@ export class DevtoolsHandler {
     data: DevToolsData = new DevToolsData();
     components: Map<string, React.ReactElement> = new Map();
     timer: any = undefined;
-    networkLogger: NetworkLogger = new NetworkLogger((item) => {
-        this.pushItem("FETCH", item);
-    });
+    /*  networkLogger: NetworkLogger = new NetworkLogger((item) => {
+          this.pushItem("FETCH", item);
+      });*/
 
     get webUrl() {
         return `http://${this.host}:7778/index.html?q=IFRAME`;
@@ -69,7 +69,7 @@ export class DevtoolsHandler {
             try {
                 this.ws.send({ type: "REGISTER", clientType: "APP" });
                 this.data.isOpened = true;
-                this.networkLogger.enable();
+                //  this.networkLogger.enable();
 
                 //console.info("connected to react-native-short-style-devtools")
             } catch (e) {
