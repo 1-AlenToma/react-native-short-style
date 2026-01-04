@@ -4,9 +4,11 @@ import path from "path";
 import { parse } from 'url';
 import http from "http";
 import mime from "mime";
-import { WebSocketServer, WebSocket } from "ws";
+import { getWs } from "./ws";
+import { WebSocketServer, WebSocket } from "ws"
 import { ObjectJson, Settings } from "./ObjectJson";
 import { pack, unpack } from "msgpackr";
+var ws = getWs();
 
 async function decodeData(data: any) {
     if (data instanceof Blob) {
@@ -140,7 +142,7 @@ export class DevServer {
     }
 
     private createWebSocketServer() {
-        this.wsServer = new WebSocketServer({
+        this.wsServer = new ws.WebSocketServer({
             port: this.wsPort,
             host: "0.0.0.0" // 👈 listen on all network interfaces
         });
@@ -200,9 +202,9 @@ export class DevServer {
                 this.appSettings.save();
 
             for (const c of this.clients) {
-                if (c.clientType === "APP" && c.ws.readyState === WebSocket.OPEN)
+                if (c.clientType === "APP" && c.ws.readyState === ws.WebSocket.OPEN)
                     c.ws.send(appItems);
-                if (c.clientType === "HTML" && c.ws.readyState === WebSocket.OPEN)
+                if (c.clientType === "HTML" && c.ws.readyState === ws.WebSocket.OPEN)
                     c.ws.send(htmlItems);
             }
         } catch (e) {

@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style-devtools",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "devtools for inpecting rendered views",
   "keywords": [
     "react-native-short-style-devtools"
@@ -33,10 +33,10 @@
     "typescript": "*"
   },
   "dependencies": {
-    "install": "^0.13.0",
-    "mime": "*",
+    "install": "*",
+    "mime": "~2.6.0",
     "msgpackr": "^1.11.5",
-    "npm": "^11.6.2",
-    "ws": "*"
+    "npm": "*",
+    "ws": "~7.5.10"
   }
 }
