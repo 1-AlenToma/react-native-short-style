@@ -11,7 +11,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from "react";
 import { AnimatedView, View } from "./ReactNativeComponents";
 import { InternalThemeContext } from "../theme/ThemeContext";
-import { useAnimate } from "../hooks";
+import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform } from "react-native";
 import { newId } from "../config";
@@ -22,6 +22,7 @@ export const Modal = (props) => {
     var _a, _b;
     const context = React.useContext(InternalThemeContext);
     const transform = React.useRef({}).current;
+    const renderUpdateTimer = useTimer(100);
     const { animate, animateX, animateY } = useAnimate({
         speed: (_a = props.speed) !== null && _a !== void 0 ? _a : 200,
         easing: (_b = props.easing) !== null && _b !== void 0 ? _b : Easing.bounce
@@ -54,7 +55,7 @@ export const Modal = (props) => {
         toggle(props.isVisible);
     }, [props.isVisible]);
     React.useEffect(() => {
-        render();
+        renderUpdateTimer(() => render());
     }, [props.children, props.style]);
     React.useEffect(() => {
         state.isVisible = props.isVisible;
@@ -79,7 +80,7 @@ export const Modal = (props) => {
                             transform: transform.scale ? [transform] : undefined,
                             opacity: transform.opacity ? transform.opacity : undefined
                         }
-                    ], children: [_jsx(View, { ifTrue: props.addCloser == true, css: x => x.cls("_modalClose").baC(".co-transparent"), children: _jsx(Button, { onPress: () => toggle(false), css: x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0), icon: _jsx(Icon, { type: "AntDesign", name: "close", size: 15 }) }) }), _jsx(View, { inspectDisplayName: "ModalContent", css: x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), children: props.children })] }))] }, state.id));
+                    ], children: [_jsx(View, { ifTrue: props.addCloser == true, css: x => x.cls("_modalClose").baC(".co-transparent"), children: _jsx(Button, { onPress: () => toggle(false), css: x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0), icon: _jsx(Icon, { type: "AntDesign", name: "close", size: 15 }) }) }), _jsx(View, { inspectDisplayName: "ModalContent", css: x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), children: props.children })] }))] }));
     };
     return null;
 };

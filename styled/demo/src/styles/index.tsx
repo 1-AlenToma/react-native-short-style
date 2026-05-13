@@ -300,8 +300,7 @@ export class CMBuilder {
                     rules: context.rules,
                     path: fullPath,
                     parent: componentParent,
-                }}
-            >
+                }}>
                 <CM
                     dataSet={dataSet}
                     {...internalProps}

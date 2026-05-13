@@ -1,7 +1,7 @@
 import * as React from "react";
 import { AnimatedView, TouchableOpacity, View } from "./ReactNativeComponents";
 import { InternalThemeContext } from "../theme/ThemeContext";
-import { useAnimate } from "../hooks";
+import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform, ViewStyle } from "react-native";
 import { newId, optionalStyle } from "../config";
@@ -14,6 +14,7 @@ import { Blur } from "./Blur";
 export const Modal = (props: ModalProps) => {
     const context = React.useContext(InternalThemeContext);
     const transform = React.useRef<any>({}).current;
+    const renderUpdateTimer = useTimer(100)
     const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
         easing: props.easing ?? Easing.bounce
@@ -52,7 +53,7 @@ export const Modal = (props: ModalProps) => {
     }, [props.isVisible])
 
     React.useEffect(() => {
-        render();
+        renderUpdateTimer(() => render());
     }, [props.children, props.style])
 
     React.useEffect(() => {
@@ -74,7 +75,7 @@ export const Modal = (props: ModalProps) => {
         let fn = state.isVisible ? context.add.bind(context) : context.remove.bind(context);
 
         fn(state.id,
-            <View inspectDisplayName="ModalContainer" key={state.id} css="_blur op:1 bac:transparent fl:1 ModalContainer" style={{ zIndex: zIndex + 300 }}>
+            <View inspectDisplayName="ModalContainer" css="_blur op:1 bac:transparent fl:1 ModalContainer" style={{ zIndex: zIndex + 300 }}>
                 <Blur style={{
                     opacity: animate.y
                 }} onPress={props.disableBlurClick ? undefined : () => {

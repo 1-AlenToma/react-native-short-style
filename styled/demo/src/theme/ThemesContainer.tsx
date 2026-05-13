@@ -12,27 +12,26 @@ import { sleep } from "react-smart-state";
 import { useTimer } from "../hooks";
 
 
-const StaticItem = ({ onMounted, id, item }: any) => {
-    const state = StateBuilder({
-        item: item
-    }).ignore("item").build();
+const StaticItem = React.memo(({ onMounted, id, item }: any) => {
+    const [element, setItem] = React.useState(item);
 
-    onMounted(x => state.item = x);
-    return state.item;
-}
+    React.useEffect(() => {
+        onMounted(x => setItem(x));
+    }, [item])
+    return element;
+});
 
 
 
 const StaticFullView = () => {
     const context = React.useContext(InternalThemeContext);
-    const state = StateBuilder({
-        updater: ""
-    }).build();
+       const [update, setUpdate] = React.useState(0)
 
     context.onItemsChange = () => {
-        state.updater = newId();
+        setUpdate(x => x + 1 < 1000 ? x + 1 : 0);
     }
-    const items = [...context.items().items.entries()];
+
+    const items = Array.from(context.items().items.entries());
 
     return (
         <View css={"_topPostion zi-4"} ifTrue={items.length > 0}>
@@ -49,17 +48,14 @@ const StaticFullView = () => {
 
 const StaticView = () => {
     const context = React.useContext(InternalThemeContext);
-    const state = StateBuilder({
-        updater: ""
-    }).build();
+    const [update, setUpdate] = React.useState(0)
 
     context.onStaticItemsChange = () => {
-        state.updater = newId();
-
+        setUpdate(x => x + 1 < 1000 ? x + 1 : 0);
     }
-    const items: any[] = [...context.items().staticItems.entries()]
+    const items = Array.from(context.items().staticItems.entries());
     return (
-        items.map(([key, value], i) => (
+        items.map(([key, value]) => (
             <React.Fragment key={key}>
                 {value.el}
             </React.Fragment>
@@ -88,7 +84,7 @@ const ThemeInternalContainer = ({ children }: any) => {
     }).ignore("items", "containerSize", "staticItems").build();
 
 
-    const contextValue = {
+    const contextValue = React.useMemo(() => ({
         add: (id: string, element: React.ReactNode, isStattic?: boolean) => {
             let item = !isStattic ? state.items.get(id) : state.staticItems.get(id);
             if (!item) {
@@ -127,14 +123,14 @@ const ThemeInternalContainer = ({ children }: any) => {
         onStaticItemsChange: () => { },
         containerSize: () => state.containerSize
 
-    }
+    }), []);
 
 
 
     return (
         <InternalThemeContext.Provider value={contextValue}>
             <DevtoolsIframe>
-                <View onLayout={(event) => {
+                <NativeView onLayout={(event) => {
                     if (Platform.OS !== "web") {
                         event.target.measure(
                             (x, y, width, height) => {
@@ -158,14 +154,14 @@ const ThemeInternalContainer = ({ children }: any) => {
                     <StaticView />
                     <ToastView />
                     <AlertView />
-                    <View style={{
+                    <NativeView style={{
                         width: "100%",
                         height: "100%",
                         zIndex: 1
                     }}>
                         {children}
-                    </View>
-                </View>
+                    </NativeView>
+                </NativeView>
             </DevtoolsIframe>
         </InternalThemeContext.Provider>
     )

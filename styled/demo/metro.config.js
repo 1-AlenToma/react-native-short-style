@@ -18,11 +18,11 @@ config.resolver.extraNodeModules = new Proxy({}, {
 config.resolver.assetExts.push("ttf", "png", "jpg", "jpeg");
 
 // Only run in Node + dev mode
-if (process.env.NODE_ENV !== "production") {
+/*if (process.env.NODE_ENV !== "production") {
     try {
         const root = path.resolve(
             __dirname,
-            "./node_modules/react-native-short-style-devtools/dist"
+            "./node_modules/react-native-short-style-devtools/dist" 
         );
 
         startDevServer({ root });
@@ -30,7 +30,7 @@ if (process.env.NODE_ENV !== "production") {
     } catch (err) {
         console.error("Failed to start DevTools server:", err);
     }
-}
+}*/
 
 
 module.exports = config;

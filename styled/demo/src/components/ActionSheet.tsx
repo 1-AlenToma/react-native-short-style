@@ -50,6 +50,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
 
     let context = useContext(InternalThemeContext);
     const timer = useTimer(100);
+    const renderUpdateTimer = useTimer(100)
     const { animateY, animateX, animate, animating, currentValue } = useAnimate({
         y: 0,
         x: 0,
@@ -57,7 +58,9 @@ export const ActionSheet = (props: ActionSheetProps) => {
         easing: Easing.bounce
     });
 
-    const blurAnimation = useAnimate();
+    const blurAnimation = useAnimate({
+        speed: 20
+    });
     const setSize = () => {
         let size = globalData.containerSize;
         let containerHeight = size.height;
@@ -163,7 +166,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
     if (isVertical && position == "Bottom")
         handleStyle.top = 8;
 
-    const _css : any = () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
+    const _css: any = () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
 
     const renderUpdate = () => {
         let Handle = Platform.OS == "web" ? TouchableOpacity : View;
@@ -266,7 +269,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
 
 
         fn(state.id,
-            <View inspectDisplayName="ActionSheetContainer" key={state.id} css={"co-transparent _topPostion ActionSheetContainer"} style={{ zIndex: zIndex + 300 }}>
+            <View inspectDisplayName="ActionSheetContainer" css={`co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`}>
                 <Blur style={{
                     opacity: blurAnimation.animate.x.interpolate({
                         inputRange: [0, 1],
@@ -324,8 +327,11 @@ export const ActionSheet = (props: ActionSheetProps) => {
     }
 
     React.useEffect(() => {
-        renderUpdate();
+        renderUpdateTimer(() => {
+            renderUpdate();
+        })
     }, [props.children, props.isVisible, props.size, props.position, props.css, props.disableBlurClick, props.style]);
+    
 
     return null;
 };

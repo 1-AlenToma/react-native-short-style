@@ -49,13 +49,16 @@ export const ActionSheet = (props) => {
     };
     let context = useContext(InternalThemeContext);
     const timer = useTimer(100);
+    const renderUpdateTimer = useTimer(100);
     const { animateY, animateX, animate, animating, currentValue } = useAnimate({
         y: 0,
         x: 0,
         speed: props.speed,
         easing: Easing.bounce
     });
-    const blurAnimation = useAnimate();
+    const blurAnimation = useAnimate({
+        speed: 20
+    });
     const setSize = () => {
         let size = globalData.containerSize;
         let containerHeight = size.height;
@@ -217,7 +220,7 @@ export const ActionSheet = (props) => {
             });
         }
         let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
-        fn(state.id, _jsxs(View, { inspectDisplayName: "ActionSheetContainer", css: "co-transparent _topPostion ActionSheetContainer", style: { zIndex: zIndex + 300 }, children: [_jsx(Blur, { style: {
+        fn(state.id, _jsxs(View, { inspectDisplayName: "ActionSheetContainer", css: `co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`, children: [_jsx(Blur, { style: {
                         opacity: blurAnimation.animate.x.interpolate({
                             inputRange: [0, 1],
                             outputRange: [0, .5]
@@ -248,10 +251,12 @@ export const ActionSheet = (props) => {
                                             state.size.width += 50;
                                         });
                                     }
-                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) }))] }, state.id));
+                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) }))] }));
     };
     React.useEffect(() => {
-        renderUpdate();
+        renderUpdateTimer(() => {
+            renderUpdate();
+        });
     }, [props.children, props.isVisible, props.size, props.position, props.css, props.disableBlurClick, props.style]);
     return null;
 };

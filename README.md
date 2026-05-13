@@ -130,5 +130,29 @@ const themes = [
       </View>
   </ThemeContainer>
 ```
-note: some components is using settings for @expo/vector-icons 15 like FormGroup info icons, so if used below the current version then assign your own icons for ex infoIcon props
+## Devtools
+
+For enabling devTools, edit `metro.config.js`
+```js
+const { startDevServer } = require("react-native-short-style-devtools");
+
+// Only run in Node + dev mode
+if (process.env.NODE_ENV !== "production") {
+    try {
+        const root = path.resolve(
+            __dirname,
+            "./node_modules/react-native-short-style-devtools/dist" 
+        );
+
+        startDevServer({ root });
+        console.log("🌐 DevTools server started from Metro!");
+    } catch (err) {
+        console.error("Failed to start DevTools server:", err);
+    }
+}
+
+lastly assign localIp to ThemeContainer
+```
+
+Note: some components is using settings for @expo/vector-icons 15 like FormGroup info icons, so if used below the current version then assign your own icons for ex infoIcon props
 

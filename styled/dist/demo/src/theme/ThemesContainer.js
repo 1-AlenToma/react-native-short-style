@@ -11,40 +11,36 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { ThemeContext, globalData, InternalThemeContext, StyleContext, devToolsHandlerContext } from "./ThemeContext";
 import * as React from "react";
 import StateBuilder from "../States";
-import { newId, currentTheme } from "../config";
+import { currentTheme } from "../config";
 import { View, AlertView, ToastView, TouchableOpacity, Text } from "../components";
-import { Platform } from "react-native";
+import { Platform, View as NativeView } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
 import { useTimer } from "../hooks";
-const StaticItem = ({ onMounted, id, item }) => {
-    const state = StateBuilder({
-        item: item
-    }).ignore("item").build();
-    onMounted(x => state.item = x);
-    return state.item;
-};
+const StaticItem = React.memo(({ onMounted, id, item }) => {
+    const [element, setItem] = React.useState(item);
+    React.useEffect(() => {
+        onMounted(x => setItem(x));
+    }, [item]);
+    return element;
+});
 const StaticFullView = () => {
     const context = React.useContext(InternalThemeContext);
-    const state = StateBuilder({
-        updater: ""
-    }).build();
+    const [update, setUpdate] = React.useState(0);
     context.onItemsChange = () => {
-        state.updater = newId();
+        setUpdate(x => x + 1 < 1000 ? x + 1 : 0);
     };
-    const items = [...context.items().items.entries()];
+    const items = Array.from(context.items().items.entries());
     return (_jsx(View, { css: "_topPostion zi-4", ifTrue: items.length > 0, children: items.map(([key, value], i) => (_jsx(React.Fragment, { children: value.el }, key))) }));
 };
 const StaticView = () => {
     const context = React.useContext(InternalThemeContext);
-    const state = StateBuilder({
-        updater: ""
-    }).build();
+    const [update, setUpdate] = React.useState(0);
     context.onStaticItemsChange = () => {
-        state.updater = newId();
+        setUpdate(x => x + 1 < 1000 ? x + 1 : 0);
     };
-    const items = [...context.items().staticItems.entries()];
-    return (items.map(([key, value], i) => (_jsx(React.Fragment, { children: value.el }, key))));
+    const items = Array.from(context.items().staticItems.entries());
+    return (items.map(([key, value]) => (_jsx(React.Fragment, { children: value.el }, key))));
 };
 function parseStyles(obj, selectedIndex) {
     const parsedTheme = React.useRef({}).current;
@@ -62,7 +58,7 @@ const ThemeInternalContainer = ({ children }) => {
         staticItems: new Map(),
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
     }).ignore("items", "containerSize", "staticItems").build();
-    const contextValue = {
+    const contextValue = React.useMemo(() => ({
         add: (id, element, isStattic) => {
             var _a, _b, _c;
             let item = !isStattic ? state.items.get(id) : state.staticItems.get(id);
@@ -102,8 +98,8 @@ const ThemeInternalContainer = ({ children }) => {
         onItemsChange: () => { },
         onStaticItemsChange: () => { },
         containerSize: () => state.containerSize
-    };
-    return (_jsx(InternalThemeContext.Provider, { value: contextValue, children: _jsx(DevtoolsIframe, { children: _jsxs(View, { onLayout: (event) => {
+    }), []);
+    return (_jsx(InternalThemeContext.Provider, { value: contextValue, children: _jsx(DevtoolsIframe, { children: _jsxs(NativeView, { onLayout: (event) => {
                     if (Platform.OS !== "web") {
                         event.target.measure((x, y, width, height) => {
                             state.containerSize.height = height;
@@ -120,7 +116,7 @@ const ThemeInternalContainer = ({ children }) => {
                         state.containerSize.x = event.nativeEvent.layout.x;
                         globalData.containerSize = state.containerSize;
                     }
-                }, style: { backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }, children: [_jsx(DevToolLayoutSelector, {}), _jsx(StaticFullView, {}), _jsx(StaticView, {}), _jsx(ToastView, {}), _jsx(AlertView, {}), _jsx(View, { style: {
+                }, style: { backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }, children: [_jsx(DevToolLayoutSelector, {}), _jsx(StaticFullView, {}), _jsx(StaticView, {}), _jsx(ToastView, {}), _jsx(AlertView, {}), _jsx(NativeView, { style: {
                             width: "100%",
                             height: "100%",
                             zIndex: 1
