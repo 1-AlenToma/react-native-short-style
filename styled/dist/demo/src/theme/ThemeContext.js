@@ -3,6 +3,7 @@ import { StyledKey } from "../Typse";
 import StateBuilder from "react-smart-state";
 import { Dimensions, Platform } from "react-native";
 import { DevtoolsHandler } from "../config/DevToolsHandler";
+import { Portals } from "../cls";
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
     themes: [],
@@ -12,11 +13,7 @@ export const StyleContext = React.createContext({
     rules: [],
     path: [],
 });
-export const InternalThemeContext = React.createContext({
-    add: (id, element, isStattic) => { },
-    remove: (id) => { },
-    totalItems: () => 1
-});
+export const InternalThemeContext = React.createContext({});
 // detect hard reload of the web
 const detectHardReload = () => {
     var _a, _b;
@@ -67,6 +64,7 @@ export const globalData = StateBuilder(() => ({
     icons: undefined,
     themeIndex: 0,
     containerSize: { height: 0, width: 0 },
+    portals: new Portals(),
     alertViewData: {
         data: undefined,
         toastData: undefined,
@@ -115,5 +113,6 @@ export const globalData = StateBuilder(() => ({
             windowChangeEvent
         ];
     }
-})).timeout(undefined).ignore("alertViewData.data", "alertViewData.toastData", "screen", "window", "storage", "tStorage", "icons").globalBuild();
+})).timeout(undefined).ignore("portals.upTimer", "portals.elems", "alertViewData.data", "alertViewData.toastData", "screen", "window", "storage", "tStorage", "icons")
+    .globalBuild();
 //# sourceMappingURL=ThemeContext.js.map

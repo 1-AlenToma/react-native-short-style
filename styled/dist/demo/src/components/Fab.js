@@ -7,6 +7,7 @@ import StateBuilder from "../States";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { Platform, StatusBar } from "react-native";
 import { Blur } from "./Blur";
+import { Portal } from "./Portal";
 export const Fab = (props) => {
     var _a;
     let context = React.useContext(InternalThemeContext);
@@ -87,16 +88,8 @@ export const Fab = (props) => {
             ]
         }, css: x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(animatedItemPosition), children: _jsx(_Fragment, { children: props.children }) }, state.id + "View"));
     const view = (_jsxs(React.Fragment, { children: [_jsxs(View, { css: x => x.cls("_fab").joinRight(style).joinRight(props.css), style: props.style, children: [!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null, _jsx(TouchableOpacity, { style: typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined, onPress: () => state.visible = !state.visible, css: x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle)), children: typeof props.prefix == "string" ? _jsx(Text, { css: "fos-xs", children: props.prefix }) : props.prefix }), !["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null] }), _jsx(Blur, { onPress: () => state.visible = false, ifTrue: state.visible && props.blureScreen !== false })] }, state.id));
-    React.useEffect(() => {
-        if (props.follow != "Parent") {
-            context.add(state.id, view, true);
-        }
-    });
-    React.useEffect(() => {
-        return () => context.remove(state.id);
-    }, []);
     if (props.follow == "Parent")
         return view;
-    return null;
+    return (_jsx(Portal, { children: view }));
 };
 //# sourceMappingURL=Fab.js.map

@@ -10,6 +10,7 @@ import StateBuilder from "../States";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { Platform, StatusBar, ViewStyle } from "react-native";
 import { Blur } from "./Blur";
+import { Portal } from "./Portal";
 
 export const Fab = (props: FabProps) => {
     let context = React.useContext(InternalThemeContext);
@@ -132,18 +133,9 @@ export const Fab = (props: FabProps) => {
         </React.Fragment>
     )
 
-    React.useEffect(() => {
-        if (props.follow != "Parent") {
-            context.add(state.id, view, true);
-        }
-
-    })
-
-    React.useEffect(() => {
-        return () => context.remove(state.id)
-    }, [])
-
     if (props.follow == "Parent")
         return view as React.ReactNode;
-    return null as React.ReactNode;
+    return (<Portal>
+        {view}
+    </Portal>)
 }

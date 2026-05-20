@@ -3,8 +3,7 @@ import { IThemeContext, GlobalState, InternalThemeContext as internalThemeContex
 import StateBuilder from "react-smart-state";
 import { Dimensions, Platform } from "react-native";
 import { DevtoolsHandler } from "../config/DevToolsHandler";
-
-
+import { Portals } from "../cls";
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
     themes: [],
@@ -16,11 +15,9 @@ export const StyleContext = React.createContext<StyleContextType>({
     path: [],
 });
 
-export const InternalThemeContext = React.createContext({
-    add: (id: string, element: React.ReactNode, isStattic?: boolean) => { },
-    remove: (id: string) => { },
-    totalItems: () => 1
-} as internalThemeContext)
+
+
+export const InternalThemeContext = React.createContext({} as internalThemeContext)
 
 
 // detect hard reload of the web
@@ -75,6 +72,7 @@ export const globalData = StateBuilder<GlobalState>(() => ({
     icons: undefined,
     themeIndex: 0,
     containerSize: { height: 0, width: 0 },
+    portals: new Portals(),
     alertViewData: {
         data: undefined,
         toastData: undefined,
@@ -124,10 +122,13 @@ export const globalData = StateBuilder<GlobalState>(() => ({
         ]
     }
 })).timeout(undefined).ignore(
+    "portals.upTimer",
+    "portals.elems",
     "alertViewData.data",
     "alertViewData.toastData",
     "screen",
     "window",
     "storage",
     "tStorage",
-    "icons").globalBuild();
+    "icons")
+    .globalBuild();

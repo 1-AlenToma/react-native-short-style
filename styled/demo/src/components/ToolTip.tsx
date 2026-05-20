@@ -7,6 +7,7 @@ import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { Blur } from "./Blur";
 import { ReadyView } from "./ReadyView";
 import { Platform } from "react-native";
+import { Portal } from "./Portal";
 
 export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) => {
 
@@ -14,7 +15,6 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
     globalData.hook("window")
     const state = StateBuilder(() => ({
         visible: false,
-        id: newId(),
         ref: undefined as typeof View | undefined,
         pos: undefined as Size | undefined,
         toolTipSize: undefined as Size | undefined,
@@ -56,56 +56,24 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
 
     }, "visible")
 
-    const show = () => {
 
-        let left = state.pos?.x;
-        let top = state.pos?.y;
-        if (state.toolTipSize && state.pos) {
-            left = left - (state.toolTipSize.width / 2)
-            top = top + state.pos.height
-            if (left + state.toolTipSize.width > globalData.window.width)
-                left = globalData.window.width - (state.toolTipSize.width)
-            else if (left < 0)
-                left = 5
-            if (!props.postion || props.postion == "Top") {
-                top -= state.toolTipSize.height + (Platform.OS == "web" ? state.pos.height : 0);
-                if (top < 0)
-                    top = 5
-            }
 
+    let left = state.pos?.x;
+    let top = state.pos?.y;
+    if (state.toolTipSize && state.pos) {
+        left = left - (state.toolTipSize.width / 2)
+        top = top + state.pos.height
+        if (left + state.toolTipSize.width > globalData.window.width)
+            left = globalData.window.width - (state.toolTipSize.width)
+        else if (left < 0)
+            left = 5
+        if (!props.postion || props.postion == "Top") {
+            top -= state.toolTipSize.height + (Platform.OS == "web" ? state.pos.height : 0);
+            if (top < 0)
+                top = 5
         }
 
-        const fn = state.visible && state.pos ? context.add.bind(context) : context.remove.bind(context);
-        fn(state.id, (
-            <View key={state.id} css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent")}>
-                <Blur css="zi:1 bac:transparent" onPress={() => state.visible = false} />
-                <View onLayout={({ nativeEvent }) => {
-                    if (!state.toolTipSize && state.visible) {
-                        state.toolTipSize = nativeEvent.layout;
-                        show();
-                    }
-                }} style={[{
-                    left: left,
-                    top: top,
-                }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip")}>
-                    {
-                        typeof props.text == "string" ? <Text selectable={true} css=".fos-sm">{props.text}</Text> : props.text
-                    }
-                </View>
-            </View>
-        ))
-
     }
-
-
-    React.useEffect(() => {
-        show();
-        return () => context.remove(state.id);
-    })
-
-    React.useEffect(() => {
-        return () => context.remove(state.id)
-    }, [])
 
     if (ifSelector(props.ifTrue) == false)
         return null;
@@ -118,6 +86,23 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
             state.visible = !state.visible;
         }} style={[style.o]} css={x => x.joinRight(style.c)}>
             {props.children}
+            <Portal visible={state.visible && state.pos != undefined}>
+                <View css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent").zI(300)}>
+                    <Blur css="zi:1 bac:transparent" onPress={() => state.visible = false} />
+                    <View onLayout={({ nativeEvent }) => {
+                        if (!state.toolTipSize && state.visible) {
+                            state.toolTipSize = nativeEvent.layout;
+                        }
+                    }} style={[{
+                        left: left,
+                        top: top,
+                    }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip").op(state.toolTipSize ? 1 : 0)}>
+                        {
+                            typeof props.text == "string" ? <Text selectable={true} css=".fos-sm">{props.text}</Text> : props.text
+                        }
+                    </View>
+                </View>
+            </Portal>
         </TouchableOpacity>
     )
 });

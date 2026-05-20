@@ -2,6 +2,7 @@ import { TouchableOpacityProps, TextInputProps, TextProps, ColorValue, OpaqueCol
 import * as ReactNative from "react-native"
 import { CSSStyle } from "./styles/CSSStyle"
 import * as React from "react";
+import { Portals } from "./cls";
 
 export const StyledKey = "StyledKey";
 interface NodeProps extends Record<string, any> {
@@ -161,7 +162,7 @@ export type ButtonProps = {
 } & StyledProps & Omit<TouchableOpacityProps, "children"> & MouseProps;
 
 export type IExtraThemeContext = {
-    
+
 }
 
 export type IThemeContext = {
@@ -198,12 +199,6 @@ export type IThemeContext = {
 }
 
 export type InternalThemeContext = {
-    add: (id: string, element: React.ReactNode, isStattic?: boolean) => void;
-    remove: (id: string) => void;
-    totalItems: () => number;
-    onItemsChange?: () => void;
-    onStaticItemsChange?: () => void;
-    items: () => { items: Map<any, any>, staticItems: Map<any, any> },
     containerSize: () => Size
 }
 
@@ -234,6 +229,7 @@ export type GlobalState = {
     tStorage: CSSStorage;
     themeIndex: number;
     icons?: Record<IConType, any>,
+    portals: Portals;
     appStart: () => EventListener[];
     alertViewData: {
         alert: (props: AlertViewProps | string) => void;
@@ -431,6 +427,8 @@ export type LoaderProps = Omit<ActivityIndicatorProps, "animating" | "hidesWhenS
 
 export type PortalProps = StyledProps & {
     children: React.ReactNode | React.ReactNode[];
+    visible?: boolean; // default = true;
+    id?: string;
 }
 
 export type ButtonGroupProps = StyledProps & {

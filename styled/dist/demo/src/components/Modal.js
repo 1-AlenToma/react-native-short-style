@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from "react";
 import { AnimatedView, View } from "./ReactNativeComponents";
-import { InternalThemeContext } from "../theme/ThemeContext";
+import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform } from "react-native";
@@ -18,6 +18,7 @@ import { newId } from "../config";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { Blur } from "./Blur";
+import { Portal } from "./Portal";
 export const Modal = (props) => {
     var _a, _b;
     const context = React.useContext(InternalThemeContext);
@@ -35,7 +36,6 @@ export const Modal = (props) => {
         if (show && !state.isVisible) {
             state.isVisible = show;
         }
-        render();
         animateY(!show ? 0 : .5);
         animateX(!show ? 0 : 1, () => {
             try {
@@ -43,7 +43,6 @@ export const Modal = (props) => {
                     props.onHide();
                 if (show != state.isVisible) {
                     state.isVisible = show;
-                    render();
                 }
             }
             catch (e) {
@@ -52,26 +51,20 @@ export const Modal = (props) => {
         });
     });
     React.useEffect(() => {
-        toggle(props.isVisible);
+        state.isVisible = props.isVisible;
     }, [props.isVisible]);
     React.useEffect(() => {
-        renderUpdateTimer(() => render());
-    }, [props.children, props.style]);
-    React.useEffect(() => {
-        state.isVisible = props.isVisible;
-        return () => context.remove(state.id);
-    }, []);
-    const render = () => {
-        if (!transform[props.animationStyle == "Opacity" ? "opacity" : "scale"])
-            transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 1],
-                extrapolate: "clamp"
-            });
-        let style = Array.isArray(props.style) ? props.style : [props.style];
-        let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
-        let fn = state.isVisible ? context.add.bind(context) : context.remove.bind(context);
-        fn(state.id, _jsxs(View, { inspectDisplayName: "ModalContainer", css: "_blur op:1 bac:transparent fl:1 ModalContainer", style: { zIndex: zIndex + 300 }, children: [_jsx(Blur, { style: {
+        toggle(state.isVisible);
+    }, [state.isVisible]);
+    if (!transform[props.animationStyle == "Opacity" ? "opacity" : "scale"])
+        transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 1],
+            extrapolate: "clamp"
+        });
+    let style = Array.isArray(props.style) ? props.style : [props.style];
+    let zIndex = globalData.portals.elems.has(state.id) ? globalData.portals.keys.indexOf(state.id) : globalData.portals.totalItems;
+    return (_jsx(Portal, { visible: state.isVisible, children: _jsxs(View, { inspectDisplayName: "ModalContainer", css: "_blur op:1 bac:transparent fl:1 ModalContainer", style: { zIndex: zIndex + 300 }, children: [_jsx(Blur, { style: {
                         opacity: animate.y
                     }, onPress: props.disableBlurClick ? undefined : () => {
                         toggle(false);
@@ -80,8 +73,6 @@ export const Modal = (props) => {
                             transform: transform.scale ? [transform] : undefined,
                             opacity: transform.opacity ? transform.opacity : undefined
                         }
-                    ], children: [_jsx(View, { ifTrue: props.addCloser == true, css: x => x.cls("_modalClose").baC(".co-transparent"), children: _jsx(Button, { onPress: () => toggle(false), css: x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0), icon: _jsx(Icon, { type: "AntDesign", name: "close", size: 15 }) }) }), _jsx(View, { inspectDisplayName: "ModalContent", css: x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), children: props.children })] }))] }));
-    };
-    return null;
+                    ], children: [_jsx(View, { ifTrue: props.addCloser == true, css: x => x.cls("_modalClose").baC(".co-transparent"), children: _jsx(Button, { onPress: () => toggle(false), css: x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0), icon: _jsx(Icon, { type: "AntDesign", name: "close", size: 15 }) }) }), _jsx(View, { inspectDisplayName: "ModalContent", css: x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), children: props.children })] }))] }) }));
 };
 //# sourceMappingURL=Modal.js.map

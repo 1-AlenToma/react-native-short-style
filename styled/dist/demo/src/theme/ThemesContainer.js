@@ -17,30 +17,19 @@ import { Platform, View as NativeView } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
 import { useTimer } from "../hooks";
-const StaticItem = React.memo(({ onMounted, id, item }) => {
-    const [element, setItem] = React.useState(item);
+const StaticItem = (props) => {
+    const [element, setItem] = React.useState(props.item.elem);
+    if (!props.item.funcBind)
+        props.item.funcBind = x => setItem(() => x);
     React.useEffect(() => {
-        onMounted(x => setItem(x));
-    }, [item]);
-    return element;
-});
-const StaticFullView = () => {
-    const context = React.useContext(InternalThemeContext);
-    const [update, setUpdate] = React.useState(0);
-    context.onItemsChange = () => {
-        setUpdate(x => x + 1 < 1000 ? x + 1 : 0);
-    };
-    const items = Array.from(context.items().items.entries());
-    return (_jsx(View, { css: "_topPostion zi-4", ifTrue: items.length > 0, children: items.map(([key, value], i) => (_jsx(React.Fragment, { children: value.el }, key))) }));
+        props.item.funcBind = x => setItem(() => x);
+    }, [element]);
+    return element === null || element === void 0 ? void 0 : element.children;
 };
 const StaticView = () => {
-    const context = React.useContext(InternalThemeContext);
-    const [update, setUpdate] = React.useState(0);
-    context.onStaticItemsChange = () => {
-        setUpdate(x => x + 1 < 1000 ? x + 1 : 0);
-    };
-    const items = Array.from(context.items().staticItems.entries());
-    return (items.map(([key, value]) => (_jsx(React.Fragment, { children: value.el }, key))));
+    globalData.hook("portals.updater");
+    const items = Array.from(globalData.portals.elems.entries());
+    return (items.map(([key, value]) => (_jsx(React.Fragment, { children: _jsx(StaticItem, { item: value }) }, key))));
 };
 function parseStyles(obj, selectedIndex) {
     const parsedTheme = React.useRef({}).current;
@@ -54,49 +43,9 @@ function parseStyles(obj, selectedIndex) {
 }
 const ThemeInternalContainer = ({ children }) => {
     const state = StateBuilder({
-        items: new Map(),
-        staticItems: new Map(),
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
-    }).ignore("items", "containerSize", "staticItems").build();
+    }).ignore("containerSize").build();
     const contextValue = React.useMemo(() => ({
-        add: (id, element, isStattic) => {
-            var _a, _b, _c;
-            let item = !isStattic ? state.items.get(id) : state.staticItems.get(id);
-            if (!item) {
-                item = { onchange: undefined, el: undefined };
-                item.el = (_jsx(StaticItem, { id: id, item: element, onMounted: (fn) => item.onchange = fn }));
-                if (!isStattic)
-                    state.items.set(id, item);
-                else
-                    state.staticItems.set(id, item);
-                if (!isStattic)
-                    (_a = contextValue.onItemsChange) === null || _a === void 0 ? void 0 : _a.call(contextValue);
-                else
-                    (_b = contextValue.onStaticItemsChange) === null || _b === void 0 ? void 0 : _b.call(contextValue);
-            }
-            else
-                (_c = item.onchange) === null || _c === void 0 ? void 0 : _c.call(item, element);
-        },
-        remove: (id) => {
-            var _a, _b;
-            let hasItems = state.items.has(id);
-            let hasStatic = state.staticItems.has(id);
-            if (hasItems)
-                state.items.delete(id);
-            if (hasStatic)
-                state.staticItems.delete(id);
-            if (hasItems)
-                (_a = contextValue.onItemsChange) === null || _a === void 0 ? void 0 : _a.call(contextValue);
-            if (hasStatic)
-                (_b = contextValue.onStaticItemsChange) === null || _b === void 0 ? void 0 : _b.call(contextValue);
-        },
-        totalItems: () => state.items.size,
-        items: () => {
-            return { items: state.items, staticItems: state.staticItems };
-        },
-        staticItems: () => state.staticItems,
-        onItemsChange: () => { },
-        onStaticItemsChange: () => { },
         containerSize: () => state.containerSize
     }), []);
     return (_jsx(InternalThemeContext.Provider, { value: contextValue, children: _jsx(DevtoolsIframe, { children: _jsxs(NativeView, { onLayout: (event) => {
@@ -116,7 +65,7 @@ const ThemeInternalContainer = ({ children }) => {
                         state.containerSize.x = event.nativeEvent.layout.x;
                         globalData.containerSize = state.containerSize;
                     }
-                }, style: { backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }, children: [_jsx(DevToolLayoutSelector, {}), _jsx(StaticFullView, {}), _jsx(StaticView, {}), _jsx(ToastView, {}), _jsx(AlertView, {}), _jsx(NativeView, { style: {
+                }, style: { backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }, children: [_jsx(DevToolLayoutSelector, {}), _jsx(StaticView, {}), _jsx(ToastView, {}), _jsx(AlertView, {}), _jsx(NativeView, { style: {
                             width: "100%",
                             height: "100%",
                             zIndex: 1

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { AnimatedView, TouchableOpacity, View } from "./ReactNativeComponents";
-import { InternalThemeContext } from "../theme/ThemeContext";
+import { globalData, InternalThemeContext } from "../theme/ThemeContext";
 import { useAnimate, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform, ViewStyle } from "react-native";
@@ -9,6 +9,7 @@ import { ModalProps } from "../Typse";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { Blur } from "./Blur";
+import { Portal } from "./Portal";
 
 
 export const Modal = (props: ModalProps) => {
@@ -31,8 +32,6 @@ export const Modal = (props: ModalProps) => {
         if (show && !state.isVisible) {
             state.isVisible = show;
         }
-
-        render();
         animateY(!show ? 0 : .5)
         animateX(!show ? 0 : 1, () => {
             try {
@@ -40,7 +39,6 @@ export const Modal = (props: ModalProps) => {
                     props.onHide();
                 if (show != state.isVisible) {
                     state.isVisible = show;
-                    render();
                 }
             } catch (e) {
                 console.error(e)
@@ -49,32 +47,25 @@ export const Modal = (props: ModalProps) => {
     };
 
     React.useEffect(() => {
-        toggle(props.isVisible);
+        state.isVisible = props.isVisible;
     }, [props.isVisible])
 
     React.useEffect(() => {
-        renderUpdateTimer(() => render());
-    }, [props.children, props.style])
-
-    React.useEffect(() => {
-        state.isVisible = props.isVisible;
-        return () => context.remove(state.id)
-    }, [])
+       toggle(state.isVisible)
+    }, [state.isVisible])
 
 
-    const render = () => {
 
-        if (!transform[props.animationStyle == "Opacity" ? "opacity" : "scale"])
-            transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 1],
-                extrapolate: "clamp"
-            });
-        let style = Array.isArray(props.style) ? props.style : [props.style];
-        let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
-        let fn = state.isVisible ? context.add.bind(context) : context.remove.bind(context);
-
-        fn(state.id,
+    if (!transform[props.animationStyle == "Opacity" ? "opacity" : "scale"])
+        transform[props.animationStyle == "Opacity" ? "opacity" : "scale"] = animate.x.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 1],
+            extrapolate: "clamp"
+        });
+    let style = Array.isArray(props.style) ? props.style : [props.style];
+    let zIndex = globalData.portals.elems.has(state.id) ? globalData.portals.keys.indexOf(state.id) : globalData.portals.totalItems;
+    return (
+        <Portal visible={state.isVisible}>
             <View inspectDisplayName="ModalContainer" css="_blur op:1 bac:transparent fl:1 ModalContainer" style={{ zIndex: zIndex + 300 }}>
                 <Blur style={{
                     opacity: animate.y
@@ -100,9 +91,6 @@ export const Modal = (props: ModalProps) => {
                         {props.children}
                     </View>
                 </AnimatedView>
-            </View>)
-    }
-
-    return null;
-
+            </View>
+        </Portal>);
 }

@@ -18,6 +18,7 @@ import * as React from "react";
 import { useContext } from "react";
 import { PanResponder } from "react-native";
 import { Blur } from "./Blur";
+import { Portal } from "./Portal";
 export const ActionSheet = (props) => {
     var _a;
     globalData.hook("containerSize");
@@ -26,9 +27,9 @@ export const ActionSheet = (props) => {
     const state = StateBuilder(() => ({
         id: newId(),
         size: undefined,
+        isVisible: false,
         refItem: {
             startValue: 0,
-            isVisible: false,
             panResponse: undefined,
             isTouched: false,
             interpolate: [],
@@ -93,10 +94,9 @@ export const ActionSheet = (props) => {
     let toggle = (show) => __awaiter(void 0, void 0, void 0, function* () {
         //  if (animating.isAnimating)
         //    return;
-        if (!state.refItem.isVisible && show) {
-            state.refItem.isVisible = props.isVisible;
-            renderUpdate();
-        }
+        //if (!state.isVisible && show) {
+        //    state.isVisible = props.isVisible;
+        //}
         setSize();
         const fn = !isVertical ? animateX : animateY;
         blurAnimation.animateX(show ? 1 : 0, undefined, 20);
@@ -104,19 +104,18 @@ export const ActionSheet = (props) => {
             var _a;
             state.refItem.panResponse = undefined;
             state.refItem.show = show;
-            state.refItem.isVisible = props.isVisible;
-            if (state.refItem.isVisible && !show) {
+            if (state.isVisible != props.isVisible && !show)
+                state.isVisible = props.isVisible;
+            if (state.isVisible && !show && props.isVisible) {
                 (_a = props.onHide) === null || _a === void 0 ? void 0 : _a.call(props);
             }
-            renderUpdate();
         });
     });
     const screenSizeUpdated = () => {
         timer(() => {
             setSize();
-            if (state.refItem.isVisible) {
+            if (state.isVisible) {
                 state.refItem.panResponse = undefined;
-                renderUpdate();
                 //animate.flattenOffset();
                 toggle(true);
             }
@@ -129,13 +128,14 @@ export const ActionSheet = (props) => {
         screenSizeUpdated();
     }, "size");
     React.useEffect(() => {
-        toggle(props.isVisible);
+        if (state.isVisible != props.isVisible && props.isVisible)
+            state.isVisible = props.isVisible;
+        else
+            toggle(props.isVisible);
     }, [props.isVisible]);
     React.useEffect(() => {
-        return () => {
-            context.remove(state.id);
-        };
-    }, []);
+        toggle(state.isVisible);
+    }, [state.isVisible]);
     const handleStyle = {};
     if (!isVertical && position == "Left")
         handleStyle.right = 8;
@@ -145,82 +145,82 @@ export const ActionSheet = (props) => {
         handleStyle.bottom = 8;
     if (isVertical && position == "Bottom")
         handleStyle.top = 8;
-    const _css = () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
-    const renderUpdate = () => {
-        let Handle = Platform.OS == "web" ? TouchableOpacity : View;
-        const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: Object.assign({ backgroundColor: "transparent" }, handleStyle), css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: (e) => {
-                state.refItem.isTouched = true;
-            }, children: _jsx(TouchableOpacity, { onPress: () => {
-                    toggle(false);
-                }, css: !isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button" }) }));
-        if (!state.refItem.panResponse) {
-            state.refItem.panResponse =
-                PanResponder.create({
-                    onMoveShouldSetPanResponder: (evt, gestureState) => {
-                        const { dx, dy } = gestureState;
-                        return ((state.refItem.isTouched) &&
-                            (dx > 2 ||
-                                dx < -2 ||
-                                dy > 2 ||
-                                dy < -2));
-                    },
-                    onPanResponderGrant: (e, gestureState) => {
-                        if (!isVertical)
-                            state.refItem.startValue = gestureState.dx;
+    const _css = React.useMemo(() => {
+        return () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
+    }, [props.css]);
+    let Handle = Platform.OS == "web" ? TouchableOpacity : View;
+    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: Object.assign({ backgroundColor: "transparent" }, handleStyle), css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: (e) => {
+            state.refItem.isTouched = true;
+        }, children: _jsx(TouchableOpacity, { onPress: () => {
+                toggle(false);
+            }, css: !isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button" }) }));
+    if (!state.refItem.panResponse) {
+        state.refItem.panResponse =
+            PanResponder.create({
+                onMoveShouldSetPanResponder: (evt, gestureState) => {
+                    const { dx, dy } = gestureState;
+                    return ((state.refItem.isTouched) &&
+                        (dx > 2 ||
+                            dx < -2 ||
+                            dy > 2 ||
+                            dy < -2));
+                },
+                onPanResponderGrant: (e, gestureState) => {
+                    if (!isVertical)
+                        state.refItem.startValue = gestureState.dx;
+                    else
+                        state.refItem.startValue = gestureState.dy;
+                    animate.setValue({
+                        x: isVertical ? 0 : firstValue(),
+                        y: isVertical ? firstValue() : 0
+                    });
+                    animate.extractOffset();
+                    return true;
+                },
+                onPanResponderMove: (e, gestureState) => {
+                    if (!isVertical) {
+                        if (position == "Left")
+                            animate.x.setValue(gestureState.dx);
                         else
-                            state.refItem.startValue = gestureState.dy;
-                        animate.setValue({
-                            x: isVertical ? 0 : firstValue(),
-                            y: isVertical ? firstValue() : 0
-                        });
-                        animate.extractOffset();
-                        return true;
-                    },
-                    onPanResponderMove: (e, gestureState) => {
-                        if (!isVertical) {
-                            if (position == "Left")
-                                animate.x.setValue(gestureState.dx);
-                            else
-                                animate.x.setValue(-gestureState.dx);
-                        }
-                        else
-                            animate.y.setValue(-gestureState.dy);
-                    },
-                    onPanResponderRelease: (evt, gestureState) => {
-                        let old = firstValue();
-                        let newValue = !isVertical ? gestureState.dx : gestureState.dy;
-                        let diff = newValue - state.refItem.startValue;
-                        if (Math.abs(diff) > getHeight() / 3) {
-                            animate.flattenOffset();
-                            toggle(false);
-                        }
-                        else {
-                            //   animate.flattenOffset();
-                            animateY(old); // reset to start value
-                        }
-                        return false;
+                            animate.x.setValue(-gestureState.dx);
                     }
-                });
-        }
-        let inputRange = [...state.refItem.interpolate].sort((a, b) => a - b);
-        let fn = state.refItem.isVisible ? context.add.bind(context) : context.remove.bind(context);
-        let transform = {};
-        if (isVertical) {
-            transform.translateY = animate.y.interpolate({
-                inputRange: inputRange,
-                outputRange: state.refItem.interpolate,
-                extrapolate: "clamp"
+                    else
+                        animate.y.setValue(-gestureState.dy);
+                },
+                onPanResponderRelease: (evt, gestureState) => {
+                    let old = firstValue();
+                    let newValue = !isVertical ? gestureState.dx : gestureState.dy;
+                    let diff = newValue - state.refItem.startValue;
+                    if (Math.abs(diff) > getHeight() / 3) {
+                        animate.flattenOffset();
+                        toggle(false);
+                    }
+                    else {
+                        //   animate.flattenOffset();
+                        animateY(old); // reset to start value
+                    }
+                    return false;
+                }
             });
-        }
-        else {
-            transform.translateX = animate.x.interpolate({
-                inputRange: inputRange,
-                outputRange: state.refItem.interpolate,
-                extrapolate: "clamp"
-            });
-        }
-        let zIndex = context.items().items.has(state.id) ? [...context.items().items.keys()].indexOf(state.id) : context.items().items.size;
-        fn(state.id, _jsxs(View, { inspectDisplayName: "ActionSheetContainer", css: `co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`, children: [_jsx(Blur, { style: {
+    }
+    let inputRange = [...state.refItem.interpolate].sort((a, b) => a - b);
+    let transform = {};
+    if (isVertical) {
+        transform.translateY = animate.y.interpolate({
+            inputRange: inputRange,
+            outputRange: state.refItem.interpolate,
+            extrapolate: "clamp"
+        });
+    }
+    else {
+        transform.translateX = animate.x.interpolate({
+            inputRange: inputRange,
+            outputRange: state.refItem.interpolate,
+            extrapolate: "clamp"
+        });
+    }
+    let zIndex = globalData.portals.elems.has(state.id) ? globalData.portals.keys.indexOf(state.id) : globalData.portals.totalItems;
+    return (_jsx(Portal, { visible: state.isVisible, children: _jsxs(View, { inspectDisplayName: "ActionSheetContainer", css: `co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`, children: [_jsx(Blur, { style: {
                         opacity: blurAnimation.animate.x.interpolate({
                             inputRange: [0, 1],
                             outputRange: [0, .5]
@@ -251,13 +251,6 @@ export const ActionSheet = (props) => {
                                             state.size.width += 50;
                                         });
                                     }
-                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) }))] }));
-    };
-    React.useEffect(() => {
-        renderUpdateTimer(() => {
-            renderUpdate();
-        });
-    }, [props.children, props.isVisible, props.size, props.position, props.css, props.disableBlurClick, props.style]);
-    return null;
+                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) }))] }) }));
 };
 //# sourceMappingURL=ActionSheet.js.map

@@ -1,1 +1,1 @@
-export declare const ToastView: () => any;
+export declare const ToastView: () => import("react/jsx-runtime").JSX.Element;
