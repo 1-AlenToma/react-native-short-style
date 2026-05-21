@@ -24,4 +24,4 @@ export declare class AlertDialog {
     static confirm(props: AlertViewProps | string): Promise<boolean>;
 }
 export declare const setRef: (ref: any, item: any) => void;
-export declare const refCreator: <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any) => T;
+export declare const refCreator: <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any, compare?: (prevProps: any, nextProps: any) => boolean) => T;

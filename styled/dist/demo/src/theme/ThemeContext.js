@@ -56,6 +56,7 @@ const getWebStorage = () => {
     }
 };
 export const devToolsHandlerContext = StateBuilder(new DevtoolsHandler()).ignore("ws", "que", "components", "treeQue").globalBuild();
+const portals = new Portals();
 export const globalData = StateBuilder(() => ({
     storage: getWebStorage(),
     tStorage: new Map(),
@@ -64,7 +65,7 @@ export const globalData = StateBuilder(() => ({
     icons: undefined,
     themeIndex: 0,
     containerSize: { height: 0, width: 0 },
-    portals: new Portals(),
+    portals: portals,
     alertViewData: {
         data: undefined,
         toastData: undefined,
@@ -113,6 +114,6 @@ export const globalData = StateBuilder(() => ({
             windowChangeEvent
         ];
     }
-})).timeout(undefined).ignore("portals.upTimer", "portals.elems", "alertViewData.data", "alertViewData.toastData", "screen", "window", "storage", "tStorage", "icons")
+})).timeout(undefined).ignore("portals", "alertViewData.data", "alertViewData.toastData", "screen", "window", "storage", "tStorage", "icons")
     .globalBuild();
 //# sourceMappingURL=ThemeContext.js.map

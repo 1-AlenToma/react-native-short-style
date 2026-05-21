@@ -14,8 +14,6 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         sizes: new Map<number, Size>()
     }).ignore("scrollView", "selectedIndex", "sizes").build();
     const timer = useTimer(500);
-
-
     const select = (index: number) => {
         if (!props.selectMultiple)
             state.selectedIndex = [index];

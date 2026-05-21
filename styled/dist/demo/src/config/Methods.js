@@ -138,10 +138,10 @@ export const setRef = (ref, item) => {
     else if (ref && typeof ref === "object")
         Object.assign(ref, item);
 };
-export const refCreator = function (forwardRef, name, view) {
+export const refCreator = function (forwardRef, name, view, compare) {
     name = view.displayName || name;
-    forwardRef.displayName = `StyledItem(${name})`;
-    //(forwardRef as any).name = `StyledItem(${name})`;
-    return React.forwardRef(forwardRef);
+    const Component = React.forwardRef(forwardRef);
+    Component.displayName = `StyledItem(${name})`;
+    return React.memo(Component, compare);
 };
 //# sourceMappingURL=Methods.js.map

@@ -150,9 +150,17 @@ export const setRef = (ref: any, item: any) => {
         Object.assign(ref, item);
 }
 
-export const refCreator = function <T>(forwardRef: (props: any, ref: any) => React.ReactNode, name: string, view: any) {
+export const refCreator = function <T>(
+    forwardRef: (props: any, ref: any) => React.ReactNode,
+    name: string,
+    view: any,
+    compare?: (prevProps: any, nextProps: any) => boolean
+) {
     name = view.displayName || name;
-    (forwardRef as any).displayName = `StyledItem(${name})`;
-    //(forwardRef as any).name = `StyledItem(${name})`;
-    return React.forwardRef(forwardRef) as T;
+
+    const Component = React.forwardRef(forwardRef);
+
+    (Component as any).displayName = `StyledItem(${name})`;
+
+    return React.memo(Component, compare) as T;
 }

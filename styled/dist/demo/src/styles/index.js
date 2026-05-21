@@ -30,16 +30,14 @@ import { IParent } from "../Typse";
 import { useStyled, PositionContext, useLocalRef } from "../hooks";
 export class CMBuilder {
     constructor(name, view) {
-        this.myRef = undefined;
-        this.Component = undefined;
         this.__name = name;
         this.__View = view;
         //  console.log(view)
     }
-    setRef(cRef, c) {
-        if (c === null)
+    setRef(cRef, c, currentRef) {
+        if (c === null || cRef == undefined)
             return;
-        if (c === this.myRef) {
+        if (c === currentRef.current) {
             return;
         }
         try {
@@ -49,31 +47,41 @@ export class CMBuilder {
             console.error(e);
         }
         finally {
-            this.myRef = c;
+            currentRef.current = c;
         }
     }
     fn() {
-        const bound = this.renderFirst.bind(this);
-        this.Component = this.render.bind(this);
-        this.Component.__name = this.__name;
-        this.Component.displayName = `Styled(${this.__name})`;
-        bound.__name = this.__name; // attach __name to the bound function
-        return refCreator(bound, this.__name, this.__View);
+        return refCreator(this.render.bind(this), this.__name, this.__View, this.compaire);
     }
-    renderFirst(props, ref) {
-        const css = React.useMemo(() => {
-            if (props && typeof props.css === "function") {
-                return props.css(new CSSStyle()).toString();
+    compaire(prev, next) {
+        prev = prev !== null && prev !== void 0 ? prev : {};
+        next = next !== null && next !== void 0 ? next : {};
+        for (let key in next) {
+            let a = prev[key];
+            let b = next[key];
+            if (key == "css") {
+                if (typeof b == "function")
+                    b = b(new CSSStyle()).toString();
+                if (typeof a == "function")
+                    a = a(new CSSStyle()).toString();
             }
-            return (props === null || props === void 0 ? void 0 : props.css) || "";
-        }, [props === null || props === void 0 ? void 0 : props.css]);
-        if (ifSelector(props === null || props === void 0 ? void 0 : props.ifTrue) === false)
-            return null;
-        return _jsx(this.Component, Object.assign({}, props, { ifTrue: true, css: css, cRef: (c) => setRef(ref, c) }));
+            if (key == "ifTrue" && typeof a == "function") {
+                if (typeof b == "function")
+                    b = ifSelector(b);
+                if (typeof a == "function")
+                    a = ifSelector(a);
+            }
+            if (a !== b) {
+                //console.log(this.__name, key, a, b)
+                return false; // props changed
+            }
+        }
+        return true;
     }
-    render(_a) {
+    render(_a, ref) {
         var _b, _c, _d, _e, _f, _g, _h, _j;
-        var { children, variant, cRef, style, css, ifTrue, noneDevtools } = _a, props = __rest(_a, ["children", "variant", "cRef", "style", "css", "ifTrue", "noneDevtools"]);
+        var { children, variant, style, css, ifTrue, noneDevtools } = _a, props = __rest(_a, ["children", "variant", "style", "css", "ifTrue", "noneDevtools"]);
+        ifTrue = ifSelector(ifTrue);
         let internalProps = Object.assign({}, props);
         const id = useLocalRef(newId);
         const context = React.useContext(StyleContext);
@@ -82,6 +90,7 @@ export class CMBuilder {
         const [changedProps, setChangedProps] = React.useState(undefined);
         const isDev = __DEV__ && !noneDevtools;
         const inspect = isDev && devToolsHandlerContext.data.isOpened;
+        const myref = React.useRef(null);
         if (isDev) {
             devToolsHandlerContext.useEffect(() => {
                 if (devToolsHandlerContext.data.changedProps.has(id)) {
@@ -116,15 +125,15 @@ export class CMBuilder {
         const childrenArray = React.Children.toArray(children).filter(Boolean);
         let childTotal = 0;
         const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
+        const _css = typeof css == "function" ? css(new CSSStyle()).toString() : css;
         // Memoized values
         const classNames = React.useMemo(() => {
-            const cls = ValueIdentity.getClasses(css, themeContext.systemThemes);
+            const cls = ValueIdentity.getClasses(_css, themeContext.systemThemes);
             //   if (cls.length > 0)
             //  console.log(cls.join(","));
             return cls;
-        }, [css]);
+        }, [_css]);
         const className = React.useMemo(() => classNames.join(" "), [classNames]);
-        const _css = css;
         const dataSet = __DEV__ && Platform.OS === "web" && _css
             ? { css: "__DEV__ CSS:" + _css, type: this.__name, classNames: className }
             : undefined;
@@ -258,11 +267,11 @@ export class CMBuilder {
                 rules: context.rules,
                 path: fullPath,
                 parent: componentParent,
-            }, children: _jsx(CM, Object.assign({ dataSet: dataSet }, internalProps, { ref: (c) => {
-                    this.setRef(cRef, c);
+            }, children: _jsx(CM, Object.assign({ dataSet: dataSet }, internalProps, { ref: ref || inspect ? (c) => {
+                    this.setRef(ref, c, myref);
                     if (inspect)
                         c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
-                }, style: styles, children: mappedChildren.length > 0 ? mappedChildren : null })) }));
+                } : undefined, style: styles, children: mappedChildren.length > 0 ? mappedChildren : null })) }));
     }
 }
 export { NestedStyleSheet, cssTranslator };

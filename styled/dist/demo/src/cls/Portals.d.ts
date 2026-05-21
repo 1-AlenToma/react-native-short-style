@@ -1,26 +1,14 @@
+type Listener = () => void;
 export declare class UpFunc {
-    id?: string;
-    elem?: {
-        visible: boolean;
-        children: any;
-    };
-    updater: number;
-    upTimer?: ReturnType<typeof setTimeout>;
-    funcBind?: (x: {
-        visible: boolean;
-        children: any;
-    }) => void;
-    update(elem?: {
-        visible: boolean;
-        children: any;
-    }): void;
-    constructor(id?: string, elem?: {
-        visible: boolean;
-        children: any;
-    });
+    private listeners;
+    subscribe: (fn: Listener) => () => any;
+    protected notify(): void;
 }
 export declare class Portals extends UpFunc {
-    elems: Map<string, UpFunc>;
+    elems: Map<string, {
+        visible: boolean;
+        children: any;
+    }>;
     keys: string[];
     constructor();
     get totalItems(): number;
@@ -31,3 +19,4 @@ export declare class Portals extends UpFunc {
     setKeys(): void;
     clean(id: string): void;
 }
+export {};

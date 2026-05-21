@@ -51,7 +51,10 @@ export const Modal = (props) => {
         });
     });
     React.useEffect(() => {
-        state.isVisible = props.isVisible;
+        if (!state.isVisible || props.isVisible)
+            state.isVisible = props.isVisible;
+        else
+            toggle(props.isVisible);
     }, [props.isVisible]);
     React.useEffect(() => {
         toggle(state.isVisible);

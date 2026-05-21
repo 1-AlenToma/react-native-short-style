@@ -63,6 +63,7 @@ const getWebStorage = () => {
 
 export const devToolsHandlerContext = StateBuilder<DevtoolsHandler>(new DevtoolsHandler()).ignore("ws", "que", "components", "treeQue").globalBuild();
 
+const portals = new Portals();
 
 export const globalData = StateBuilder<GlobalState>(() => ({
     storage: getWebStorage(),
@@ -72,7 +73,7 @@ export const globalData = StateBuilder<GlobalState>(() => ({
     icons: undefined,
     themeIndex: 0,
     containerSize: { height: 0, width: 0 },
-    portals: new Portals(),
+    portals: portals,
     alertViewData: {
         data: undefined,
         toastData: undefined,
@@ -122,8 +123,7 @@ export const globalData = StateBuilder<GlobalState>(() => ({
         ]
     }
 })).timeout(undefined).ignore(
-    "portals.upTimer",
-    "portals.elems",
+    "portals",
     "alertViewData.data",
     "alertViewData.toastData",
     "screen",

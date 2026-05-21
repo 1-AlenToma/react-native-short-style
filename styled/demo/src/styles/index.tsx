@@ -16,18 +16,16 @@ import { useStyled, PositionContext, useLocalRef, useTimer } from "../hooks";
 export class CMBuilder {
     __name: string;
     __View: any;
-    myRef: any = undefined;
-    Component: any = undefined;
     constructor(name: string, view: any) {
         this.__name = name;
         this.__View = view;
         //  console.log(view)
     }
 
-    setRef(cRef: any, c: any) {
-        if (c === null)
+    setRef(cRef: any, c: any, currentRef: { current: any }) {
+        if (c === null || cRef == undefined)
             return;
-        if (c === this.myRef) {
+        if (c === currentRef.current) {
             return;
         }
         try {
@@ -35,39 +33,48 @@ export class CMBuilder {
         } catch (e) {
             console.error(e)
         } finally {
-            this.myRef = c;
+            currentRef.current = c;
         }
     }
 
     fn() {
-        const bound: any = this.renderFirst.bind(this);
-        this.Component = this.render.bind(this) as any;
-        this.Component.__name = this.__name;
-        this.Component.displayName = `Styled(${this.__name})`;
-        bound.__name = this.__name; // attach __name to the bound function
-
-        return refCreator(bound, this.__name, this.__View);
+        return refCreator(this.render.bind(this), this.__name, this.__View, this.compaire);
     }
 
+    compaire(prev, next) {
+        prev = prev ?? {};
+        next = next ?? {};
+        for (let key in next) {
+            let a = prev[key];
+            let b = next[key];
 
-
-    renderFirst(props: CSSProps<any>, ref: any) {
-        const css = React.useMemo(() => {
-            if (props && typeof props.css === "function") {
-                return props.css(new CSSStyle()).toString();
+            if (key == "css") {
+                if (typeof b == "function")
+                    b = b(new CSSStyle()).toString();
+                if (typeof a == "function")
+                    a = a(new CSSStyle()).toString();
             }
-            return props?.css || "";
-        }, [props?.css]);
 
-        if (ifSelector(props?.ifTrue) === false)
-            return null;
+            if (key == "ifTrue" && typeof a == "function") {
+                if (typeof b == "function")
+                    b = ifSelector(b)
+                if (typeof a == "function")
+                    a = ifSelector(a)
+            }
 
+            if (a !== b) {
+                //console.log(this.__name, key, a, b)
+                return false; // props changed
 
-        return <this.Component {...props} ifTrue={true} css={css} cRef={(c) => setRef(ref, c)} />
+            }
+        }
+        return true;
     }
 
-    render({ children, variant, cRef, style, css, ifTrue, noneDevtools, ...props }: CSSProps<any>) {
-        let internalProps = Object.assign({}, props)
+
+    render({ children, variant, style, css, ifTrue, noneDevtools, ...props }: CSSProps<any>, ref: any) {
+        ifTrue = ifSelector(ifTrue);
+        let internalProps = Object.assign({}, props);
         const id = useLocalRef(newId);
         const context = React.useContext(StyleContext);
         const themeContext = React.useContext(ThemeContext);
@@ -75,6 +82,7 @@ export class CMBuilder {
         const [changedProps, setChangedProps] = React.useState<any>(undefined);
         const isDev = __DEV__ && !noneDevtools;
         const inspect = isDev && devToolsHandlerContext.data.isOpened;
+        const myref = React.useRef(null);
         if (isDev) {
             devToolsHandlerContext.useEffect(() => {
                 if (devToolsHandlerContext.data.changedProps.has(id)) {
@@ -110,16 +118,16 @@ export class CMBuilder {
         const childrenArray = React.Children.toArray(children).filter(Boolean);
         let childTotal = 0;
         const isTextWeb = CM.displayName === "Text" && Platform.OS === "web";
-
+        const _css = typeof css == "function" ? css(new CSSStyle()).toString() : css;
         // Memoized values
         const classNames = React.useMemo(() => {
-            const cls = ValueIdentity.getClasses(css, themeContext.systemThemes);
+            const cls = ValueIdentity.getClasses(_css, themeContext.systemThemes);
             //   if (cls.length > 0)
             //  console.log(cls.join(","));
             return cls;
-        }, [css]);
+        }, [_css]);
         const className = React.useMemo(() => classNames.join(" "), [classNames]);
-        const _css = css;
+
         const dataSet =
             __DEV__ && Platform.OS === "web" && _css
                 ? { css: "__DEV__ CSS:" + _css, type: this.__name, classNames: className }
@@ -309,11 +317,11 @@ export class CMBuilder {
                 <CM
                     dataSet={dataSet}
                     {...internalProps}
-                    ref={(c) => {
-                        this.setRef(cRef, c);
+                    ref={ref || inspect ? (c) => {
+                        this.setRef(ref, c, myref);
                         if (inspect)
                             c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
-                    }}
+                    } : undefined}
                     style={styles}>
                     {mappedChildren.length > 0 ? mappedChildren : null}
                 </CM>

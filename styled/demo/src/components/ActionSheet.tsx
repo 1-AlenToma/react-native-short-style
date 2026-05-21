@@ -117,7 +117,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                 if (state.isVisible != props.isVisible && !show)
                     state.isVisible = props.isVisible;
                 if (state.isVisible && !show && props.isVisible) {
-                     props.onHide?.(); 
+                    props.onHide?.();
                 }
             }
         );
@@ -166,7 +166,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         handleStyle.top = 8;
 
     const _css: any = React.useMemo(() => {
-        return () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
+        return x => x.joinLeft("zi-5 maw-99% ._overflow mat-5 bac-transparent").joinRight(props.css).zI(5).importantValue();
     }, [props.css]);
 
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;

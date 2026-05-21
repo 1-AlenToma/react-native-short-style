@@ -17,22 +17,20 @@ import { Platform, View as NativeView } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
 import { useTimer } from "../hooks";
-const StaticItem = ({ item }) => {
-    var _a;
-    const [element, setElement] = React.useState(item.elem);
-    React.useEffect(() => {
-        item.funcBind = setElement;
-        return () => {
-            if (item.funcBind === setElement) {
-                item.funcBind = undefined;
-            }
-        };
-    }, [item]);
-    return (_a = element === null || element === void 0 ? void 0 : element.children) !== null && _a !== void 0 ? _a : null;
-};
 const StaticView = () => {
-    globalData.hook("portals.updater");
-    return (_jsx(_Fragment, { children: Array.from(globalData.portals.elems.entries()).map(([key, value]) => (_jsx(StaticItem, { item: value }, key))) }));
+    const [, forceUpdate] = React.useState(0);
+    const timer = useTimer(10);
+    React.useEffect(() => {
+        return globalData.portals.subscribe(() => {
+            timer(() => {
+                forceUpdate(x => x + 1 < 1000 ? x + 1 : 0);
+            });
+        });
+    }, []);
+    return (_jsx(_Fragment, { children: globalData.portals.keys.map(key => {
+            var _a;
+            return (_jsx(React.Fragment, { children: (_a = globalData.portals.elems.get(key)) === null || _a === void 0 ? void 0 : _a.children }, key));
+        }) }));
 };
 function parseStyles(obj, selectedIndex) {
     const parsedTheme = React.useRef({}).current;

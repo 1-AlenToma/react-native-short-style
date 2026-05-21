@@ -8,36 +8,25 @@ import { GestureResponderEvent, Platform, StyleSheet, View as NativeView, Image 
 import { parseSelector } from "../config/CssSelectorParser";
 import { svgSelect } from "../constant";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
-import { sleep } from "react-smart-state";
 import { useTimer } from "../hooks";
-import { UpFunc } from "../cls";
-
-
-const StaticItem = ({ item }: { item: UpFunc }) => {
-    const [element, setElement] = React.useState(item.elem);
-
-    React.useEffect(() => {
-        item.funcBind = setElement;
-        return () => {
-            if (item.funcBind === setElement) {
-                item.funcBind = undefined;
-            }
-        };
-    }, [item]);
-
-    return element?.children ?? null;
-};
 
 const StaticView = () => {
-    globalData.hook("portals.updater");
+    const [, forceUpdate] = React.useState(0);
+    const timer = useTimer(10);
+    React.useEffect(() => {
+        return globalData.portals.subscribe(() => {
+            timer(() => {
+                forceUpdate(x => x + 1 < 1000 ? x + 1 : 0);
+            });
+        });
+    }, []);
 
     return (
         <>
-            {Array.from(globalData.portals.elems.entries()).map(([key, value]) => (
-                <StaticItem
-                    key={key}
-                    item={value}
-                />
+            {globalData.portals.keys.map(key => (
+                <React.Fragment key={key}>
+                    {globalData.portals.elems.get(key)?.children}
+                </React.Fragment>
             ))}
         </>
     );

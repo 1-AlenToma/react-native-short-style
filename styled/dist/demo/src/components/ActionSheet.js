@@ -146,7 +146,7 @@ export const ActionSheet = (props) => {
     if (isVertical && position == "Bottom")
         handleStyle.top = 8;
     const _css = React.useMemo(() => {
-        return () => x => x.joinLeft("zi:5 maw:99% _overflow mat:5 bac-transparent").joinRight(props.css).zI(5).importantValue();
+        return x => x.joinLeft("zi-5 maw-99% ._overflow mat-5 bac-transparent").joinRight(props.css).zI(5).importantValue();
     }, [props.css]);
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;
     const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: Object.assign({ backgroundColor: "transparent" }, handleStyle), css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: (e) => {

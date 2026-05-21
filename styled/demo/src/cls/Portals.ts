@@ -1,29 +1,21 @@
+type Listener = () => void;
 export class UpFunc {
-    id?: string;
-    elem?: { visible: boolean; children: any };
-    updater = 0;
-    upTimer?: ReturnType<typeof setTimeout>;
-    funcBind?: (x: { visible: boolean; children: any }) => void;
-    update(elem?: { visible: boolean; children: any }) {
-        clearTimeout(this.upTimer);
-        if (elem)
-            this.elem = elem;
-        if (!this.funcBind) {
-            this.upTimer = setTimeout(() => {
-                if (!this.funcBind)
-                    this.updater = this.updater < 1000 ? this.updater + 1 : 0;
-            }, 100);
-        } else this.funcBind(this.elem);
-    }
+    private listeners = new Set<Listener>();
 
-    constructor(id?: string, elem?: { visible: boolean; children: any }) {
-        this.id = id;
-        this.elem = elem;
+    subscribe = (fn: Listener) => {
+        this.listeners.add(fn);
+        return () => this.listeners.delete(fn) as any;
+    };
+
+    protected notify() {
+        for (const fn of this.listeners) {
+            fn();
+        }
     }
 }
 
 export class Portals extends UpFunc {
-    elems = new Map<string, UpFunc>();
+    elems = new Map<string, { visible: boolean; children: any }>();
     keys = [] as string[];
     constructor() {
         super();
@@ -37,15 +29,11 @@ export class Portals extends UpFunc {
         if (!portal.visible)
             this.clean(id);
         else {
-            let extItem = this.elems.get(id);
-            if (!extItem) {
-                this.elems.set(id, new UpFunc(id, portal));
+            let hasKey = this.elems.has(id);
+            this.elems.set(id, portal);
+            if (!hasKey)
                 this.setKeys();
-            }
-            if (extItem)
-                extItem.update(portal);
-            else
-                this.update();
+            this.notify();
         }
     }
 
@@ -57,7 +45,7 @@ export class Portals extends UpFunc {
         if (this.elems.has(id)) {
             this.elems.delete(id);
             this.setKeys();
-            this.update();
+            this.notify();
         }
     }
 }
