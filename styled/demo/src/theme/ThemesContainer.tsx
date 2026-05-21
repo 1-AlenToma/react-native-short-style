@@ -13,29 +13,35 @@ import { useTimer } from "../hooks";
 import { UpFunc } from "../cls";
 
 
-const StaticItem = (props: { item: UpFunc }) => {
-    const [element, setItem] = React.useState(props.item.elem);
-    if (!props.item.funcBind)
-        props.item.funcBind = x => setItem(() => x);
-    React.useEffect(() => {
-        props.item.funcBind = x => setItem(() => x);
-    }, [element])
+const StaticItem = ({ item }: { item: UpFunc }) => {
+    const [element, setElement] = React.useState(item.elem);
 
-    return element?.children;
+    React.useEffect(() => {
+        item.funcBind = setElement;
+        return () => {
+            if (item.funcBind === setElement) {
+                item.funcBind = undefined;
+            }
+        };
+    }, [item]);
+
+    return element?.children ?? null;
 };
 
 const StaticView = () => {
     globalData.hook("portals.updater");
 
-    const items = Array.from(globalData.portals.elems.entries());
     return (
-        items.map(([key, value]) => (
-            <React.Fragment key={key}>
-                <StaticItem item={value} />
-            </React.Fragment>
-        ))
-    )
-}
+        <>
+            {Array.from(globalData.portals.elems.entries()).map(([key, value]) => (
+                <StaticItem
+                    key={key}
+                    item={value}
+                />
+            ))}
+        </>
+    );
+};
 
 function parseStyles(obj: Record<string, any>, selectedIndex: number): Rule[] {
     const parsedTheme = React.useRef({}).current;
@@ -401,7 +407,6 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         return null;
 
     return (
-
         <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>
             <ThemeContext.Provider value={{ ...props, systemThemes: theme }}>
                 <ThemeInternalContainer>

@@ -14,7 +14,6 @@ export class UpFunc {
     }
     constructor(id, elem) {
         this.updater = 0;
-        this.upTimer = undefined;
         this.id = id;
         this.elem = elem;
     }

@@ -5,7 +5,7 @@ export declare class UpFunc {
         children: any;
     };
     updater: number;
-    upTimer: any;
+    upTimer?: ReturnType<typeof setTimeout>;
     funcBind?: (x: {
         visible: boolean;
         children: any;

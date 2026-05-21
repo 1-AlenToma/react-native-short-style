@@ -67,8 +67,7 @@ export class CMBuilder {
             }
             return (props === null || props === void 0 ? void 0 : props.css) || "";
         }, [props === null || props === void 0 ? void 0 : props.css]);
-        const ifTrue = props && ifSelector(props.ifTrue);
-        if (ifSelector(ifTrue) === false)
+        if (ifSelector(props === null || props === void 0 ? void 0 : props.ifTrue) === false)
             return null;
         return _jsx(this.Component, Object.assign({}, props, { ifTrue: true, css: css, cRef: (c) => setRef(ref, c) }));
     }
@@ -226,25 +225,33 @@ export class CMBuilder {
                 }
             };
         }, []);
-        const patch = () => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            if (inspect && ifTrue != false) {
-                if (internalProps === null || internalProps === void 0 ? void 0 : internalProps.inspectDisplayName)
-                    delete internalProps.inspectDisplayName;
-                devToolsHandlerContext.patch({
-                    name: (_a = props.inspectDisplayName) !== null && _a !== void 0 ? _a : this.__name,
-                    children: [],
-                    props: Object.assign(Object.assign(Object.assign({ ifTrue }, devToolsHandlerContext.cleanProps(Object.assign(Object.assign({}, internalProps), { style: Object.assign({}, flatStyle(styles, "_props", "transforms", "important")), css }))), { classes: devToolsHandlerContext.withKeysOnly(keySelectors), _viewId: id, _elementIndex: positionContext.index, _parent_viewId: (_b = positionContext.parentId) !== null && _b !== void 0 ? _b : "__0__" }), (typeof children == "string" ? { children } : {}))
-                });
+        useEffect(() => {
+            const patch = () => __awaiter(this, void 0, void 0, function* () {
+                var _a, _b;
+                if (inspect && ifTrue != false) {
+                    if (internalProps === null || internalProps === void 0 ? void 0 : internalProps.inspectDisplayName)
+                        delete internalProps.inspectDisplayName;
+                    devToolsHandlerContext.patch({
+                        name: (_a = props.inspectDisplayName) !== null && _a !== void 0 ? _a : this.__name,
+                        children: [],
+                        props: Object.assign(Object.assign(Object.assign({ ifTrue }, devToolsHandlerContext.cleanProps(Object.assign(Object.assign({}, internalProps), { style: Object.assign({}, flatStyle(styles, "_props", "transforms", "important")), css }))), { classes: devToolsHandlerContext.withKeysOnly(keySelectors), _viewId: id, _elementIndex: positionContext.index, _parent_viewId: (_b = positionContext.parentId) !== null && _b !== void 0 ? _b : "__0__" }), (typeof children == "string" ? { children } : {}))
+                    });
+                }
+                else if (inspect) {
+                    devToolsHandlerContext.delete(id);
+                    devToolsHandlerContext.components.delete(id);
+                }
+                ;
+            });
+            if (inspect) {
+                patch();
             }
-            else if (inspect) {
-                devToolsHandlerContext.delete(id);
-                devToolsHandlerContext.components.delete(id);
-            }
-            ;
-        });
-        if (inspect)
-            patch();
+        }, [
+            inspect,
+            styles,
+            internalProps,
+            children
+        ]);
         if (ifTrue == false)
             return null;
         return (_jsx(StyleContext.Provider, { value: {

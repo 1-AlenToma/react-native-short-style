@@ -8,9 +8,6 @@ import { devToolsHandlerContext } from "../theme/ThemeContext";
 export const PositionContext = React.createContext<IPositionContext>({ index: 0, parentId: "__0__" })
 
 
-
-
-
 // FullPathNode now keeps classes per node
 type FullPathNode = string[];
 

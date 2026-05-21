@@ -13,8 +13,6 @@ import cssTranslator, { clearCss } from "./cssTranslator";
 import { IParent } from "../Typse";
 import { useStyled, PositionContext, useLocalRef, useTimer } from "../hooks";
 
-
-
 export class CMBuilder {
     __name: string;
     __View: any;
@@ -61,9 +59,7 @@ export class CMBuilder {
             return props?.css || "";
         }, [props?.css]);
 
-        const ifTrue = props && ifSelector(props.ifTrue);
-
-        if (ifSelector(ifTrue) === false)
+        if (ifSelector(props?.ifTrue) === false)
             return null;
 
 
@@ -223,10 +219,12 @@ export class CMBuilder {
             themeContext.systemThemes
         );
 
-        let cssStyle = {...(React.useMemo(() => {
-            if (!_css || _css.trim().length === 0) return undefined;
-            return cssTranslator(_css, themeContext.systemThemes);
-        }, [_css, themeContext.systemThemes]) ?? {} as any)};
+        let cssStyle = {
+            ...(React.useMemo(() => {
+                if (!_css || _css.trim().length === 0) return undefined;
+                return cssTranslator(_css, themeContext.systemThemes);
+            }, [_css, themeContext.systemThemes]) ?? {} as any)
+        };
 
         //**
         // style.important override cssStyle and cssStyle.important override the style.important
@@ -263,32 +261,39 @@ export class CMBuilder {
             }
         }, [])
 
+        useEffect(() => {
+            const patch = async () => {
+                if (inspect && ifTrue != false) {
+                    if (internalProps?.inspectDisplayName)
+                        delete internalProps.inspectDisplayName;
+                    devToolsHandlerContext.patch({
+                        name: props.inspectDisplayName ?? this.__name,
+                        children: [],
+                        props: {
+                            ifTrue,
+                            ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
+                            classes: devToolsHandlerContext.withKeysOnly(keySelectors),
+                            _viewId: id,
+                            _elementIndex: positionContext.index,
+                            _parent_viewId: positionContext.parentId ?? "__0__",
+                            ...(typeof children == "string" ? { children } : {})
+                        }
+                    });
+                } else if (inspect) {
+                    devToolsHandlerContext.delete(id);
+                    devToolsHandlerContext.components.delete(id);
+                };
+            }
 
-        const patch = async () => {
-            if (inspect && ifTrue != false) {
-                if (internalProps?.inspectDisplayName)
-                    delete internalProps.inspectDisplayName;
-                devToolsHandlerContext.patch({
-                    name: props.inspectDisplayName ?? this.__name,
-                    children: [],
-                    props: {
-                        ifTrue,
-                        ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
-                        classes: devToolsHandlerContext.withKeysOnly(keySelectors),
-                        _viewId: id,
-                        _elementIndex: positionContext.index,
-                        _parent_viewId: positionContext.parentId ?? "__0__",
-                        ...(typeof children == "string" ? { children } : {})
-                    }
-                });
-            } else if (inspect) {
-                devToolsHandlerContext.delete(id);
-                devToolsHandlerContext.components.delete(id);
-            };
-        }
-
-        if (inspect)
-            patch();
+            if (inspect) {
+                patch();
+            }
+        }, [
+            inspect,
+            styles,
+            internalProps,
+            children
+        ]);
 
         if (ifTrue == false)
             return null;

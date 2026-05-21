@@ -423,6 +423,7 @@ export type LoaderProps = Omit<ActivityIndicatorProps, "animating" | "hidesWhenS
     loading: boolean;
     text?: string | React.ReactNode;
     children?: React.ReactNode | React.ReactNode[];
+    containerProps?: StyledProps
 }
 
 export type PortalProps = StyledProps & {

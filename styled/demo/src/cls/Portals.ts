@@ -2,7 +2,7 @@ export class UpFunc {
     id?: string;
     elem?: { visible: boolean; children: any };
     updater = 0;
-    upTimer = undefined;
+    upTimer?: ReturnType<typeof setTimeout>;
     funcBind?: (x: { visible: boolean; children: any }) => void;
     update(elem?: { visible: boolean; children: any }) {
         clearTimeout(this.upTimer);
@@ -15,6 +15,7 @@ export class UpFunc {
             }, 100);
         } else this.funcBind(this.elem);
     }
+
     constructor(id?: string, elem?: { visible: boolean; children: any }) {
         this.id = id;
         this.elem = elem;
