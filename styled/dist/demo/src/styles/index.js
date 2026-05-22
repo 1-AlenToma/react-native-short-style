@@ -50,8 +50,8 @@ export class CMBuilder {
             currentRef.current = c;
         }
     }
-    fn() {
-        return refCreator(this.render.bind(this), this.__name, this.__View, this.compaire);
+    fn(useMem) {
+        return refCreator(useMem, this.render.bind(this), this.__name, this.__View, this.compaire);
     }
     compaire(prev, next) {
         prev = prev !== null && prev !== void 0 ? prev : {};

@@ -151,6 +151,7 @@ export const setRef = (ref: any, item: any) => {
 }
 
 export const refCreator = function <T>(
+    useMem: boolean,
     forwardRef: (props: any, ref: any) => React.ReactNode,
     name: string,
     view: any,
@@ -162,5 +163,5 @@ export const refCreator = function <T>(
 
     (Component as any).displayName = `StyledItem(${name})`;
 
-    return React.memo(Component, compare) as T;
+    return (useMem ? React.memo(Component, compare) : Component) as T ;
 }

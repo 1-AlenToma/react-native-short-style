@@ -37,8 +37,8 @@ export class CMBuilder {
         }
     }
 
-    fn() {
-        return refCreator(this.render.bind(this), this.__name, this.__View, this.compaire);
+    fn(useMem: boolean) {
+        return refCreator(useMem, this.render.bind(this), this.__name, this.__View, this.compaire);
     }
 
     compaire(prev, next) {
