@@ -413,6 +413,8 @@ export type CollabseProps = StyledProps & {
     text?: string | React.ReactNode;
     icon?: React.ReactNode;
     children: React.ReactNode;
+    onActiveStateChange?:(isActive: boolean) => void;
+    lazyLoading?: boolean;
 }
 
 export type LoaderRef = {

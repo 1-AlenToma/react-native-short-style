@@ -31,7 +31,11 @@ export const Collabse = React.forwardRef((props, ref) => {
     state.useEffect(() => show(), "visible");
     if (ifSelector(props.ifTrue) == false)
         return null;
-    return (_jsxs(View, { style: props.style, css: x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), children: [_jsxs(TouchableOpacity, { onPress: () => state.visible = !state.visible, css: "wi:100% he:30 ali:center fld:row", children: [props.icon, _jsx(Text, { css: "fos-lg fow:bold", children: props.text }), _jsx(Icon, { type: "AntDesign", css: "_abc ri:2", size: 20, name: state.prefix })] }), _jsx(AnimatedView, { css: "wi:100% pal:10", style: {
+    return (_jsxs(View, { style: props.style, css: x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), children: [_jsxs(TouchableOpacity, { onPress: () => {
+                    var _a;
+                    (_a = props.onActiveStateChange) === null || _a === void 0 ? void 0 : _a.call(props, !state.visible);
+                    state.visible = !state.visible;
+                }, css: "wi:100% he:30 ali:center fld:row", children: [props.icon, _jsx(Text, { css: "fos-lg fow:bold", children: props.text }), _jsx(Icon, { type: "AntDesign", css: "_abc ri:2", size: 20, name: state.prefix })] }), _jsx(AnimatedView, { css: "wi:100% pal:10", style: {
                     overflow: "hidden",
                     maxHeight: animate.y.interpolate({
                         inputRange: [0, 1],
@@ -46,6 +50,6 @@ export const Collabse = React.forwardRef((props, ref) => {
                             outputRange: [0, 1],
                             extrapolate: "clamp"
                         })
-                    }, children: props.children }) })] }));
+                    }, children: state.visible || !props.lazyLoading ? props.children : null }) })] }));
 });
 //# sourceMappingURL=Collabse.js.map

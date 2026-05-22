@@ -5,4 +5,6 @@ export declare const Collabse: React.ForwardRefExoticComponent<import("../Typse"
     text?: string | React.ReactNode;
     icon?: React.ReactNode;
     children: React.ReactNode;
+    onActiveStateChange?: (isActive: boolean) => void;
+    lazyLoading?: boolean;
 } & React.RefAttributes<DropdownRefItem>>;

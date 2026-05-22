@@ -41,7 +41,10 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
 
     return (
         <View style={props.style} css={x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css)}>
-            <TouchableOpacity onPress={() => state.visible = !state.visible} css="wi:100% he:30 ali:center fld:row">
+            <TouchableOpacity onPress={() => {
+                props.onActiveStateChange?.(!state.visible);
+                state.visible = !state.visible;
+            }} css="wi:100% he:30 ali:center fld:row">
                 {props.icon}
                 <Text css="fos-lg fow:bold">{props.text}</Text>
                 <Icon type="AntDesign" css="_abc ri:2" size={20} name={state.prefix} />
@@ -64,7 +67,9 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
                     })
 
                 }}>
-                    {props.children}
+                    {
+                        state.visible || !props.lazyLoading ? props.children : null
+                    }
                 </AnimatedView>
             </AnimatedView>
         </View>
