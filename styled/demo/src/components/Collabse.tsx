@@ -49,7 +49,7 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
                 <Text css="fos-lg fow:bold">{props.text}</Text>
                 <Icon type="AntDesign" css="_abc ri:2" size={20} name={state.prefix} />
             </TouchableOpacity>
-            <AnimatedView css="wi:100% pal:10" style={{
+            <AnimatedView css="wi:100%" style={{
                 overflow: "hidden",
                 maxHeight: animate.y.interpolate({
                     inputRange: [0, 1],
