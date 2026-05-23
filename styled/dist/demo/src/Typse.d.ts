@@ -350,6 +350,7 @@ export type CollabseProps = StyledProps & {
     defaultActive?: boolean;
     text?: string | React.ReactNode;
     icon?: React.ReactNode;
+    headerStyle?: CSS_String | ViewStyle;
     children: React.ReactNode;
     onActiveStateChange?: (isActive: boolean) => void;
     lazyLoading?: boolean;

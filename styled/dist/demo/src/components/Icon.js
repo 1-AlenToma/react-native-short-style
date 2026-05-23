@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import * as React from "react";
-import { CreateView } from "./ReactNativeComponents";
+import { CreateView } from "./helper";
 import { useTimer } from "../hooks";
 import { flatStyle } from "../config";
 import { globalData } from "../theme/ThemeContext";

@@ -1,0 +1,20 @@
+import * as Native from "react-native";
+import { ViewProps, TextProps, ScrollViewProps, TouchableOpacityProps, ImageProps, FlatListProps } from "react-native/types";
+import * as NativeSlider from '@miblanchard/react-native-slider';
+import { CreateViewWithMem } from "./helper";
+const AnimatedTouchable = Native.Animated.createAnimatedComponent(Native.TouchableOpacity);
+
+export const View = CreateViewWithMem<Native.View, ViewProps>(Native.View);
+export const Slider = CreateViewWithMem<NativeSlider.Slider, NativeSlider.SliderProps>(NativeSlider.Slider, "Slider");
+export const Text = CreateViewWithMem<Native.Text, TextProps>(Native.Text, "Text");
+export const TextInput = CreateViewWithMem<Native.TextInput, Native.TextInputProps>(Native.TextInput, "TextInput");
+export const ScrollView = CreateViewWithMem<Native.ScrollView, ScrollViewProps>(Native.ScrollView);
+export const FlatList = CreateViewWithMem<Native.FlatList, FlatListProps<any>>(Native.FlatList, "FlatList");
+export const TouchableOpacity = CreateViewWithMem<typeof Native.TouchableOpacity, TouchableOpacityProps>(Native.TouchableOpacity);
+export const TouchableWithoutFeedback = CreateViewWithMem<Native.TouchableWithoutFeedback, Native.TouchableWithoutFeedbackProps>(Native.TouchableOpacity);
+export const TouchableNativeFeedback = CreateViewWithMem<Native.TouchableNativeFeedback, Native.TouchableNativeFeedbackProps>(Native.TouchableOpacity);
+export const Image = CreateViewWithMem<Native.Image, ImageProps>(Native.Image);
+export const AnimatedView = CreateViewWithMem<Native.View, ViewProps>(Native.Animated.View, "AnimatedView");
+export const AnimatedText = CreateViewWithMem<Native.Text, TextProps>(Native.Animated.Text, "AnimatedText");
+export const AnimatedTouchableOpacity = CreateViewWithMem<typeof Native.TouchableOpacity, TouchableOpacityProps>(AnimatedTouchable, "AnimatedTouchableOpacity");
+export const AnimatedScrollView = CreateViewWithMem<Native.ScrollView, ScrollViewProps>(Native.Animated.ScrollView, "AnimatedScrollView");

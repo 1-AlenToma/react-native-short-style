@@ -4,6 +4,7 @@ export declare const Collabse: React.ForwardRefExoticComponent<import("../Typse"
     defaultActive?: boolean;
     text?: string | React.ReactNode;
     icon?: React.ReactNode;
+    headerStyle?: import("../Typse").CSS_String | import("../Typse").ViewStyle;
     children: React.ReactNode;
     onActiveStateChange?: (isActive: boolean) => void;
     lazyLoading?: boolean;

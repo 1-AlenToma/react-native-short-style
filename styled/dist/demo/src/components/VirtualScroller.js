@@ -13,7 +13,7 @@ import * as React from "react";
 import StateBuilder from "../States";
 import { newId, setRef } from "../config";
 import { useTimer, useDeferredMemo } from "../hooks";
-import { ViewMem, TouchableOpacityMem, ScrollViewMem } from "./ReactNativeComponents";
+import { View, TouchableOpacity, ScrollView } from "./ReactNativeComponentsMems";
 import { SmartScheduler } from "../constant";
 const ScrollContext = React.createContext(null);
 const ScrollIsVisibleView = ({ startIndex, children }) => {
@@ -95,7 +95,7 @@ const ScrollIsVisibleView = ({ startIndex, children }) => {
     const visibility = () => {
         return (state.render && (state.visible || rowIndex == context.parentState.scrollToIndex || context.itemSize == undefined));
     };
-    return (_jsx(ViewMem, { ifTrue: visibility, onLayout: React.useCallback(({ nativeEvent }) => {
+    return (_jsx(View, { ifTrue: visibility, onLayout: React.useCallback(({ nativeEvent }) => {
             const size = nativeEvent.layout;
             if (context.parentState.estimatedItemSize <= 2) {
                 context.parentState.estimatedItemSize = isHorizontal ? size.width : size.height;
@@ -113,7 +113,7 @@ const VirtualScrollerView = React.memo(({ startIndex }) => {
     const onItemLayout = context.props.onItemLayout;
     const renderedItems = useDeferredMemo(() => {
         const isView = context.props.onItemLayout || (context.props.numColumns && context.props.numColumns > 1 && !isHorizontal);
-        const Container = onItemPress ? TouchableOpacityMem : (isView ? ViewMem : React.Fragment);
+        const Container = onItemPress ? TouchableOpacity : (isView ? View : React.Fragment);
         const containerProps = isView || onItemPress ? ({ style: { flex: 1, backgroundColor: "transparent" } }) : undefined;
         const rows = context.itemRows.get(startIndex);
         return rows.map((item, i) => {
@@ -223,7 +223,7 @@ export const VirtualScroller = React.forwardRef((props, ref) => {
             itemRows: (_d = (_c = state.items) === null || _c === void 0 ? void 0 : _c.rows) !== null && _d !== void 0 ? _d : new Map(),
             props,
             itemSize
-        }, children: _jsx(ScrollViewMem, { ifTrue: props.ifTrue, css: props.css, showsVerticalScrollIndicator: props.showsVerticalScrollIndicator, showsHorizontalScrollIndicator: props.showsHorizontalScrollIndicator, horizontal: props.horizontal, ref: c => state.refItems.scrollView = c, scrollEventThrottle: (_e = props.scrollEventThrottle) !== null && _e !== void 0 ? _e : 16, contentContainerStyle: {
+        }, children: _jsx(ScrollView, { ifTrue: props.ifTrue, css: props.css, showsVerticalScrollIndicator: props.showsVerticalScrollIndicator, showsHorizontalScrollIndicator: props.showsHorizontalScrollIndicator, horizontal: props.horizontal, ref: c => state.refItems.scrollView = c, scrollEventThrottle: (_e = props.scrollEventThrottle) !== null && _e !== void 0 ? _e : 16, contentContainerStyle: {
                 minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
                 minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
                 flexDirection: props.horizontal ? "row" : "column",

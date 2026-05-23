@@ -1,4 +1,4 @@
-export * from "./ReactNativeComponents";
+export * from "./ReactNativeComponentsMems";
 export * from "./Button";
 export * from "./Icon";
 export * from "./Modal";

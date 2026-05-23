@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IConProps } from "../Typse";
-import { CreateView } from "./ReactNativeComponents";
+import { CreateView } from "./helper";
 import { useTimer } from "../hooks";
 import { flatStyle } from "../config";
 import { globalData } from "../theme/ThemeContext";

@@ -5,7 +5,7 @@ import { Size, VirtualScrollerViewRefProps, VirtualScrollerViewProps, ViewStyle 
 import { useTimer, useDeferredMemo } from "../hooks";
 import { globalData } from "../theme/ThemeContext";
 import { LayoutChangeEvent } from "react-native";
-import { ViewMem, TouchableOpacityMem, ScrollViewMem } from "./ReactNativeComponents";
+import { View, TouchableOpacity, ScrollView } from "./ReactNativeComponentsMems";
 import { SmartScheduler } from "../constant";
 // Context used to share scroll state and layout handling
 
@@ -116,7 +116,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
     const visibility = () => {
         return (state.render && (state.visible || rowIndex == context.parentState.scrollToIndex || context.itemSize == undefined))
     };
-    return (<ViewMem
+    return (<View
         ifTrue={visibility}
         onLayout={React.useCallback(({ nativeEvent }: LayoutChangeEvent) => {
             const size = nativeEvent.layout;
@@ -129,7 +129,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
         css={React.useMemo(() => x => x.joinLeft(context.props.itemStyle).cls("virtualItemSelector"), [context.props.itemStyle])}
         style={style}>
         {children}
-    </ViewMem>)
+    </View>)
 }
 
 
@@ -142,7 +142,7 @@ const VirtualScrollerView = React.memo(({ startIndex }: { startIndex: number }) 
     const onItemLayout = context.props.onItemLayout;
     const renderedItems = useDeferredMemo(() => {
         const isView = context.props.onItemLayout || (context.props.numColumns && context.props.numColumns > 1 && !isHorizontal);
-        const Container: any = onItemPress ? TouchableOpacityMem : (isView ? ViewMem : React.Fragment);
+        const Container: any = onItemPress ? TouchableOpacity : (isView ? View : React.Fragment);
         const containerProps: any = isView || onItemPress ? ({ style: { flex: 1, backgroundColor: "transparent" } as ViewStyle }) : undefined;
         const rows = context.itemRows.get(startIndex)
         return rows.map((item, i) => {
@@ -178,7 +178,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
         },
         id: newId(),
         refItems: {
-            scrollView: undefined as typeof ScrollViewMem | undefined,
+            scrollView: undefined as typeof ScrollView | undefined,
             scrollOffset: 0,
             init: false,
             ref: {
@@ -269,7 +269,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
             props,
             itemSize
         }}>
-            <ScrollViewMem
+            <ScrollView
                 key={state.id}
                 ifTrue={props.ifTrue}
                 css={props.css}
@@ -330,7 +330,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 }}
             >
                 {state.containerSize && state.items?.children}
-            </ScrollViewMem>
+            </ScrollView>
         </ScrollContext.Provider>
     );
 });

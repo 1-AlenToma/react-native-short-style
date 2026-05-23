@@ -22,4 +22,5 @@ export * from "./ScrollMenu";
 export * from "./VirtualScroller";
 export * from "./ReadyView";
 export * from "./public_hooks/index";
+export * from "./helper";
 //# sourceMappingURL=index.js.map

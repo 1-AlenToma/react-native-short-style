@@ -44,7 +44,7 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
             <TouchableOpacity onPress={() => {
                 props.onActiveStateChange?.(!state.visible);
                 state.visible = !state.visible;
-            }} css="wi:100% he:30 ali:center fld:row">
+            }} css={x => x.joinLeft("wi:100% he:30 ali:center fld:row").joinRight(props.headerStyle)}>
                 {props.icon}
                 <Text css="fos-lg fow:bold">{props.text}</Text>
                 <Icon type="AntDesign" css="_abc ri:2" size={20} name={state.prefix} />

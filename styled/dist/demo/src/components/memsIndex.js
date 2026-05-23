@@ -1,4 +1,4 @@
-export * from "./ReactNativeComponents";
+export * from "./ReactNativeComponentsMems";
 export * from "./Button";
 export * from "./Icon";
 export * from "./Modal";
@@ -23,3 +23,4 @@ export * from "./VirtualScroller";
 export * from "./ReadyView";
 export * from "./public_hooks/index";
 export * from "./helper";
+//# sourceMappingURL=memsIndex.js.map
