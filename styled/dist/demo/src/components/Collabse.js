@@ -7,9 +7,8 @@ import StateBuilder from "../States";
 import { ifSelector, setRef } from "../config";
 import { Icon } from "./Icon";
 export const Collabse = React.forwardRef((props, ref) => {
-    var _a;
     const state = StateBuilder({
-        visible: (_a = props.defaultActive) !== null && _a !== void 0 ? _a : false,
+        visible: props.defaultActive ?? false,
         prefix: props.defaultActive ? "minus" : "plus"
     }).build();
     const { animate, animateY, animateX } = useAnimate({ speed: 300, useNativeDriver: false });
@@ -32,8 +31,7 @@ export const Collabse = React.forwardRef((props, ref) => {
     if (ifSelector(props.ifTrue) == false)
         return null;
     return (_jsxs(View, { style: props.style, css: x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), children: [_jsxs(TouchableOpacity, { onPress: () => {
-                    var _a;
-                    (_a = props.onActiveStateChange) === null || _a === void 0 ? void 0 : _a.call(props, !state.visible);
+                    props.onActiveStateChange?.(!state.visible);
                     state.visible = !state.visible;
                 }, css: x => x.joinLeft("wi:100% he:30 ali:center fld:row").joinRight(props.headerStyle), children: [props.icon, _jsx(Text, { css: "fos-lg fow:bold", children: props.text }), _jsx(Icon, { type: "AntDesign", css: "_abc ri:2", size: 20, name: state.prefix })] }), _jsx(AnimatedView, { css: "wi:100%", style: {
                     overflow: "hidden",

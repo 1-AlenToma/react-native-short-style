@@ -1,16 +1,15 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { AnimatedTouchableOpacity, AnimatedView } from "./ReactNativeComponents";
 export const Blur = (props) => {
-    let hProps = Object.assign({}, props);
+    let hProps = { ...props };
     const Component = props.onPress ? AnimatedTouchableOpacity : AnimatedView;
     const onPress = (event) => {
-        var _a;
-        (_a = props === null || props === void 0 ? void 0 : props.onPress) === null || _a === void 0 ? void 0 : _a.call(props, event);
+        props?.onPress?.(event);
     };
     if (!hProps.onPress && hProps.activeOpacity === undefined)
         hProps.activeOpacity = 1;
     if (props.onPress)
         hProps.onPress = onPress;
-    return (_jsx(Component, Object.assign({ inspectDisplayName: "Blur" }, hProps, { css: x => x.cls("_blur").joinRight(hProps.css) })));
+    return (_jsx(Component, { inspectDisplayName: "Blur", ...hProps, css: x => x.cls("_blur").joinRight(hProps.css) }));
 };
 //# sourceMappingURL=Blur.js.map

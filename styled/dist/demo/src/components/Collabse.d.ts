@@ -1,10 +1,10 @@
 import * as React from "react";
 import { DropdownRefItem } from "../Typse";
-export declare const Collabse: React.ForwardRefExoticComponent<import("../Typse").StyledProps & {
+export declare const Collabse: React.ForwardRefExoticComponent<import("..").StyledProps & {
     defaultActive?: boolean;
     text?: string | React.ReactNode;
     icon?: React.ReactNode;
-    headerStyle?: import("../Typse").CSS_String | import("../Typse").ViewStyle;
+    headerStyle?: import("..").CSS_String | import("..").ViewStyle;
     children: React.ReactNode;
     onActiveStateChange?: (isActive: boolean) => void;
     lazyLoading?: boolean;

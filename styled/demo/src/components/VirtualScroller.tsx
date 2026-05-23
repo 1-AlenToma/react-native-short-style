@@ -3,7 +3,6 @@ import StateBuilder, { PrimitiveValue } from "../States";
 import { ifSelector, newId, optionalStyle, setRef } from "../config";
 import { Size, VirtualScrollerViewRefProps, VirtualScrollerViewProps, ViewStyle } from "../Typse";
 import { useTimer, useDeferredMemo } from "../hooks";
-import { globalData } from "../theme/ThemeContext";
 import { LayoutChangeEvent } from "react-native";
 import { View, TouchableOpacity, ScrollView } from "./ReactNativeComponentsMems";
 import { SmartScheduler } from "../constant";

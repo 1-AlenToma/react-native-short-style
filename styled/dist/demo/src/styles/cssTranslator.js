@@ -71,7 +71,7 @@ const checkObject = (value) => {
     return value;
 };
 const cleanKey = (k) => {
-    return (k !== null && k !== void 0 ? k : "").indexOf(".") != -1 ? k.substring(1) : k;
+    return (k ?? "").indexOf(".") != -1 ? k.substring(1) : k;
 };
 const newId = () => Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
 export const serilizeCssStyle = (style) => {
@@ -103,23 +103,22 @@ export const clearAll = () => {
     Storage.clear();
 };
 const css_translator = (css, styleFile, id) => {
-    var _a, _b, _c;
     try {
         let important = {};
         let cssItem = { _props: {} };
         if (!css || css.trim().length <= 0)
             return cssItem;
         if (id !== undefined && Storage.has(id))
-            return Object.assign({}, Storage.get(id));
+            return { ...Storage.get(id) };
         else if (TStorage.has(css))
-            return Object.assign({}, TStorage.get(css));
-        let CSS = styleFile !== null && styleFile !== void 0 ? styleFile : {};
+            return { ...TStorage.get(css) };
+        let CSS = styleFile ?? {};
         let translatedItem = extractProps(css);
         if (translatedItem._hasValue) {
             css = translatedItem.css;
             delete translatedItem.css;
             delete translatedItem._hasValue;
-            cssItem._props = Object.assign({}, translatedItem);
+            cssItem._props = { ...translatedItem };
         }
         let items = ValueIdentity.splitCss(css);
         let isImportant = /(^|[^-])!important\b/.test(css);
@@ -131,7 +130,7 @@ const css_translator = (css, styleFile, id) => {
                     //   console.log(c)
                     c = c.trim().substring(1);
                 }
-                let style = (_a = CSS[c]) !== null && _a !== void 0 ? _a : CSS[c.toLowerCase()];
+                let style = CSS[c] ?? CSS[c.toLowerCase()];
                 let _isImportend = isImportant;
                 if (style === undefined && (ValueIdentity.has(c))) {
                     let kValue = ValueIdentity.keyValue(c);
@@ -144,7 +143,7 @@ const css_translator = (css, styleFile, id) => {
                         value = undefined;
                     else if (kValue.isClassName) {
                         if (value in CSS || value.toLowerCase() in CSS) {
-                            let tValue = (_b = CSS[value]) !== null && _b !== void 0 ? _b : CSS[value.toLowerCase()];
+                            let tValue = CSS[value] ?? CSS[value.toLowerCase()];
                             if (typeof tValue === "object")
                                 value = Object.values(tValue)[0];
                             else
@@ -153,7 +152,7 @@ const css_translator = (css, styleFile, id) => {
                         else
                             continue; // its a class that is not used in this context
                     }
-                    let short = ((_c = ShortCSS[k]) !== null && _c !== void 0 ? _c : ShortCSS[k.toLowerCase()]);
+                    let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
                     if (!kValue.isClassName || short) {
                         if (short) {
                             (_isImportend ? important : cssItem)[short] = value;
@@ -170,16 +169,16 @@ const css_translator = (css, styleFile, id) => {
                 }
                 if (style && typeof style === "string") {
                     style = css_translator(style, styleFile);
-                    CSS[c] = Object.assign({}, style); // so as to not parse it again
+                    CSS[c] = { ...style }; // so as to not parse it again
                 }
                 if (typeof style == "object")
-                    style = Object.assign({}, style);
+                    style = { ...style };
                 if (style) {
                     if (style._props) {
                         Object.assign(cssItem._props, style._props);
                         delete style._props;
                     }
-                    important = Object.assign(Object.assign({}, important), style.important);
+                    important = { ...important, ...style.important };
                     //Object.assign(important, style);
                     Object.assign(cssItem, style);
                     continue;
@@ -187,10 +186,10 @@ const css_translator = (css, styleFile, id) => {
             }
         }
         if (id !== undefined)
-            Storage.set(id, Object.assign(Object.assign({}, cssItem), { important: Object.assign({}, important) }));
+            Storage.set(id, { ...cssItem, important: { ...important } });
         else
-            TStorage.set(css, Object.assign(Object.assign({}, cssItem), { important: Object.assign({}, important) }));
-        return Object.assign(Object.assign({}, cssItem), { important: Object.assign({}, important) });
+            TStorage.set(css, { ...cssItem, important: { ...important } });
+        return { ...cssItem, important: { ...important } };
     }
     catch (e) {
         console.error("css translator error", css, e);

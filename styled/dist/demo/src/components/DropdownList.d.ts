@@ -1,6 +1,6 @@
 import * as React from "react";
 import { DropdownItem, DropdownRefItem } from "../Typse";
-export declare const DropdownList: React.ForwardRefExoticComponent<import("../Typse").StyledProps & {
+export declare const DropdownList: React.ForwardRefExoticComponent<import("..").StyledProps & {
     items: DropdownItem[];
     render?: (item: DropdownItem) => React.ReactNode;
     onSelect?: (item: DropdownItem) => void;
@@ -12,7 +12,7 @@ export declare const DropdownList: React.ForwardRefExoticComponent<import("../Ty
     enableSearch?: boolean;
     textInputPlaceHolder?: string;
     onSearch?: (items: DropdownItem, txt: string) => boolean;
-    itemSize?: import("../Typse").VirtualItemSize;
+    itemSize?: import("..").VirtualItemSize;
     numColumns?: number;
     updateOn?: any[];
 } & React.RefAttributes<DropdownRefItem>>;

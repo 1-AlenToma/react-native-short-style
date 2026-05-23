@@ -1,11 +1,12 @@
 export const StyledKey = "StyledKey";
 export class IParent {
-    constructor() {
-        this.childrenPaths = new Map();
-        this.classPath = [];
-        this.props = {};
-        this.type = "";
-    }
+    index;
+    total;
+    parent;
+    childrenPaths = new Map();
+    classPath = [];
+    props = {};
+    type = "";
     getKey(...args) {
         return args.join("|");
     }

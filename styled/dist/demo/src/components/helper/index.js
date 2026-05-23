@@ -1,11 +1,10 @@
 import { CMBuilder } from "../../styles";
 const styledItems = {};
 export const CreateView = function (view, name, override, withMem) {
-    var _a, _b;
-    name = (_a = name !== null && name !== void 0 ? name : view.displayName) !== null && _a !== void 0 ? _a : view;
-    let cacheName = (override ? name : (_b = view.displayName) !== null && _b !== void 0 ? _b : name) + (withMem == true ? "true" : "");
-    let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = new CMBuilder(name, view)).fn(withMem !== null && withMem !== void 0 ? withMem : false);
-    View.displayName = `Styled(${name !== null && name !== void 0 ? name : cacheName})`;
+    name = name ?? view.displayName ?? view;
+    let cacheName = (override ? name : view.displayName ?? name) + (withMem == true ? "true" : "");
+    let View = styledItems[cacheName] ? styledItems[cacheName] : (styledItems[cacheName] = new CMBuilder(name, view)).fn(withMem ?? false);
+    View.displayName = `Styled(${name ?? cacheName})`;
     return View;
 };
 export const CreateViewWithMem = function (view, name, override) {

@@ -6,12 +6,11 @@ export const PositionContext = React.createContext({ index: 0, parentId: "__0__"
 const expandFullPath = (parent, type, classPath) => {
     const result = [];
     const traverse = (p) => {
-        var _a;
         if (!p)
             return;
         if (p.parent)
             traverse(p.parent);
-        result.push([...p.classPath, (_a = p === null || p === void 0 ? void 0 : p.type) !== null && _a !== void 0 ? _a : "unknown"]);
+        result.push([...p.classPath, p?.type ?? "unknown"]);
     };
     traverse(parent);
     result.push([...classPath, type]);
@@ -19,7 +18,6 @@ const expandFullPath = (parent, type, classPath) => {
 };
 // Compute indices, totals, typeIndex, totalTypes
 function buildNodeMeta(fullPath, parent, thisParent, type, index, total) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     const indices = [];
     const totals = [];
     const totalTypes = [];
@@ -29,24 +27,24 @@ function buildNodeMeta(fullPath, parent, thisParent, type, index, total) {
     let i = fullPath.length - 1;
     while (i >= 0) {
         const nodeType = fullPath[i][fullPath[i].length - 1]; // last item is base type
-        indices[i] = (_a = p === null || p === void 0 ? void 0 : p.index) !== null && _a !== void 0 ? _a : 0;
-        totals[i] = (_b = p === null || p === void 0 ? void 0 : p.total) !== null && _b !== void 0 ? _b : 1;
-        const parentChildren = Array.from((_e = (_d = (_c = p === null || p === void 0 ? void 0 : p.parent) === null || _c === void 0 ? void 0 : _c.childrenPaths) === null || _d === void 0 ? void 0 : _d.values()) !== null && _e !== void 0 ? _e : []);
-        typeIndex[i] = (_g = (_f = parentChildren.find(x => x.index === indices[i] && x.type === nodeType)) === null || _f === void 0 ? void 0 : _f.typeIndex) !== null && _g !== void 0 ? _g : 0;
+        indices[i] = p?.index ?? 0;
+        totals[i] = p?.total ?? 1;
+        const parentChildren = Array.from(p?.parent?.childrenPaths?.values() ?? []);
+        typeIndex[i] = parentChildren.find(x => x.index === indices[i] && x.type === nodeType)?.typeIndex ?? 0;
         totalTypes[i] = parentChildren.filter(x => x.type === nodeType).length;
-        props[i] = (_h = p === null || p === void 0 ? void 0 : p.props) !== null && _h !== void 0 ? _h : {};
-        p = p === null || p === void 0 ? void 0 : p.parent;
+        props[i] = p?.props ?? {};
+        p = p?.parent;
         i--;
     }
     // Override last node with current type/index/total
     const lastIdx = fullPath.length - 1;
     indices[lastIdx] = index;
     totals[lastIdx] = total;
-    const lastParentChildren = Array.from((_k = (_j = parent === null || parent === void 0 ? void 0 : parent.childrenPaths) === null || _j === void 0 ? void 0 : _j.values()) !== null && _k !== void 0 ? _k : []);
+    const lastParentChildren = Array.from(parent?.childrenPaths?.values() ?? []);
     ;
-    typeIndex[lastIdx] = (_m = (_l = lastParentChildren.find(x => x.index === index && x.type === type)) === null || _l === void 0 ? void 0 : _l.typeIndex) !== null && _m !== void 0 ? _m : 0;
+    typeIndex[lastIdx] = lastParentChildren.find(x => x.index === index && x.type === type)?.typeIndex ?? 0;
     totalTypes[lastIdx] = lastParentChildren.filter(x => x.type === type).length;
-    props[lastIdx] = (_o = thisParent === null || thisParent === void 0 ? void 0 : thisParent.props) !== null && _o !== void 0 ? _o : {};
+    props[lastIdx] = thisParent?.props ?? {};
     return { indices, totals, totalTypes, typeIndex, props };
 }
 // --- Match selector ---
@@ -57,13 +55,12 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
     let selectorIndex = selector.length - 1;
     // --- Check pseudos ---
     function checkPseudos(sel, currentPath) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         if (!sel.pseudos || sel.pseudos.length === 0)
             return true;
-        const tot = (_a = totals[currentPath]) !== null && _a !== void 0 ? _a : 1;
-        const idx = (_b = indices[currentPath]) !== null && _b !== void 0 ? _b : 0;
-        const typeIdx = (_c = typeIndex[currentPath]) !== null && _c !== void 0 ? _c : 0;
-        const typeTot = (_d = totalTypes[currentPath]) !== null && _d !== void 0 ? _d : 1;
+        const tot = totals[currentPath] ?? 1;
+        const idx = indices[currentPath] ?? 0;
+        const typeIdx = typeIndex[currentPath] ?? 0;
+        const typeTot = totalTypes[currentPath] ?? 1;
         for (const pseudo of sel.pseudos) {
             const name = pseudo.name.toLowerCase();
             switch (name) {
@@ -94,7 +91,7 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
                     break;
                 // --- nth variants ---
                 case "nth": {
-                    const value = String((_e = pseudo.arg) !== null && _e !== void 0 ? _e : "").trim();
+                    const value = String(pseudo.arg ?? "").trim();
                     if (/even/i.test(value)) {
                         if (idx % 2 !== 0)
                             return false;
@@ -111,7 +108,7 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
                     break;
                 }
                 case "nth-of-type": {
-                    const value = String((_f = pseudo.arg) !== null && _f !== void 0 ? _f : "").trim();
+                    const value = String(pseudo.arg ?? "").trim();
                     if (/even/i.test(value)) {
                         if (typeIdx % 2 !== 0)
                             return false;
@@ -129,13 +126,13 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
                 }
                 // --- eq shortcuts ---
                 case "eq": {
-                    const eq = parseInt(String((_g = pseudo.arg) !== null && _g !== void 0 ? _g : "0"), 10);
+                    const eq = parseInt(String(pseudo.arg ?? "0"), 10);
                     if (idx !== eq)
                         return false;
                     break;
                 }
                 case "eq-of-type": {
-                    const eq = parseInt(String((_h = pseudo.arg) !== null && _h !== void 0 ? _h : "0"), 10);
+                    const eq = parseInt(String(pseudo.arg ?? "0"), 10);
                     if (typeIdx !== eq)
                         return false;
                     break;
@@ -145,7 +142,7 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
                     if (Array.isArray(pseudo.arg)) {
                         for (const group of pseudo.arg) {
                             let startIndex = currentPath + 1; // start after current node
-                            const firstRelation = ((_j = group[0]) === null || _j === void 0 ? void 0 : _j.relation) || "descendant";
+                            const firstRelation = group[0]?.relation || "descendant";
                             // check descendants for match
                             while (startIndex < fullPath.length) {
                                 if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, startIndex)) {
@@ -166,7 +163,7 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
                     for (const group of pseudo.arg) {
                         let found = false;
                         let startIndex = currentPath + 1; // start after current node
-                        const firstRelation = ((_k = group[0]) === null || _k === void 0 ? void 0 : _k.relation) || "descendant";
+                        const firstRelation = group[0]?.relation || "descendant";
                         while (startIndex < fullPath.length) {
                             if (matchSelector(fullPath, group, indices, totals, totalTypes, typeIndex, props, startIndex)) {
                                 found = true;
@@ -189,10 +186,9 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
     }
     // --- Check attributes ---
     function checkAttrs(sel, currentPath) {
-        var _a;
         if (!sel.attrs || sel.attrs.length === 0)
             return true;
-        const nodeProps = (_a = props[currentPath]) !== null && _a !== void 0 ? _a : {};
+        const nodeProps = props[currentPath] ?? {};
         for (const { key, op, value } of sel.attrs) {
             const actual = nodeProps[key];
             switch (op) {
@@ -268,11 +264,10 @@ function matchSelector(fullPath, selector, indices, totals, totalTypes, typeInde
 }
 // --- useStyled ---
 export function useStyled(parentId, context, type, index, total, variant, thisParent, systemTheme) {
-    var _a;
     try {
         const id = `${parentId}_useStyled`;
         const current = variant ? `${type}.${variant}` : type;
-        const classNames = (_a = thisParent === null || thisParent === void 0 ? void 0 : thisParent.classPath) !== null && _a !== void 0 ? _a : [];
+        const classNames = thisParent?.classPath ?? [];
         const idDev = devToolsHandlerContext.data.isOpened && __DEV__;
         React.useEffect(() => {
             return () => clearCss(id);
@@ -303,14 +298,14 @@ export function useStyled(parentId, context, type, index, total, variant, thisPa
                 //   console.log("here")
                 if (typeof rule.style === "string") {
                     let st = cssTranslator(rule.style, systemTheme);
-                    merged = Object.assign(Object.assign({}, merged), st);
+                    merged = { ...merged, ...st };
                     if (merged.important)
-                        important = Object.assign(Object.assign({}, important), cleanStyle(merged.important));
+                        important = { ...important, ...cleanStyle(merged.important) };
                     merged = cleanStyle(merged);
                     if (idDev) {
-                        keySelector = (Object.assign(Object.assign({}, keySelector), st));
+                        keySelector = ({ ...keySelector, ...st });
                         if (keySelector.important)
-                            keySelectorImportant = Object.assign(Object.assign({}, keySelectorImportant), cleanStyle(keySelector.important));
+                            keySelectorImportant = { ...keySelectorImportant, ...cleanStyle(keySelector.important) };
                         keySelector = cleanStyle(keySelector);
                     }
                 }
@@ -338,9 +333,9 @@ export function useStyled(parentId, context, type, index, total, variant, thisPa
                     }
                 }
             }
-            keyStyle[rule.selectors.join(",")] = Object.assign(Object.assign({}, keySelector), keySelectorImportant);
+            keyStyle[rule.selectors.join(",")] = { ...keySelector, ...keySelectorImportant };
         }
-        return [Object.assign(Object.assign({}, merged), { important }), keyStyle];
+        return [{ ...merged, important }, keyStyle];
     }
     catch (e) {
         console.error("usestyle error");
@@ -349,11 +344,11 @@ export function useStyled(parentId, context, type, index, total, variant, thisPa
 }
 export const cleanStyle = (style, parse) => {
     if (parse)
-        style = Object.assign(Object.assign({}, style), style.important);
-    if (style === null || style === void 0 ? void 0 : style.important)
+        style = { ...style, ...style.important };
+    if (style?.important)
         delete style.important;
-    if (style === null || style === void 0 ? void 0 : style._props)
-        style === null || style === void 0 ? true : delete style.props;
+    if (style?._props)
+        delete style?.props;
     return style;
 };
 //# sourceMappingURL=useStyle.js.map

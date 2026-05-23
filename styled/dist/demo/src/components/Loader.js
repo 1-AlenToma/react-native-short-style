@@ -6,7 +6,6 @@ import StateBuilder from '../States';
 import { ActivityIndicator } from 'react-native';
 import { Blur } from './Blur';
 export const Loader = React.forwardRef((props, ref) => {
-    var _a;
     const state = StateBuilder({
         loading: props.loading
     }).build();
@@ -16,6 +15,6 @@ export const Loader = React.forwardRef((props, ref) => {
     setRef(ref, {
         loading: (value) => state.loading = value
     });
-    return (_jsxs(View, { inspectDisplayName: "Loader", style: (_a = props.containerProps) === null || _a === void 0 ? void 0 : _a.style, css: x => { var _a; return x.joinLeft("wi:100% he:100% flg:1 bac:transparent Loader").joinRight((_a = props.containerProps) === null || _a === void 0 ? void 0 : _a.css); }, children: [_jsx(Blur, { css: "bor:5 zi:2", ifTrue: props.loading }), _jsxs(View, { ifTrue: props.loading, css: "juc:center ali:center _abc wi:100% he:100% bac:transparent zi:3", children: [_jsx(ActivityIndicator, Object.assign({ color: "white", size: "large" }, props, { children: null })), typeof props.text == "string" ? (_jsx(Text, { css: "fos-lg co:white fow:bold", children: props.text })) : props.text] }), _jsx(View, { inspectDisplayName: "LoaderContent", css: 'wi:100% he:100% fl:1 flg:1 zi:1 LoaderContent', children: props.children })] }));
+    return (_jsxs(View, { inspectDisplayName: "Loader", style: props.containerProps?.style, css: x => x.joinLeft("wi:100% he:100% flg:1 bac:transparent Loader").joinRight(props.containerProps?.css), children: [_jsx(Blur, { css: "bor:5 zi:2", ifTrue: props.loading }), _jsxs(View, { ifTrue: props.loading, css: "juc:center ali:center _abc wi:100% he:100% bac:transparent zi:3", children: [_jsx(ActivityIndicator, { color: "white", size: "large", ...props, children: null }), typeof props.text == "string" ? (_jsx(Text, { css: "fos-lg co:white fow:bold", children: props.text })) : props.text] }), _jsx(View, { inspectDisplayName: "LoaderContent", css: 'wi:100% he:100% fl:1 flg:1 zi:1 LoaderContent', children: props.children })] }));
 });
 //# sourceMappingURL=Loader.js.map

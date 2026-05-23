@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { ThemeContext, globalData, InternalThemeContext, StyleContext, devToolsHandlerContext } from "./ThemeContext";
 import * as React from "react";
@@ -27,10 +18,7 @@ const StaticView = () => {
             });
         });
     }, []);
-    return (_jsx(_Fragment, { children: globalData.portals.keys.map(key => {
-            var _a;
-            return (_jsx(React.Fragment, { children: (_a = globalData.portals.elems.get(key)) === null || _a === void 0 ? void 0 : _a.children }, key));
-        }) }));
+    return (_jsx(_Fragment, { children: globalData.portals.keys.map(key => (_jsx(React.Fragment, { children: globalData.portals.elems.get(key)?.children }, key))) }));
 };
 function parseStyles(obj, selectedIndex) {
     const parsedTheme = React.useRef({}).current;
@@ -105,15 +93,15 @@ export const DevToolLayoutSelector = () => {
                 }
             });
         };
-        const measureComponentOnce = (cm, id) => __awaiter(void 0, void 0, void 0, function* () {
+        const measureComponentOnce = async (cm, id) => {
             if (positionsRef.current.has(id))
                 return positionsRef.current.get(id);
-            const pos = yield measure(cm);
+            const pos = await measure(cm);
             if (pos)
                 positionsRef.current.set(id, pos);
             return pos;
-        });
-        const selectComponentAt = (x, y) => __awaiter(void 0, void 0, void 0, function* () {
+        };
+        const selectComponentAt = async (x, y) => {
             try {
                 let closestComponent = null;
                 let smallestArea = Infinity;
@@ -124,7 +112,7 @@ export const DevToolLayoutSelector = () => {
                         continue;
                     }
                     ;
-                    const position = yield measureComponentOnce(cm, id);
+                    const position = await measureComponentOnce(cm, id);
                     if (!position)
                         continue;
                     const { px, py, width, height } = position;
@@ -149,7 +137,7 @@ export const DevToolLayoutSelector = () => {
             catch (e) {
                 console.error(e);
             }
-        });
+        };
         const selectComponentAtWeb = (x, y) => {
             let closest = null;
             let smallestArea = Infinity;
@@ -198,17 +186,17 @@ export const DevToolLayoutSelector = () => {
             });
         };
         const handleMouseLeave = () => setHighlight(null);
-        const selector = (_jsx(TouchableOpacity, { noneDevtools: true, css: "poe-box-only", onPress: (e) => __awaiter(void 0, void 0, void 0, function* () {
+        const selector = (_jsx(TouchableOpacity, { noneDevtools: true, css: "poe-box-only", onPress: async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                devToolsHandlerContext.batch(() => __awaiter(void 0, void 0, void 0, function* () {
+                devToolsHandlerContext.batch(async () => {
                     if (!devToolsHandlerContext.data.settings.webDevToolsIsOpen)
                         devToolsHandlerContext.data.settings.webDevToolsIsOpen = true;
                     if (!devToolsHandlerContext.data.settings.elementSelection)
                         devToolsHandlerContext.data.settings.elementSelection = !devToolsHandlerContext.data.settings.elementSelection;
-                    yield devToolsHandlerContext.sendProp("elementSelection", "webDevToolsIsOpen");
-                }));
-            }), style: {
+                    await devToolsHandlerContext.sendProp("elementSelection", "webDevToolsIsOpen");
+                });
+            }, style: {
                 position: "absolute",
                 borderRadius: 5,
                 top: 10,
@@ -249,7 +237,6 @@ export const DevToolLayoutSelector = () => {
     }
 };
 export const ThemeContainer = (props) => {
-    var _a;
     globalData.hook("window");
     const [ready, setReady] = React.useState(false);
     const devtoolOpend = React.useRef(devToolsHandlerContext.data.isOpened);
@@ -277,14 +264,14 @@ export const ThemeContainer = (props) => {
         let events = globalData.appStart();
         if (props.storage)
             globalData.storage = props.storage;
-        return () => events.forEach(x => { var _a; return (_a = x === null || x === void 0 ? void 0 : x.remove) === null || _a === void 0 ? void 0 : _a.call(x); });
+        return () => events.forEach(x => x?.remove?.());
     }, []);
     if (props.storage && globalData.storage !== props.storage)
         globalData.storage = props.storage;
     if (globalData.themeIndex !== props.selectedIndex)
         globalData.themeIndex = props.selectedIndex;
     if (!globalData.icons)
-        globalData.icons = (_a = props.icons) !== null && _a !== void 0 ? _a : {};
+        globalData.icons = props.icons ?? {};
     const theme = currentTheme(props);
     // console.log(theme)
     const rules = parseStyles(theme, props.selectedIndex);
@@ -303,6 +290,6 @@ export const ThemeContainer = (props) => {
     }
     if (!ready && devToolsHandlerContext.data.isOpened && __DEV__)
         return null;
-    return (_jsx(StyleContext.Provider, { value: { rules: rules !== null && rules !== void 0 ? rules : [], path: [], parent: undefined }, children: _jsx(ThemeContext.Provider, { value: Object.assign(Object.assign({}, props), { systemThemes: theme }), children: _jsx(ThemeInternalContainer, { children: props.children }) }) }));
+    return (_jsx(StyleContext.Provider, { value: { rules: rules ?? [], path: [], parent: undefined }, children: _jsx(ThemeContext.Provider, { value: { ...props, systemThemes: theme }, children: _jsx(ThemeInternalContainer, { children: props.children }) }) }));
 };
 //# sourceMappingURL=ThemesContainer.js.map

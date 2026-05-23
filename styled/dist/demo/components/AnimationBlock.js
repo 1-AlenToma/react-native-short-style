@@ -81,6 +81,11 @@ export const MovingBall = () => {
     //console.log(`co-${colorCls[state.bacIndex]}`)
     return (_jsxs(View, { css: "bac-black fl-1 juc-center ali-center", onLayout: ({ nativeEvent }) => {
             state.container = nativeEvent.layout;
-        }, children: [_jsxs(FormItem, { title: "Speed", css: "he-100 wi-200 op-0.5", children: [_jsx(ProgressBar, { value: state.sliderValue }), _jsx(SliderView, { css: "mat:30", animationType: "spring", minimumValue: 100, value: state.sliderValue, onValueChange: (v) => state.sliderValue = state.vx = state.vy = v[0], maximumValue: 2000, step: 50, enableButtons: true })] }), _jsx(AnimatedView, { css: x => x.joinLeft("_abc to-0 le-0").baC(`.co-${colorCls[state.bacIndex]}`), style: Object.assign({ width: ballSize, height: ballSize, borderRadius: ballSize / 2 }, position.getLayout()) })] }));
+        }, children: [_jsxs(FormItem, { title: "Speed", css: "he-100 wi-200 op-0.5", children: [_jsx(ProgressBar, { value: state.sliderValue }), _jsx(SliderView, { css: "mat:30", animationType: "spring", minimumValue: 100, value: state.sliderValue, onValueChange: (v) => state.sliderValue = state.vx = state.vy = v[0], maximumValue: 2000, step: 50, enableButtons: true })] }), _jsx(AnimatedView, { css: x => x.joinLeft("_abc to-0 le-0").baC(`.co-${colorCls[state.bacIndex]}`), style: {
+                    width: ballSize,
+                    height: ballSize,
+                    borderRadius: ballSize / 2,
+                    ...position.getLayout(),
+                } })] }));
 };
 //# sourceMappingURL=AnimationBlock.js.map

@@ -8,7 +8,6 @@ import { Blur } from "./Blur";
 import { Platform } from "react-native";
 import { Portal } from "./Portal";
 export const ToolTip = React.forwardRef((props, ref) => {
-    var _a, _b;
     const context = React.useContext(InternalThemeContext);
     globalData.hook("window");
     const state = StateBuilder(() => ({
@@ -45,8 +44,8 @@ export const ToolTip = React.forwardRef((props, ref) => {
         else
             setPostion();
     }, "visible");
-    let left = (_a = state.pos) === null || _a === void 0 ? void 0 : _a.x;
-    let top = (_b = state.pos) === null || _b === void 0 ? void 0 : _b.y;
+    let left = state.pos?.x;
+    let top = state.pos?.y;
     if (state.toolTipSize && state.pos) {
         left = left - (state.toolTipSize.width / 2);
         top = top + state.pos.height;

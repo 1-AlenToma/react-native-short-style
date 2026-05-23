@@ -79,7 +79,7 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
             css={x => x.joinLeft("wi-100% he-100% fl-1").joinRight(props.css)}
             style={props.style}>
             <AnimatedScrollView
-                {...props.scrollViewProps}
+                {...(props.scrollViewProps as any)}
                 onScrollBeginDrag={() => state.private.scrollEnabled = false}
                 onScrollEndDrag={() => state.private.scrollEnabled = true}
                 horizontal={props.horizontal}

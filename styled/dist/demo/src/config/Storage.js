@@ -3,6 +3,8 @@ const getKey = (key) => {
     return `CSSStyled_${key.replace(/[ ]/g, "")}_${globalData.themeIndex}`;
 };
 class TempStorage {
+    data = new Map();
+    lastSave = parseInt((new Date().getTime() / 1000).toString());
     validate() {
         let now = parseInt((new Date().getTime() / 1000).toString());
         var hours = Math.abs(now - this.lastSave) / 3600;
@@ -14,8 +16,6 @@ class TempStorage {
             this.data = new Map();
     }
     constructor() {
-        this.data = new Map();
-        this.lastSave = parseInt((new Date().getTime() / 1000).toString());
         globalData.tStorage = this;
     }
     getKey(key) {

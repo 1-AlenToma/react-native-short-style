@@ -16,9 +16,8 @@ export const StyleContext = React.createContext({
 export const InternalThemeContext = React.createContext({});
 // detect hard reload of the web
 const detectHardReload = () => {
-    var _a, _b;
     if (window.performance) {
-        if (String((_b = (_a = window.performance.getEntriesByType("navigation")[0]) === null || _a === void 0 ? void 0 : _a.type) !== null && _b !== void 0 ? _b : "") === "reload") {
+        if (String(window.performance.getEntriesByType("navigation")[0]?.type ?? "") === "reload") {
             return true;
         }
         else {

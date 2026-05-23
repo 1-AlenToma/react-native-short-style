@@ -58,7 +58,7 @@ export const CheckBoxList = (props) => {
             state.ids.delete(id);
         },
         checkBoxListProps: props,
-        value: (id) => { var _a; return (_a = state.ids.get(id)) !== null && _a !== void 0 ? _a : false; },
+        value: (id) => state.ids.get(id) ?? false,
         ids: state.ids
     };
     React.useEffect(() => {
@@ -67,10 +67,9 @@ export const CheckBoxList = (props) => {
     let items = Array.isArray(props.children) ? props.children : [props.children];
     if (ifSelector(props.ifTrue) == false)
         return null;
-    return (_jsx(CheckBoxContext.Provider, { value: contextValue, children: _jsx(ViewItem, Object.assign({ title: props.label }, props, { children: _jsx(View, { css: "CheckBoxList fl-1", children: items.map((x, i) => (_jsx(View, { children: x }, i))) }) })) }));
+    return (_jsx(CheckBoxContext.Provider, { value: contextValue, children: _jsx(ViewItem, { title: props.label, ...props, children: _jsx(View, { css: "CheckBoxList fl-1", children: items.map((x, i) => (_jsx(View, { children: x }, i))) }) }) }));
 };
 export const CheckBox = (props) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     const state = StateBuilder(() => ({
         id: newId(),
         checked: props.checked,
@@ -81,14 +80,14 @@ export const CheckBox = (props) => {
         }
     })).ignore("refItem").build();
     const context = React.useContext(CheckBoxContext);
-    const checkBoxType = (_b = (_a = context.checkBoxListProps.checkBoxType) !== null && _a !== void 0 ? _a : props.checkBoxType) !== null && _b !== void 0 ? _b : "CheckBox";
-    const labelPostion = (_d = (_c = props.labelPostion) !== null && _c !== void 0 ? _c : context.checkBoxListProps.labelPostion) !== null && _d !== void 0 ? _d : "Right";
-    const disabled = (_f = (_e = context.checkBoxListProps.disabled) !== null && _e !== void 0 ? _e : props.disabled) !== null && _f !== void 0 ? _f : false;
+    const checkBoxType = context.checkBoxListProps.checkBoxType ?? props.checkBoxType ?? "CheckBox";
+    const labelPostion = props.labelPostion ?? context.checkBoxListProps.labelPostion ?? "Right";
+    const disabled = context.checkBoxListProps.disabled ?? props.disabled ?? false;
     const selectionType = context.checkBoxListProps.selectionType;
     const { animateX, animate, currentValue } = useAnimate({ speed: 100 });
-    const swtichColor = (_h = (_g = context.checkBoxListProps.swtichColor) !== null && _g !== void 0 ? _g : props.swtichColor) !== null && _h !== void 0 ? _h : { true: "black", false: "white" };
+    const swtichColor = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "black", false: "white" };
     if (!context.ids || !context.ids.has(state.id))
-        (_j = context.add) === null || _j === void 0 ? void 0 : _j.call(context, state.id, props.checked);
+        context.add?.(state.id, props.checked);
     const tAnimate = (value) => {
         let ch = value == 1 ? true : false;
         if ((state.refItem.working && state.refItem.prev == ch) || disabled)
@@ -101,7 +100,7 @@ export const CheckBox = (props) => {
     };
     React.useEffect(() => {
         state.isInit = true;
-        return () => { var _a; return (_a = context.remove) === null || _a === void 0 ? void 0 : _a.call(context, state.id); };
+        return () => context.remove?.(state.id);
     }, []);
     if (!context.value)
         React.useEffect(() => {
@@ -111,13 +110,12 @@ export const CheckBox = (props) => {
             state.checked = props.checked;
         }, [props.checked]);
     React.useEffect(() => {
-        var _a, _b;
         let isChecked = context.value != undefined ? context.value(state.id) : props.checked;
         if (checkBoxType == "Switch")
             tAnimate(state.checked ? 1 : 0);
         if (state.checked != isChecked && state.isInit) {
             //context.add?.(state.id, state.checked);
-            (_b = ((_a = context.onChange) !== null && _a !== void 0 ? _a : props.onChange)) === null || _b === void 0 ? void 0 : _b(state.checked, state.id);
+            (context.onChange ?? props.onChange)?.(state.checked, state.id);
         }
     }, [state.checked]);
     if (context.ids)
@@ -132,10 +130,9 @@ export const CheckBox = (props) => {
     const activeOpacity = disabled ? .5 : 1;
     const disabledCss = disabled ? "disabled" : "";
     return (_jsxs(_Fragment, { children: [_jsxs(TouchableOpacity, { activeOpacity: activeOpacity, style: props.style, css: `_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, ifTrue: checkBoxType == "CheckBox", onPress: () => {
-                    var _a;
                     if (!disabled && !props.onPress)
                         state.checked = !state.checked;
-                    (_a = props.onPress) === null || _a === void 0 ? void 0 : _a.call(props);
+                    props.onPress?.();
                 }, children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: { backgroundColor: color(state.checked) }, css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, type: "AntDesign", css: x => x.co(".co-light"), name: "check", size: 24 }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { style: props.style, css: x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), ifTrue: checkBoxType == "RadioButton", onPress: () => {
                     if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                         state.checked = !state.checked;

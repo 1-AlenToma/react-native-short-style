@@ -6,7 +6,6 @@ import { flatStyle } from "../config";
 import { globalData } from "../theme/ThemeContext";
 let styledItems = {};
 export const Icon = (props) => {
-    var _a;
     const [flash, setFlash] = React.useState(undefined);
     const timer = useTimer(1000);
     let TypeIcon = globalData.icons[props.type];
@@ -15,7 +14,7 @@ export const Icon = (props) => {
         return null;
     }
     TypeIcon.displayName = props.type;
-    let Ico = (_a = styledItems[props.type]) !== null && _a !== void 0 ? _a : (styledItems[props.type] = CreateView(TypeIcon, "Icon"));
+    let Ico = styledItems[props.type] ?? (styledItems[props.type] = CreateView(TypeIcon, "Icon"));
     // console.log(Ico, props.type)
     if (props.flash)
         timer(() => {
@@ -27,6 +26,6 @@ export const Icon = (props) => {
     let stl = flatStyle(props.style);
     if (flash)
         stl.color = flash;
-    return (_jsx(Ico, Object.assign({}, props, { style: stl })));
+    return (_jsx(Ico, { ...props, style: stl }));
 };
 //# sourceMappingURL=Icon.js.map

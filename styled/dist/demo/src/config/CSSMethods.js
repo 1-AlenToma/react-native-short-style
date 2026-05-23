@@ -3,16 +3,16 @@ export const flatStyle = function (style, ...removeKeys) {
     if (style && Array.isArray(style) && typeof style == "object")
         style = style.reduce((a, v) => {
             if (v)
-                a = Object.assign(Object.assign({}, a), v);
+                a = { ...a, ...v };
             return a;
         }, {});
-    let item = style !== null && style !== void 0 ? style : {};
-    item = Object.assign({}, item);
+    let item = style ?? {};
+    item = { ...item };
     removeKeys.forEach(x => delete item[x]);
     return item;
 };
 export const removeProps = (item, ...props) => {
-    item = item !== null && item !== void 0 ? item : {};
+    item = item ?? {};
     for (let p of props) {
         if (p in item)
             delete item[p];
@@ -20,13 +20,13 @@ export const removeProps = (item, ...props) => {
     return item;
 };
 export const hasString = (a, b) => {
-    a = a !== null && a !== void 0 ? a : "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
-    b = b !== null && b !== void 0 ? b : "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
+    a = a ?? "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
+    b = b ?? "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
     return a.toLowerCase().indexOf(b.toLowerCase()) != -1;
 };
 export const eqString = (a, b) => {
-    a = a !== null && a !== void 0 ? a : "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
-    b = b !== null && b !== void 0 ? b : "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
+    a = a ?? "kjhasdjkh kjashdjhkyua8weqdljmnaksjchzx cisuhdihwsdk";
+    b = b ?? "klhaksjhdnkjbhjhb iuasydouiwd qwiudhwqhebdmhwbvsnjbzliuchasdiaöoij";
     return a.toLowerCase() == b.toLowerCase();
 };
 export const parseKeys = (key) => {
@@ -79,7 +79,7 @@ export const extractProps = (css) => {
                 items.push(pItem);
             }
             if (items.length > 0)
-                result = Object.assign(Object.assign({}, result), flatStyle(items));
+                result = { ...result, ...flatStyle(items) };
         }
     }
     result.css = css;
@@ -92,7 +92,7 @@ export const newId = (inc) => {
         ids = new Map();
         lastDate = new Date();
     }
-    let id = (inc !== null && inc !== void 0 ? inc : "") + Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
+    let id = (inc ?? "") + Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36);
     if (ids.has(id)) {
         return newId(id);
     }

@@ -1,16 +1,9 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 export class NetworkLogger {
+    static originalFetch = global.fetch;
+    entries = [];
+    idCounter = 0;
+    onFetchReponse;
     constructor(onFetchReponse) {
-        this.entries = [];
-        this.idCounter = 0;
         this.onFetchReponse = onFetchReponse;
     }
     logRequest(method, url, headers, body) {
@@ -51,12 +44,12 @@ export class NetworkLogger {
         this.idCounter = 0;
     }
     enable() {
-        global.fetch = (url_1, ...args_1) => __awaiter(this, [url_1, ...args_1], void 0, function* (url, options = {}) {
-            const id = this.logRequest((options === null || options === void 0 ? void 0 : options.method) || "GET", url, options === null || options === void 0 ? void 0 : options.headers, options === null || options === void 0 ? void 0 : options.body);
+        global.fetch = async (url, options = {}) => {
+            const id = this.logRequest(options?.method || "GET", url, options?.headers, options?.body);
             try {
-                const res = yield NetworkLogger.originalFetch(url, options);
+                const res = await NetworkLogger.originalFetch(url, options);
                 const clone = res.clone();
-                const body = yield clone.text();
+                const body = await clone.text();
                 this.logResponse(id, res.status, body, Object.fromEntries(res.headers.entries()));
                 return res;
             }
@@ -64,9 +57,8 @@ export class NetworkLogger {
                 this.logError(id, e.message || String(e));
                 throw e;
             }
-        });
+        };
     }
 }
-NetworkLogger.originalFetch = global.fetch;
 // Example usage for fetch
 //# sourceMappingURL=NetworkLogger.js.map

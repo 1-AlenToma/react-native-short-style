@@ -75,7 +75,6 @@ export function parseSelector(selector) {
 }
 // parse a single token like "virtualItemSelector:nth(even):not(:has(selectedValue))"
 function parsePart(token, relation) {
-    var _a, _b;
     let baseType = "";
     const sel = { type: "*", relation };
     let i = 0;
@@ -100,7 +99,7 @@ function parsePart(token, relation) {
             i++;
             continue;
         }
-        sel.pseudos = (_a = sel.pseudos) !== null && _a !== void 0 ? _a : [];
+        sel.pseudos = sel.pseudos ?? [];
         // Handle pseudos
         if (ch === ":") {
             i++;
@@ -126,7 +125,7 @@ function parsePart(token, relation) {
             }
             const lname = name.toLowerCase();
             if (lname === "not" || lname == "has")
-                sel.pseudos.push({ name: lname, arg: (_b = arg === null || arg === void 0 ? void 0 : arg.split(/\s*,\s*/).map(s => parseSelector(s))) !== null && _b !== void 0 ? _b : [] });
+                sel.pseudos.push({ name: lname, arg: arg?.split(/\s*,\s*/).map(s => parseSelector(s)) ?? [] });
             else {
                 sel.pseudos.push({ name: lname, arg });
                 //  sel.pseudo = arg ? `${name}(${arg})` : name;

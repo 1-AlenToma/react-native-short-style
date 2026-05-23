@@ -1,6 +1,13 @@
 // ConsoleInterceptor.ts
 import { devToolsHandlerContext } from "../theme/ThemeContext";
 export class ConsoleInterceptor {
+    static original = {
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+    };
+    static enabled = false;
     /**
      * Apply the interception and filtering logic
      */
@@ -69,11 +76,4 @@ export class ConsoleInterceptor {
         console.error = this.original.error;
     }
 }
-ConsoleInterceptor.original = {
-    log: console.log,
-    info: console.info,
-    warn: console.warn,
-    error: console.error,
-};
-ConsoleInterceptor.enabled = false;
 //# sourceMappingURL=ConsoleInterceptor.js.map

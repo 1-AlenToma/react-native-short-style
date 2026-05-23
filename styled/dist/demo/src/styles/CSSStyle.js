@@ -2,10 +2,8 @@ import { flatStyle } from "../config/CSSMethods";
 import { ShortStyles } from "./validStyles";
 ;
 export class ExtraCssStyle {
-    constructor() {
-        this.value = "";
-        this.type = "CSSStyled";
-    }
+    value = "";
+    type = "CSSStyled";
     /** Add classNames  eg container*/
     classNames(...cls) {
         cls.forEach(x => {
@@ -289,13 +287,6 @@ export class ExtraCssStyle {
     }
 }
 export class CSSStyle extends ExtraCssStyle {
-    constructor() {
-        super(...arguments);
-        this.toString = () => {
-            var _a;
-            return (_a = this.value) !== null && _a !== void 0 ? _a : "";
-        };
-    }
     pointerEvents(value) {
         return this.add(ShortStyles.pointerEvents, value);
     }
@@ -308,6 +299,9 @@ export class CSSStyle extends ExtraCssStyle {
     tt(value) {
         return this.textTransform(value);
     }
+    toString = () => {
+        return this.value ?? "";
+    };
     alignContent(value) {
         return this.add(ShortStyles.alignContent, value);
     }
@@ -913,10 +907,7 @@ export class CSSStyle extends ExtraCssStyle {
 }
 // specific only for nested StyleSheet
 export class CSSStyleSheetStyle extends CSSStyle {
-    constructor() {
-        super(...arguments);
-        this.eqs = [];
-    }
+    eqs = [];
     //** override all css with this class styles*/
     importantAll() {
         if (this.value.indexOf(" !important") == -1)
@@ -931,7 +922,7 @@ export class CSSStyleSheetStyle extends CSSStyle {
     /** Used in NestedStyleSheet */
     getEqs(parentKey, item) {
         let items = [];
-        for (let value of (item !== null && item !== void 0 ? item : this).eqs) {
+        for (let value of (item ?? this).eqs) {
             let k = `${parentKey}_${value.index}`;
             if (typeof value.index == "string" && value.index != "last")
                 k = `${parentKey} > ${value.index}`;

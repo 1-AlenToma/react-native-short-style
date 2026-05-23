@@ -42,8 +42,8 @@ let _default = NestedStyleSheet.create({
     },
 });
 if (Platform.OS == "web")
-    _default = Object.assign(Object.assign({}, _default), web);
+    _default = { ..._default, ...web };
 else
-    _default = Object.assign(Object.assign({}, _default), android);
+    _default = { ..._default, ...android };
 export default _default;
 //# sourceMappingURL=GlobalStyles.js.map

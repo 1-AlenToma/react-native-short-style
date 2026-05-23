@@ -1,23 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 import { jsx as _jsx } from "react/jsx-runtime";
 import React, { useEffect } from "react";
 import { Platform, } from "react-native";
@@ -29,6 +9,8 @@ import cssTranslator, { clearCss } from "./cssTranslator";
 import { IParent } from "../Typse";
 import { useStyled, PositionContext, useLocalRef } from "../hooks";
 export class CMBuilder {
+    __name;
+    __View;
     constructor(name, view) {
         this.__name = name;
         this.__View = view;
@@ -54,8 +36,8 @@ export class CMBuilder {
         return refCreator(useMem, this.render.bind(this), this.__name, this.__View, this.compaire);
     }
     compaire(prev, next) {
-        prev = prev !== null && prev !== void 0 ? prev : {};
-        next = next !== null && next !== void 0 ? next : {};
+        prev = prev ?? {};
+        next = next ?? {};
         for (let key in next) {
             let a = prev[key];
             let b = next[key];
@@ -78,9 +60,7 @@ export class CMBuilder {
         }
         return true;
     }
-    render(_a, ref) {
-        var _b, _c, _d, _e, _f, _g, _h, _j;
-        var { children, variant, style, css, ifTrue, noneDevtools } = _a, props = __rest(_a, ["children", "variant", "style", "css", "ifTrue", "noneDevtools"]);
+    render({ children, variant, style, css, ifTrue, noneDevtools, ...props }, ref) {
         ifTrue = ifSelector(ifTrue);
         let internalProps = Object.assign({}, props);
         const id = useLocalRef(newId);
@@ -95,8 +75,8 @@ export class CMBuilder {
             devToolsHandlerContext.useEffect(() => {
                 if (devToolsHandlerContext.data.changedProps.has(id)) {
                     const item = devToolsHandlerContext.data.changedProps.get(id);
-                    if (!(item === null || item === void 0 ? void 0 : item.handled) || !changedProps) {
-                        setChangedProps(Object.assign({}, item));
+                    if (!item?.handled || !changedProps) {
+                        setChangedProps({ ...item });
                         if (item)
                             item.handled = true;
                     }
@@ -109,10 +89,10 @@ export class CMBuilder {
         if (inspect && changedProps) {
             try {
                 let item = changedProps;
-                style = (_b = item.style) !== null && _b !== void 0 ? _b : {};
+                style = item.style ?? {};
                 if ("ifTrue" in item)
-                    ifTrue = (_c = item.ifTrue) !== null && _c !== void 0 ? _c : ifTrue;
-                internalProps = Object.assign(Object.assign(Object.assign({}, internalProps), item), { _viewId: undefined, _elementIndex: undefined, _parent_viewId: undefined });
+                    ifTrue = item.ifTrue ?? ifTrue;
+                internalProps = { ...internalProps, ...item, _viewId: undefined, _elementIndex: undefined, _parent_viewId: undefined };
                 if (item.children && typeof children == "string")
                     children = item.children;
                 // console.log("internal", changedProps);
@@ -143,20 +123,19 @@ export class CMBuilder {
         const current = variant ? `${this.__name}.${variant}` : this.__name;
         const fullPath = React.useMemo(() => [...context.path, current], [context.path, current]);
         const componentParent = new IParent();
-        componentParent.index = (_d = positionContext.index) !== null && _d !== void 0 ? _d : 0;
+        componentParent.index = positionContext.index ?? 0;
         //  prt.total = posContext.total ?? context.parent?.total ?? 1;
         componentParent.classPath = classNames;
         componentParent.type = this.__name;
-        componentParent.props = Object.assign(Object.assign({ className, type: this.__name }, internalProps), { children });
-        (_e = context.parent) === null || _e === void 0 ? void 0 : _e.reg(this.__name, componentParent.index);
-        componentParent.classPath.forEach((x) => { var _a; return (_a = context.parent) === null || _a === void 0 ? void 0 : _a.reg(x, componentParent.index); });
+        componentParent.props = { className, type: this.__name, ...internalProps, children };
+        context.parent?.reg(this.__name, componentParent.index);
+        componentParent.classPath.forEach((x) => context.parent?.reg(x, componentParent.index));
         // Parent info
         componentParent.parent = context.parent;
         const regChild = (child, idx) => {
-            var _a, _b, _c;
-            let typeName = ((_a = child.type) === null || _a === void 0 ? void 0 : _a.__name) ||
-                ((_b = child.type) === null || _b === void 0 ? void 0 : _b.displayName) ||
-                ((_c = child.type) === null || _c === void 0 ? void 0 : _c.name) ||
+            let typeName = child.type?.__name ||
+                child.type?.displayName ||
+                child.type?.name ||
                 "unknown";
             if (typeName.startsWith("Styled(")) {
                 typeName = typeName.replace(/((Styled)|(\()|(\)))/gi, "");
@@ -166,7 +145,6 @@ export class CMBuilder {
             return typeName;
         };
         const cloneChild = (children) => {
-            var _a, _b;
             const queue = React.Children.toArray(children);
             const result = [];
             let idx = 0;
@@ -187,7 +165,7 @@ export class CMBuilder {
                         continue;
                     }
                     regChild(child, idx);
-                    const childKey = `styled-child-${(_a = frag === null || frag === void 0 ? void 0 : frag.key) !== null && _a !== void 0 ? _a : ''}:${(_b = child.key) !== null && _b !== void 0 ? _b : idx}`;
+                    const childKey = `styled-child-${frag?.key ?? ''}:${child.key ?? idx}`;
                     result.push(_jsx(PositionContext.Provider, { value: { index: idx, parentId: id }, children: child }, `styled-wrapper-${childKey}`));
                 }
                 else {
@@ -199,13 +177,15 @@ export class CMBuilder {
             return result;
         };
         const mappedChildren = cloneChild(childrenArray);
-        componentParent.total = (_g = (_f = context.parent) === null || _f === void 0 ? void 0 : _f.total) !== null && _g !== void 0 ? _g : childTotal;
+        componentParent.total = context.parent?.total ?? childTotal;
         const [_styles, keySelectors] = useStyled(id, context, this.__name, componentParent.index, componentParent.total, variant, componentParent, themeContext.systemThemes);
-        let cssStyle = Object.assign({}, ((_h = React.useMemo(() => {
-            if (!_css || _css.trim().length === 0)
-                return undefined;
-            return cssTranslator(_css, themeContext.systemThemes);
-        }, [_css, themeContext.systemThemes])) !== null && _h !== void 0 ? _h : {}));
+        let cssStyle = {
+            ...(React.useMemo(() => {
+                if (!_css || _css.trim().length === 0)
+                    return undefined;
+                return cssTranslator(_css, themeContext.systemThemes);
+            }, [_css, themeContext.systemThemes]) ?? {})
+        };
         //**
         // style.important override cssStyle and cssStyle.important override the style.important
         // and style tag override all */
@@ -221,7 +201,7 @@ export class CMBuilder {
         }
         if (inspect && ifTrue != false) {
             //styles = flatStyle(styles);
-            if (changedProps && ((_j = changedProps._deletedItems) === null || _j === void 0 ? void 0 : _j.style))
+            if (changedProps && changedProps._deletedItems?.style)
                 devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
         }
         useEffect(() => {
@@ -235,15 +215,22 @@ export class CMBuilder {
             };
         }, []);
         useEffect(() => {
-            const patch = () => __awaiter(this, void 0, void 0, function* () {
-                var _a, _b;
+            const patch = async () => {
                 if (inspect && ifTrue != false) {
-                    if (internalProps === null || internalProps === void 0 ? void 0 : internalProps.inspectDisplayName)
+                    if (internalProps?.inspectDisplayName)
                         delete internalProps.inspectDisplayName;
                     devToolsHandlerContext.patch({
-                        name: (_a = props.inspectDisplayName) !== null && _a !== void 0 ? _a : this.__name,
+                        name: props.inspectDisplayName ?? this.__name,
                         children: [],
-                        props: Object.assign(Object.assign(Object.assign({ ifTrue }, devToolsHandlerContext.cleanProps(Object.assign(Object.assign({}, internalProps), { style: Object.assign({}, flatStyle(styles, "_props", "transforms", "important")), css }))), { classes: devToolsHandlerContext.withKeysOnly(keySelectors), _viewId: id, _elementIndex: positionContext.index, _parent_viewId: (_b = positionContext.parentId) !== null && _b !== void 0 ? _b : "__0__" }), (typeof children == "string" ? { children } : {}))
+                        props: {
+                            ifTrue,
+                            ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
+                            classes: devToolsHandlerContext.withKeysOnly(keySelectors),
+                            _viewId: id,
+                            _elementIndex: positionContext.index,
+                            _parent_viewId: positionContext.parentId ?? "__0__",
+                            ...(typeof children == "string" ? { children } : {})
+                        }
                     });
                 }
                 else if (inspect) {
@@ -251,7 +238,7 @@ export class CMBuilder {
                     devToolsHandlerContext.components.delete(id);
                 }
                 ;
-            });
+            };
             if (inspect) {
                 patch();
             }
@@ -267,11 +254,11 @@ export class CMBuilder {
                 rules: context.rules,
                 path: fullPath,
                 parent: componentParent,
-            }, children: _jsx(CM, Object.assign({ dataSet: dataSet }, internalProps, { ref: ref || inspect ? (c) => {
+            }, children: _jsx(CM, { dataSet: dataSet, ...internalProps, ref: ref || inspect ? (c) => {
                     this.setRef(ref, c, myref);
                     if (inspect)
                         c ? devToolsHandlerContext.components.set(id, c) : devToolsHandlerContext.components.delete(id);
-                } : undefined, style: styles, children: mappedChildren.length > 0 ? mappedChildren : null })) }));
+                } : undefined, style: styles, children: mappedChildren.length > 0 ? mappedChildren : null }) }));
     }
 }
 export { NestedStyleSheet, cssTranslator };

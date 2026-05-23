@@ -10,11 +10,10 @@ import { Icon } from "./Icon";
 import { Platform, StatusBar } from 'react-native';
 import { Portal } from "./Portal";
 export const ToastView = () => {
-    var _a, _b, _c;
     globalData.hook("screen", "alertViewData.toastData");
     const { animate, animateY, currentValue } = useAnimate();
-    const data = (_a = globalData.alertViewData.toastData) !== null && _a !== void 0 ? _a : {};
-    data.position = (_b = data.position) !== null && _b !== void 0 ? _b : "Top";
+    const data = globalData.alertViewData.toastData ?? {};
+    data.position = data.position ?? "Top";
     const context = React.useContext(InternalThemeContext);
     const timer = useTimer(100);
     const state = StateBuilder(() => ({
@@ -25,10 +24,9 @@ export const ToastView = () => {
     })).ignore("id").build();
     let interpolate = [0, 1];
     const startCounter = () => {
-        var _a;
         if (data.loader == false)
             return;
-        state.counter += (_a = data.loaderCounter) !== null && _a !== void 0 ? _a : .01;
+        state.counter += data.loaderCounter ?? .01;
         if (state.counter < 1)
             timer(() => startCounter());
         else
@@ -111,6 +109,6 @@ export const ToastView = () => {
                                 extrapolate: "clamp"
                             })
                         }]
-                }, css: x => x.cls("_toast").joinRight(typeInfo.css).zI(999).joinRight(data.css), children: [_jsxs(View, { children: [_jsx(View, { css: x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC(".co-transparent"), children: _jsx(TouchableOpacity, { onPress: () => state.visible = false, css: "wi-15", children: _jsx(Icon, { type: "AntDesign", css: "co:white", name: "close", size: 15 }) }) }), _jsx(View, { ifTrue: data.icon != undefined || typeInfo.icon != undefined, css: "fl:1 maw:40 zi:1 bac:transparent", children: (_c = data.icon) !== null && _c !== void 0 ? _c : typeInfo.icon }), _jsxs(View, { css: "fl:1 zi:1 bac:transparent", children: [_jsx(Text, { ifTrue: data.title != undefined, css: x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css), children: data.title }), _jsx(Text, { css: x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css), children: data.message })] })] }), _jsx(ProgressBar, { ifTrue: data.loader !== false, color: data.loaderBg, children: null, value: state.counter, css: "_toastProgressView" })] }, state.id)] }));
+                }, css: x => x.cls("_toast").joinRight(typeInfo.css).zI(999).joinRight(data.css), children: [_jsxs(View, { children: [_jsx(View, { css: x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC(".co-transparent"), children: _jsx(TouchableOpacity, { onPress: () => state.visible = false, css: "wi-15", children: _jsx(Icon, { type: "AntDesign", css: "co:white", name: "close", size: 15 }) }) }), _jsx(View, { ifTrue: data.icon != undefined || typeInfo.icon != undefined, css: "fl:1 maw:40 zi:1 bac:transparent", children: data.icon ?? typeInfo.icon }), _jsxs(View, { css: "fl:1 zi:1 bac:transparent", children: [_jsx(Text, { ifTrue: data.title != undefined, css: x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css), children: data.title }), _jsx(Text, { css: x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css), children: data.message })] })] }), _jsx(ProgressBar, { ifTrue: data.loader !== false, color: data.loaderBg, children: null, value: state.counter, css: "_toastProgressView" })] }, state.id)] }));
 };
 //# sourceMappingURL=ToastView.js.map

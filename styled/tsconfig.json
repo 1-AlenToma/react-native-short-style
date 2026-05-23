@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "module": "esnext",
-    "target": "ES6",
+    "module": "ESNext",
+    "target": "esnext",
     "lib": [
       "dom",
       "esnext"
     ],
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "sourceMap": true,
     "declaration": true,

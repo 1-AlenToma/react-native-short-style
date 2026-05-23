@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { View, AnimatedView, TouchableOpacity } from "./ReactNativeComponents";
 import { InternalThemeContext, globalData } from "../theme/ThemeContext";
@@ -20,9 +11,8 @@ import { PanResponder } from "react-native";
 import { Blur } from "./Blur";
 import { Portal } from "./Portal";
 export const ActionSheet = (props) => {
-    var _a;
     globalData.hook("containerSize");
-    let position = (_a = props.position) !== null && _a !== void 0 ? _a : "Bottom";
+    let position = props.position ?? "Bottom";
     const isVertical = ["Top", "Bottom"].includes(position);
     const state = StateBuilder(() => ({
         id: newId(),
@@ -37,13 +27,12 @@ export const ActionSheet = (props) => {
         }
     })).ignore("refItem").build();
     let getHeight = () => {
-        var _a, _b, _c, _d;
-        let h = (_a = props.size) !== null && _a !== void 0 ? _a : "50%";
+        let h = props.size ?? "50%";
         if (props.size == "content") {
-            h = (_c = (isVertical ? (_b = state.size) === null || _b === void 0 ? void 0 : _b.height : state.size.width)) !== null && _c !== void 0 ? _c : 1;
+            h = (isVertical ? state.size?.height : state.size.width) ?? 1;
         }
         if ((typeof h === "string")) {
-            h = proc(parseFloat(((_d = h === null || h === void 0 ? void 0 : h.toString()) !== null && _d !== void 0 ? _d : "0").replace(/%/g, "").trim()), (isVertical ? globalData.containerSize.height : globalData.containerSize.width));
+            h = proc(parseFloat((h?.toString() ?? "0").replace(/%/g, "").trim()), (isVertical ? globalData.containerSize.height : globalData.containerSize.width));
         }
         let value = Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 90));
         return value;
@@ -91,7 +80,7 @@ export const ActionSheet = (props) => {
             index = 0;
         return state.refItem.interpolate[index];
     };
-    let toggle = (show) => __awaiter(void 0, void 0, void 0, function* () {
+    let toggle = async (show) => {
         //  if (animating.isAnimating)
         //    return;
         //if (!state.isVisible && show) {
@@ -101,16 +90,15 @@ export const ActionSheet = (props) => {
         const fn = !isVertical ? animateX : animateY;
         blurAnimation.animateX(show ? 1 : 0, undefined, 20);
         fn(firstValue(show), () => {
-            var _a;
             state.refItem.panResponse = undefined;
             state.refItem.show = show;
             if (state.isVisible != props.isVisible && !show)
                 state.isVisible = props.isVisible;
             if (state.isVisible && !show && props.isVisible) {
-                (_a = props.onHide) === null || _a === void 0 ? void 0 : _a.call(props);
+                props.onHide?.();
             }
         });
-    });
+    };
     const screenSizeUpdated = () => {
         timer(() => {
             setSize();
@@ -149,7 +137,10 @@ export const ActionSheet = (props) => {
         return x => x.joinLeft("zi-5 maw-99% ._overflow mat-5 bac-transparent").joinRight(props.css).zI(5).importantValue();
     }, [props.css]);
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;
-    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: Object.assign({ backgroundColor: "transparent" }, handleStyle), css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: (e) => {
+    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: {
+            backgroundColor: "transparent",
+            ...handleStyle
+        }, css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: (e) => {
             state.refItem.isTouched = true;
         }, children: _jsx(TouchableOpacity, { onPress: () => {
                 toggle(false);
@@ -228,7 +219,7 @@ export const ActionSheet = (props) => {
                     }, onPress: () => {
                         if (!props.disableBlurClick)
                             toggle(false);
-                    }, css: "zi:1" }), _jsx(AnimatedView, Object.assign({ inspectDisplayName: "ActionSheet", onTouchStart: () => {
+                    }, css: "zi:1" }), _jsx(AnimatedView, { inspectDisplayName: "ActionSheet", onTouchStart: () => {
                         //state.refItem.isTouched = true;
                     }, onTouchEnd: (event) => {
                         state.refItem.isTouched = false;
@@ -238,7 +229,7 @@ export const ActionSheet = (props) => {
                             height: isVertical ? getHeight() : "100%",
                             transform: [transform]
                         },
-                    ] }, state.refItem.panResponse.panHandlers, { children: _jsxs(View, { inspectDisplayName: "ActionSheetContent", style: {
+                    ], ...state.refItem.panResponse.panHandlers, children: _jsxs(View, { inspectDisplayName: "ActionSheetContent", style: {
                             flexDirection: !isVertical ? "row" : undefined
                         }, css: "wi:100% he:100% pa:10 flex:1 ActionSheetContent", children: [position == "Bottom" || position == "Right" ? handle : null, _jsx(View, { ifTrue: state.refItem.show || !props.lazyLoading, css: _css, style: [(props.size != "content" ? {
                                         flex: 1,
@@ -251,6 +242,6 @@ export const ActionSheet = (props) => {
                                             state.size.width += 50;
                                         });
                                     }
-                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) }))] }) }));
+                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) })] }) }));
 };
 //# sourceMappingURL=ActionSheet.js.map

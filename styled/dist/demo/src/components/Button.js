@@ -4,11 +4,10 @@ import * as React from "react";
 import { ifSelector, RemoveProps } from "../config";
 import { useTimer } from "../hooks";
 export const Button = (props) => {
-    var _a;
     const [shadow, setShadow] = React.useState("sh-sm");
     const disabled = ifSelector(props.disabled);
-    const timer = useTimer((_a = props.whilePressedDelay) !== null && _a !== void 0 ? _a : 300);
-    const pressableProps = Object.assign({}, props);
+    const timer = useTimer(props.whilePressedDelay ?? 300);
+    const pressableProps = { ...props };
     const onPress = (event) => {
         timer.clear();
         event.preventDefault();
@@ -16,8 +15,7 @@ export const Button = (props) => {
         props.onPress(event);
     };
     const onLongPress = (event) => {
-        var _a;
-        (_a = props.onLongPress) === null || _a === void 0 ? void 0 : _a.call(props, event);
+        props.onLongPress?.(event);
         const fn = () => {
             props.whilePressed();
             timer(fn);
@@ -25,8 +23,7 @@ export const Button = (props) => {
         fn();
     };
     const onPressOut = (event) => {
-        var _a;
-        (_a = props.onPressOut) === null || _a === void 0 ? void 0 : _a.call(props, event);
+        props.onPressOut?.(event);
         timer.clear();
     };
     if (disabled === true) {
@@ -40,15 +37,13 @@ export const Button = (props) => {
         pressableProps.onPressOut = onPressOut;
     }
     const onMouseEnter = (event) => {
-        var _a;
         setShadow("sh-md");
-        (_a = props.onMouseEnter) === null || _a === void 0 ? void 0 : _a.call(props, event);
+        props.onMouseEnter?.(event);
     };
     const onMouseLeave = (event) => {
-        var _a;
         setShadow("sh-sm");
-        (_a = props.onMouseLeave) === null || _a === void 0 ? void 0 : _a.call(props, event);
+        props.onMouseLeave?.(event);
     };
-    return (_jsxs(TouchableOpacity, Object.assign({ inspectDisplayName: "Button" }, pressableProps, { onMouseLeave: onMouseLeave, onMouseEnter: onMouseEnter, css: x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), children: [props.icon, _jsx(Text, { ifTrue: props.text != undefined, css: x => x.cls("fos-xs").joinRight(props.textCss), children: props.text })] })));
+    return (_jsxs(TouchableOpacity, { inspectDisplayName: "Button", ...pressableProps, onMouseLeave: onMouseLeave, onMouseEnter: onMouseEnter, css: x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), children: [props.icon, _jsx(Text, { ifTrue: props.text != undefined, css: x => x.cls("fos-xs").joinRight(props.textCss), children: props.text })] }));
 };
 //# sourceMappingURL=Button.js.map

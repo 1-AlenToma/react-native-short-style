@@ -12,28 +12,42 @@ const userDefined = {
     "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
 };
 const themes = [
-    NestedStyleSheet.create(Object.assign({ AnimatedView: {
+    NestedStyleSheet.create({
+        AnimatedView: {
             backgroundColor: "#fff"
-        }, View: {
+        },
+        View: {
             backgroundColor: "#fff"
-        }, Text: {
+        },
+        Text: {
             color: "#000"
-        }, TextInput: {
+        },
+        TextInput: {
             color: "#000"
-        }, Icon: {
+        },
+        Icon: {
             color: "#000"
-        } }, userDefined
-    // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
-    )),
-    NestedStyleSheet.create(Object.assign({ AnimatedView: {
+        },
+        ...userDefined
+        // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
+    }),
+    NestedStyleSheet.create({
+        AnimatedView: {
             backgroundColor: "rgb(70 70 70)"
-        }, View: {
+        },
+        View: {
             backgroundColor: "rgb(70 70 70)"
-        }, Text: {
+        },
+        Text: {
             color: "#fff"
-        }, TextInput: {
+        },
+        TextInput: {
             color: "#fff"
-        }, Icon: x => x.co(".co-light"), header: "bac:red" }, userDefined))
+        },
+        Icon: x => x.co(".co-light"),
+        header: "bac:red",
+        ...userDefined
+    })
 ];
 export default function App() {
     const state = buildState({

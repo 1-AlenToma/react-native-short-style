@@ -9,7 +9,6 @@ import { Platform, StatusBar } from "react-native";
 import { Blur } from "./Blur";
 import { Portal } from "./Portal";
 export const Fab = (props) => {
-    var _a;
     let context = React.useContext(InternalThemeContext);
     const { animateY, animate, currentValue } = useAnimate();
     const state = StateBuilder(() => ({
@@ -35,7 +34,7 @@ export const Fab = (props) => {
     let style = {};
     let animatedItemPosition = undefined;
     let leftDefault = 15;
-    let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : (_a = StatusBar.currentHeight) !== null && _a !== void 0 ? _a : 10;
+    let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : StatusBar.currentHeight ?? 10;
     switch (props.position) {
         case "RightBottom":
             style = {

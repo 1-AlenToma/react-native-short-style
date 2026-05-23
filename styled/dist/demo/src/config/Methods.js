@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTranslator";
 import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
 import { globalData } from "../theme/ThemeContext";
@@ -40,26 +31,25 @@ export const RemoveProps = (props, ...items) => {
     return props;
 };
 export const readAble = function (nr, total = 2) {
-    var _a;
     if (Array.isArray(nr))
         nr = nr[0];
-    let nrs = (_a = nr === null || nr === void 0 ? void 0 : nr.toString().split(".")) !== null && _a !== void 0 ? _a : [];
+    let nrs = nr?.toString().split(".") ?? [];
     if (nrs.length <= 1)
         return nr;
-    return parseFloat(nr === null || nr === void 0 ? void 0 : nr.toFixed(total));
+    return parseFloat(nr?.toFixed(total));
 };
 export const optionalStyle = (style) => {
     if (style && Array.isArray(style) && typeof style == "object")
         style = style.reduce((a, v) => {
             if (v)
-                a = Object.assign(Object.assign({}, a), v);
+                a = { ...a, ...v };
             return a;
         }, {});
     if (style && typeof style == "function")
         style = style(new CSSStyle()).toString();
     let item = {
-        o: typeof style == "object" ? style !== null && style !== void 0 ? style : null : null,
-        c: typeof style == "string" ? style !== null && style !== void 0 ? style : "" : ""
+        o: typeof style == "object" ? style ?? null : null,
+        c: typeof style == "string" ? style ?? "" : ""
     };
     return item;
 };
@@ -72,8 +62,10 @@ export const currentTheme = (context) => {
     if (__DEV__ || !globalData.storage.has(key)) {
         if (!themes[context.selectedIndex] && context.themes.length > 0 && context.defaultTheme) {
             let thisTheme = themeStyle();
-            let selectedTheme = serilizeCssStyle(Object.assign(Object.assign({}, context.defaultTheme), context.themes[context.selectedIndex]));
-            themes[context.selectedIndex] = Object.assign(Object.assign(Object.assign({}, thisTheme), selectedTheme), ComponentsStyles);
+            let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
+            themes[context.selectedIndex] = {
+                ...thisTheme, ...selectedTheme, ...ComponentsStyles
+            };
         }
         globalData.storage.set(key, themes[context.selectedIndex]);
     }
@@ -122,10 +114,8 @@ export class AlertDialog {
     static toast(props) {
         globalData.alertViewData.toast(props);
     }
-    static confirm(props) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return globalData.alertViewData.confirm(props);
-        });
+    static async confirm(props) {
+        return globalData.alertViewData.confirm(props);
     }
 }
 export const setRef = (ref, item) => {

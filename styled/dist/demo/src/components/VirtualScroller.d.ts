@@ -13,10 +13,10 @@ export declare const VirtualScroller: React.ForwardRefExoticComponent<{
     }) => void | Promise<void>;
     onItemLayout?: (nativeEvent: LayoutChangeEvent, item: any) => void;
     initializeIndex?: number;
-    itemStyle?: import("../Typse").CSS_String | ViewStyle;
+    itemStyle?: import("..").CSS_String | ViewStyle;
     horizontal?: boolean;
     numColumns?: number;
-    itemSize?: import("../Typse").VirtualItemSize;
+    itemSize?: import("..").VirtualItemSize;
     showsVerticalScrollIndicator?: boolean;
     showsHorizontalScrollIndicator?: boolean;
     onEndReached?: () => void;
@@ -27,4 +27,4 @@ export declare const VirtualScroller: React.ForwardRefExoticComponent<{
     scrollEventThrottle?: number;
     contentSizeTimer?: number;
     updateOn?: any[];
-} & import("../Typse").StyledProps & React.RefAttributes<VirtualScrollerViewRefProps>>;
+} & import("..").StyledProps & React.RefAttributes<VirtualScrollerViewRefProps>>;
