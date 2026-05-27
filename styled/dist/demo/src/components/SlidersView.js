@@ -40,7 +40,7 @@ export const SliderView = (props) => {
             onChange(btnValue + step);
         else if (btnValue < props.maximumValue)
             onChange(props.maximumValue);
-    }, onchange, props.maximumValue, state.value);
+    }, onChange, props.maximumValue, state.value);
     return (_jsxs(View, { ifTrue: props.ifTrue, css: mem(x => x.cls("_slider juc:space-between").joinRight(props.css), props.css), style: props.style, children: [_jsx(Button, { css: mem(x => x.cls("_sliderButton").joinRight(props.buttonCss), props.buttonCss), icon: mem(_jsx(Icon, { type: "AntDesign", size: 15, color: "white", name: "minus" })), ifTrue: props.enableButtons && btnValue != undefined, onPressIn: mem(() => state.sliding = true), disabled: btnValue != undefined && props.minimumValue >= btnValue, whilePressed: minus, onPress: minus }), _jsx(Slider, { onStartShouldSetResponder: mem(event => false), renderAboveThumbComponent: mem(() => _jsx(Text, { style: mem({ display: !state.sliding ? "none" : "flex" }), css: "_sliderThump pointerEvents-none", children: `${readAble(btnValue, 1)}/${props.maximumValue}` }), props.maximumValue, btnValue, state.sliding), ...props, onSlidingStart: mem((event, index) => {
                     props.onSlidingStart?.(event, index);
                     state.sliding = true;

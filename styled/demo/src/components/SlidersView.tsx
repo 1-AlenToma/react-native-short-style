@@ -58,7 +58,7 @@ export const SliderView = (props: NativeSlider.SliderProps & {
             onChange(btnValue + step)
         else if (btnValue < props.maximumValue)
             onChange(props.maximumValue);
-    }, onchange, props.maximumValue, state.value)
+    }, onChange, props.maximumValue, state.value)
 
 
 
