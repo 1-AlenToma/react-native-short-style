@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated } from 'react-native';
-import { View, AnimatedView, SliderView, ProgressBar, FormItem } from "../src"
+import { View, AnimatedView, SliderView, ProgressBar, FormItem, useLocalMemo } from "../src"
 import StateBuilder from 'react-smart-state';
 import { Block } from './Block';
 const colorCls = Object.keys({
@@ -17,7 +17,7 @@ function randomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 export const MovingBall = () => {
-
+    const { mem } = useLocalMemo();
     const ballSize = 50;
     const speed = 200; // pixels per second
     const updateInterval = 60; // min ms between updates
@@ -94,9 +94,9 @@ export const MovingBall = () => {
     return (
         <View
             css="bac-black fl-1 juc-center ali-center"
-            onLayout={({ nativeEvent }) => {
+            onLayout={mem(({ nativeEvent }) => {
                 state.container = nativeEvent.layout;
-            }}
+            })}
         >
             <FormItem title="Speed" css="he-100 wi-200 op-0.5">
                 <ProgressBar value={state.sliderValue} />
@@ -105,13 +105,13 @@ export const MovingBall = () => {
                     animationType="spring"
                     minimumValue={100}
                     value={state.sliderValue}
-                    onValueChange={(v) => state.sliderValue = state.vx = state.vy = v[0]}
+                    onValueChange={mem((v) => state.sliderValue = state.vx = state.vy = v[0])}
                     maximumValue={2000}
                     step={50}
                     enableButtons={true} />
             </FormItem>
             <AnimatedView
-                css={x => x.joinLeft("_abc to-0 le-0").baC(`.co-${colorCls[state.bacIndex]}`)}
+                css={mem(x => x.joinLeft("_abc to-0 le-0").baC(`.co-${colorCls[state.bacIndex]}`), state.bacIndex)}
                 style={{
                     width: ballSize,
                     height: ballSize,

@@ -7,6 +7,7 @@ import { ifSelector, optionalStyle, setRef } from "../config";
 import { Blur } from "./Blur";
 import { Platform } from "react-native";
 import { Portal } from "./Portal";
+import { useLocalMemo } from "../hooks";
 export const ToolTip = React.forwardRef((props, ref) => {
     const context = React.useContext(InternalThemeContext);
     globalData.hook("window");
@@ -17,10 +18,11 @@ export const ToolTip = React.forwardRef((props, ref) => {
         toolTipSize: undefined,
         mounted: false,
     })).ignore("ref", "pos", "toolTipSize").build();
+    const { mem } = useLocalMemo();
     setRef(ref, {
         visible: (value) => state.visible = value
     });
-    const setPostion = () => {
+    const setPostion = mem(() => {
         if (state.ref) {
             state.ref.measureInWindow((x, y, w, h) => {
                 state.pos = {
@@ -33,7 +35,7 @@ export const ToolTip = React.forwardRef((props, ref) => {
                 };
             });
         }
-    };
+    });
     globalData.useEffect(() => {
         if (state.visible)
             state.visible = false;
@@ -61,19 +63,19 @@ export const ToolTip = React.forwardRef((props, ref) => {
     }
     if (ifSelector(props.ifTrue) == false)
         return null;
-    const style = optionalStyle(props.containerStyle);
-    return (_jsxs(TouchableOpacity, { onLayout: setPostion, ref: c => {
+    const style = mem(optionalStyle(props.containerStyle), props.containerStyle);
+    return (_jsxs(TouchableOpacity, { onLayout: setPostion, ref: mem(c => {
             if (c !== state.ref)
                 state.ref = c;
-        }, onPress: () => {
+        }), onPress: mem(() => {
             state.visible = !state.visible;
-        }, style: [style.o], css: x => x.joinRight(style.c), children: [props.children, _jsx(Portal, { visible: state.visible && state.pos != undefined, children: _jsxs(View, { css: x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent").zI(300), children: [_jsx(Blur, { css: "zi:1 bac:transparent", onPress: () => state.visible = false }), _jsx(View, { onLayout: ({ nativeEvent }) => {
+        }), style: style.o, css: mem(x => x.joinRight(style.c), style.c), children: [props.children, _jsx(Portal, { visible: state.visible && state.pos != undefined, children: _jsxs(View, { css: mem(x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent").zI(300)), children: [_jsx(Blur, { css: "zi:1 bac:transparent", onPress: mem(() => state.visible = false) }), _jsx(View, { onLayout: mem(({ nativeEvent }) => {
                                 if (!state.toolTipSize && state.visible) {
                                     state.toolTipSize = nativeEvent.layout;
                                 }
-                            }, style: [{
+                            }), style: mem([{
                                     left: left,
                                     top: top,
-                                }], css: x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip").op(state.toolTipSize ? 1 : 0), children: typeof props.text == "string" ? _jsx(Text, { selectable: true, css: ".fos-sm", children: props.text }) : props.text })] }) })] }));
+                                }], left, top), css: mem(x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip").op(state.toolTipSize ? 1 : 0), state.toolTipSize), children: typeof props.text == "string" ? _jsx(Text, { selectable: true, css: ".fos-sm", children: props.text }) : props.text })] }) })] }));
 });
 //# sourceMappingURL=ToolTip.js.map

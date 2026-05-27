@@ -1,5 +1,5 @@
 import StateBuilder from "react-smart-state"
-import { CheckBox, CheckBoxList, DropdownList, FormItem, TextInput, FormGroup } from "../src"
+import { CheckBox, CheckBoxList, DropdownList, FormItem, TextInput, FormGroup, useLocalMemo } from "../src"
 import { Block } from "./Block"
 
 let countries = [
@@ -257,38 +257,39 @@ export const InputForm = () => {
         checkBoxes: [true, false],
         selectedValue: countries[countries.length - 100].value // Default to the last country
     }).build();
+    const { mem } = useLocalMemo();
     return (
         <FormGroup css={"maw-300"} formStyle="Headless" labelPosition="Top" title='User-Form'>
-            <FormItem title="FullName" icon={{ type: "AntDesign", name: "user" }}>
-                <TextInput css="fl:1" onChangeText={txt => console.log(txt)} />
+            <FormItem title="FullName" icon={mem({ type: "AntDesign", name: "user" })}>
+                <TextInput css="fl:1" onChangeText={mem(txt => console.log(txt))} />
             </FormItem>
-            <FormItem title="UserName" icon={{ type: "AntDesign", name: "user" }}>
+            <FormItem title="UserName" icon={mem({ type: "AntDesign", name: "user" })}>
                 <TextInput css="fl:1" />
             </FormItem>
-            <FormItem title="Passowrd" info="Passowrd must at least containes one upper char" icon={{ type: "AntDesign", name: "lock" }}>
+            <FormItem title="Passowrd" info="Passowrd must at least containes one upper char" icon={mem({ type: "AntDesign", name: "lock" })}>
                 <TextInput css="fl:1" />
             </FormItem>
-            <FormItem title="Country" info="Select where you are from" icon={{ type: "AntDesign", name: "flag" }}>
-                <DropdownList itemSize={{ size: 35, overscanCount: 100 }} numColumns={undefined} mode="ActionSheet" enableSearch={true} css="wi:100%"
-                    selectedValue={state.selectedValue} onSelect={(value) => {
+            <FormItem title="Country" info="Select where you are from" icon={mem({ type: "AntDesign", name: "flag" })}>
+                <DropdownList itemSize={mem({ size: 35, overscanCount: 100 })} numColumns={undefined} mode="ActionSheet" enableSearch={true} css="wi:100%"
+                    selectedValue={state.selectedValue} onSelect={mem((value) => {
                         state.selectedValue = value.value
-                    }}
+                    })}
                     items={countries} />
             </FormItem>
-            <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={{ type: "AntDesign", name: "lock" }}>
+            <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={mem({ type: "AntDesign", name: "lock" })}>
                 <CheckBox checked checkBoxType="CheckBox"></CheckBox>
             </FormItem>
-            <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={{ type: "AntDesign", name: "lock" }}>
+            <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={mem({ type: "AntDesign", name: "lock" })}>
                 <CheckBox checked checkBoxType="Switch"></CheckBox>
             </FormItem>
             <FormItem title="is User">
-                <CheckBoxList labelPostion="Left" css={"wi:100% ali:flex-end"} onChange={(changes) => {
+                <CheckBoxList labelPostion="Left" css={"wi:100% ali:flex-end"} onChange={mem((changes) => {
                     state.checkBoxes = changes.map(x => x.checked)
-                }} checkBoxType="RadioButton" selectionType="Radio">
+                })} checkBoxType="RadioButton" selectionType="Radio">
                     {
-                        state.checkBoxes.map((x, i) => (
+                        mem(state.checkBoxes.map((x, i) => (
                             <CheckBox key={i} label={i == 0 ? "Yes" : "No"} checked={x} />
-                        ))
+                        )), state.checkBoxes)
                     }
                 </CheckBoxList>
             </FormItem>

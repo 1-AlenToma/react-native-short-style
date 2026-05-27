@@ -2,7 +2,8 @@
 import { View, AnimatedView, Text, TouchableOpacity } from "./ReactNativeComponents";
 import * as React from "react";
 import {
-    useAnimate
+    useAnimate,
+    useLocalMemo
 } from "../hooks";
 import { newId } from "../config";
 import { CSS_String, FabProps, Size } from "../Typse";
@@ -13,8 +14,8 @@ import { Blur } from "./Blur";
 import { Portal } from "./Portal";
 
 export const Fab = (props: FabProps) => {
-    let context = React.useContext(InternalThemeContext);
     const { animateY, animate, currentValue } = useAnimate();
+    const { mem } = useLocalMemo();
     const state = StateBuilder(() => ({
         visible: false,
         id: newId(),
@@ -42,64 +43,68 @@ export const Fab = (props: FabProps) => {
         animateState();
     }, [])
 
-    let style = {} as ViewStyle;
-    let animatedItemPosition = undefined as CSS_String;
 
 
+    const itemStyle = React.useMemo(() => {
 
-    let leftDefault = 15;
-    let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : StatusBar.currentHeight ?? 10;
-    switch (props.position) {
-        case "RightBottom":
-            style = {
-                bottom: defaultTop,
-                right: leftDefault
-            }
-            if (state.size) {
-                animatedItemPosition = x => x.ri(leftDefault).maT(-state.size.height)
-            }
+        let style = {} as ViewStyle;
+        let animatedItemPosition = undefined as CSS_String;
 
-            break;
-        case "LeftBottom":
-            style = {
-                bottom: defaultTop,
-                left: leftDefault
-            }
+        let leftDefault = 15;
+        let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : StatusBar.currentHeight ?? 10;
+        switch (props.position) {
+            case "RightBottom":
+                style = {
+                    bottom: defaultTop,
+                    right: leftDefault
+                }
+                if (state.size) {
+                    animatedItemPosition = x => x.ri(leftDefault).maT(-state.size.height)
+                }
 
-            if (state.size) {
-                animatedItemPosition = x => x.le(leftDefault).maT(-state.size.height)
-            }
+                break;
+            case "LeftBottom":
+                style = {
+                    bottom: defaultTop,
+                    left: leftDefault
+                }
+
+                if (state.size) {
+                    animatedItemPosition = x => x.le(leftDefault).maT(-state.size.height)
+                }
 
 
-            break;
-        case "LeftTop":
-            style = {
-                top: defaultTop,
-                left: leftDefault
-            }
+                break;
+            case "LeftTop":
+                style = {
+                    top: defaultTop,
+                    left: leftDefault
+                }
 
-            if (state.size) {
-                animatedItemPosition = x => x.le(leftDefault).maT(state.size.height)
-            }
-            break;
-        case "RightTop":
-            style = {
-                top: defaultTop,
-                right: leftDefault
-            }
+                if (state.size) {
+                    animatedItemPosition = x => x.le(leftDefault).maT(state.size.height)
+                }
+                break;
+            case "RightTop":
+                style = {
+                    top: defaultTop,
+                    right: leftDefault
+                }
 
-            if (state.size) {
-                animatedItemPosition = x => x.ri(leftDefault).maT(state.size.height)
-            }
+                if (state.size) {
+                    animatedItemPosition = x => x.ri(leftDefault).maT(state.size.height)
+                }
 
-            break;
-    }
+                break;
+        }
 
+        return { style, animatedItemPosition }
+    }, [props.position, props.follow, state.size, StatusBar.currentHeight])
 
     const animatedIItem = !state.visible ? null : (
-        <AnimatedView onLayout={({ nativeEvent }) => {
+        <AnimatedView onLayout={mem(({ nativeEvent }) => {
             state.size = nativeEvent.layout;
-        }} style={{
+        })} style={mem({
             transform: [
                 {
                     scaleY: animate.y.interpolate({
@@ -108,12 +113,10 @@ export const Fab = (props: FabProps) => {
                         extrapolate: "clamp"
                     })
                 }]
-        }} css={x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(animatedItemPosition)} key={state.id + "View"} >
-            <>
+        }, animate.y)} css={mem(x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(itemStyle.animatedItemPosition), itemStyle.animatedItemPosition)} key={state.id + "View"} >
                 {
                     props.children
                 }
-            </>
         </AnimatedView >
     )
 
@@ -121,15 +124,15 @@ export const Fab = (props: FabProps) => {
 
     const view = (
         <React.Fragment key={state.id}>
-            <View css={x => x.cls("_fab").joinRight(style).joinRight(props.css)} style={props.style}>
+            <View css={mem(x => x.cls("_fab").joinRight(itemStyle.style).joinRight(props.css), props.css, itemStyle.style)} style={props.style}>
                 {!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null}
-                <TouchableOpacity style={typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined} onPress={() => state.visible = !state.visible}
-                    css={x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle))}>
+                <TouchableOpacity style={typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined} onPress={mem(() => state.visible = !state.visible)}
+                    css={mem(x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle)), props.prefixContainerStyle)}>
                     {typeof props.prefix == "string" ? <Text css="fos-xs">{props.prefix}</Text> : props.prefix}
                 </TouchableOpacity>
                 {!["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null}
             </View>
-            <Blur onPress={() => state.visible = false} ifTrue={state.visible && props.blureScreen !== false} />
+            <Blur onPress={mem(() => state.visible = false)} ifTrue={state.visible && props.blureScreen !== false} />
         </React.Fragment>
     )
 

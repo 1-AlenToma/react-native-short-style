@@ -1,5 +1,5 @@
 import StateBuilder from "react-smart-state"
-import { ButtonGroup } from "../src"
+import { ButtonGroup, useLocalMemo } from "../src"
 import { Block } from "./Block"
 
 const colors = [
@@ -58,12 +58,17 @@ const colors = [
 export const ButtonGroupView = () => {
     const state = StateBuilder({
         selectedButtons: [8] as number[]
-    }).build()
+    }).build();
+    const {mem} = useLocalMemo();
 
 
     return (
         <Block style={{ width: 300, minHeight: 200 }} title='ButtonGroup'>
-            <ButtonGroup onPress={(btns) => state.selectedButtons = btns} numColumns={2} scrollable={true} isVertical={true} buttons={colors} selectedIndex={state.selectedButtons} />
+            <ButtonGroup onPress={mem((btns) => state.selectedButtons = btns)} 
+            numColumns={2} scrollable={true} 
+            isVertical={true} 
+            buttons={colors} 
+            selectedIndex={state.selectedButtons} />
         </Block>
     )
 }

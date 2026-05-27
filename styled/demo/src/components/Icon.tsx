@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IConProps } from "../Typse";
 import { CreateView } from "./helper";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
 import { flatStyle } from "../config";
 import { globalData } from "../theme/ThemeContext";
 
@@ -9,6 +9,7 @@ let styledItems = {};
 export const Icon = (props: IConProps) => {
     const [flash, setFlash] = React.useState<any>(undefined);
     const timer = useTimer(1000);
+    const { mem } = useLocalMemo();
     let TypeIcon = globalData.icons[props.type];
     if (TypeIcon == undefined) {
         console.warn(`Icon type ${props.type} not found`, "please set ThemeContainer.icons to your exported icons");
@@ -16,7 +17,7 @@ export const Icon = (props: IConProps) => {
     }
     TypeIcon.displayName = props.type;
     let Ico: (props: IConProps) => React.ReactNode = styledItems[props.type] ?? (styledItems[props.type] = CreateView<any, any>(TypeIcon, "Icon"));
-   // console.log(Ico, props.type)
+    // console.log(Ico, props.type)
     if (props.flash)
         timer(() => {
             if (flash != props.flash)
@@ -24,7 +25,7 @@ export const Icon = (props: IConProps) => {
             else setFlash(props.color)
         })
 
-    let stl: any = flatStyle(props.style);
+    let stl: any = mem(flatStyle(props.style), props.style);
     if (flash)
         stl.color = flash;
     return (

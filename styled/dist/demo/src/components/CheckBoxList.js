@@ -5,7 +5,7 @@ import { FormGroup } from "./FormGroup";
 import { View, Text, TouchableOpacity, AnimatedView } from "./ReactNativeComponents";
 import { ifSelector, newId, optionalStyle } from "../config";
 import { Icon } from "./Icon";
-import { useAnimate } from "../hooks";
+import { useAnimate, useLocalMemo } from "../hooks";
 const CheckBoxContext = React.createContext({
     checkBoxListProps: {}
 });
@@ -79,6 +79,7 @@ export const CheckBox = (props) => {
             prev: props.checked,
         }
     })).ignore("refItem").build();
+    const { mem } = useLocalMemo();
     const context = React.useContext(CheckBoxContext);
     const checkBoxType = context.checkBoxListProps.checkBoxType ?? props.checkBoxType ?? "CheckBox";
     const labelPostion = props.labelPostion ?? context.checkBoxListProps.labelPostion ?? "Right";
@@ -88,7 +89,7 @@ export const CheckBox = (props) => {
     const swtichColor = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "black", false: "white" };
     if (!context.ids || !context.ids.has(state.id))
         context.add?.(state.id, props.checked);
-    const tAnimate = (value) => {
+    const tAnimate = mem((value) => {
         let ch = value == 1 ? true : false;
         if ((state.refItem.working && state.refItem.prev == ch) || disabled)
             return;
@@ -97,7 +98,7 @@ export const CheckBox = (props) => {
         animateX(value, () => {
             state.refItem.working = false;
         });
-    };
+    }, animateX);
     React.useEffect(() => {
         state.isInit = true;
         return () => context.remove?.(state.id);
@@ -129,23 +130,23 @@ export const CheckBox = (props) => {
     };
     const activeOpacity = disabled ? .5 : 1;
     const disabledCss = disabled ? "disabled" : "";
-    return (_jsxs(_Fragment, { children: [_jsxs(TouchableOpacity, { activeOpacity: activeOpacity, style: props.style, css: `_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, ifTrue: checkBoxType == "CheckBox", onPress: () => {
+    return (_jsxs(_Fragment, { children: [_jsxs(TouchableOpacity, { activeOpacity: activeOpacity, style: props.style, css: mem(`_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css), ifTrue: checkBoxType == "CheckBox", onPress: mem(() => {
                     if (!disabled && !props.onPress)
                         state.checked = !state.checked;
                     props.onPress?.();
-                }, children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: { backgroundColor: color(state.checked) }, css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, type: "AntDesign", css: x => x.co(".co-light"), name: "check", size: 24 }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { style: props.style, css: x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), ifTrue: checkBoxType == "RadioButton", onPress: () => {
+                }, disabled, props.onPress), children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: mem({ backgroundColor: color(state.checked) }, state.checked), css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, type: "AntDesign", css: x => x.co(".co-light"), name: "check", size: 24 }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { style: props.style, css: mem(x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), disabledCss, props.css), ifTrue: checkBoxType == "RadioButton", onPress: mem(() => {
                     if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                         state.checked = !state.checked;
-                }, children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: { borderRadius: 24, backgroundColor: "transparent" }, css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, size: 21, type: "MaterialCommunityIcons", name: "checkbox-blank-circle", color: color(true) }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { ifTrue: checkBoxType == "Switch", activeOpacity: activeOpacity, onPress: () => {
+                }, state.checked, disabled, selectionType), children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: mem({ borderRadius: 24, backgroundColor: "transparent" }), css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, size: 21, type: "MaterialCommunityIcons", name: "checkbox-blank-circle", color: color(true) }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { ifTrue: checkBoxType == "Switch", activeOpacity: activeOpacity, onPress: mem(() => {
                     if (!disabled)
                         state.checked = (!state.checked);
-                }, style: props.style, css: `fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`, children: [_jsx(Text, { ifTrue: props.label != undefined, css: "fos-sm", style: {
+                }, disabled), style: props.style, css: `fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`, children: [_jsx(Text, { ifTrue: props.label != undefined, css: "fos-sm", style: mem({
                             flexGrow: 1,
                             maxWidth: "80%",
                             overflow: "hidden"
-                        }, children: props.label }), _jsx(View, { style: {
+                        }), children: props.label }), _jsx(View, { style: mem({
                             backgroundColor: color(state.checked)
-                        }, css: "bor:10 mab:5 sh-xs juc:center miw:60 he:25 overflow:visible", children: _jsx(AnimatedView, { style: {
+                        }, state.checked), css: "bor:10 mab:5 sh-xs juc:center miw:60 he:25 overflow:visible", children: _jsx(AnimatedView, { style: mem({
                                 backgroundColor: color(!state.checked),
                                 transform: [
                                     {
@@ -156,6 +157,6 @@ export const CheckBox = (props) => {
                                         })
                                     }
                                 ]
-                            }, css: "wi:25 sh-sm he:25 bor:20 overflow:visible" }) })] })] }));
+                            }, animate.x), css: "wi:25 sh-sm he:25 bor:20 overflow:visible" }) })] })] }));
 };
 //# sourceMappingURL=CheckBoxList.js.map

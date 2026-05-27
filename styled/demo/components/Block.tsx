@@ -3,7 +3,6 @@ import { View, Text } from "../src";
 import { ViewStyle } from "react-native";
 
 export const Block = ({ children, title, style }: { children: any, style?: ViewStyle, title?: string }) => {
-
     return (
         <View style={style} css="block">
             <Text css="fixed to:-8 fow:bold fos-md zi:2">{title}</Text>

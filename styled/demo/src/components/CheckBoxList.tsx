@@ -5,7 +5,7 @@ import { FormGroup } from "./FormGroup";
 import { View, Text, TouchableOpacity, AnimatedView } from "./ReactNativeComponents";
 import { ifSelector, newId, optionalStyle } from "../config";
 import { Icon } from "./Icon";
-import { useAnimate } from "../hooks";
+import { useAnimate, useLocalMemo } from "../hooks";
 type CheckBoxListContext = {
     onChange: (checked: boolean, id: string) => void;
     add: (id: string, checked: boolean) => boolean;
@@ -114,6 +114,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             prev: props.checked,
         }
     })).ignore("refItem").build();
+    const { mem } = useLocalMemo();
 
     const context = React.useContext<CheckBoxListContext>(CheckBoxContext);
     const checkBoxType = context.checkBoxListProps.checkBoxType ?? props.checkBoxType ?? "CheckBox";
@@ -124,7 +125,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
     const swtichColor: any = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "black", false: "white" }
     if (!context.ids || !context.ids.has(state.id))
         context.add?.(state.id, props.checked);
-    const tAnimate = (value: number) => {
+    const tAnimate = mem((value: number) => {
 
         let ch = value == 1 ? true : false;
         if ((state.refItem.working && state.refItem.prev == ch) || disabled)
@@ -137,7 +138,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
                 state.refItem.working = false;
             },
         );
-    };
+    }, animateX);
 
 
 
@@ -178,28 +179,29 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
 
     return (
         <>
-            <TouchableOpacity activeOpacity={activeOpacity} style={props.style} css={`_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`}
+            <TouchableOpacity activeOpacity={activeOpacity} style={props.style}
+                css={mem(`_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css)}
                 ifTrue={checkBoxType == "CheckBox"}
-                onPress={() => {
+                onPress={mem(() => {
                     if (!disabled && !props.onPress)
                         state.checked = !state.checked;
                     props.onPress?.();
-                }}>
+                }, disabled, props.onPress)}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={{ backgroundColor: color(state.checked) }} css={`_checkBox_${labelPostion}`} >
+                <View style={mem({ backgroundColor: color(state.checked) }, state.checked)} css={`_checkBox_${labelPostion}`} >
                     <Icon ifTrue={state.checked} type="AntDesign" css={x => x.co(".co-light")} name="check" size={24} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={props.style}
-                css={x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss)}
+                css={mem(x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), disabledCss, props.css)}
                 ifTrue={checkBoxType == "RadioButton"}
-                onPress={() => {
+                onPress={mem(() => {
                     if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                         state.checked = !state.checked
-                }}>
+                }, state.checked, disabled, selectionType)}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={{ borderRadius: 24, backgroundColor: "transparent" }} css={`_checkBox_${labelPostion}`}>
+                <View style={mem({ borderRadius: 24, backgroundColor: "transparent" })} css={`_checkBox_${labelPostion}`}>
                     <Icon ifTrue={state.checked} size={21} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
@@ -207,26 +209,26 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             <TouchableOpacity
                 ifTrue={checkBoxType == "Switch"}
                 activeOpacity={activeOpacity}
-                onPress={() => {
+                onPress={mem(() => {
                     if (!disabled)
                         state.checked = (!state.checked);
-                }}
+                }, disabled)}
                 style={props.style} css={`fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`}>
                 <Text
                     ifTrue={props.label != undefined}
                     css="fos-sm"
-                    style={{
+                    style={mem({
                         flexGrow: 1,
                         maxWidth: "80%",
                         overflow: "hidden"
-                    }}>
+                    })}>
                     {props.label}
                 </Text>
-                <View style={{
+                <View style={mem({
                     backgroundColor: color(state.checked)
-                }} css="bor:10 mab:5 sh-xs juc:center miw:60 he:25 overflow:visible">
+                }, state.checked)} css="bor:10 mab:5 sh-xs juc:center miw:60 he:25 overflow:visible">
                     <AnimatedView
-                        style={{
+                        style={mem({
                             backgroundColor: color(!state.checked),
                             transform: [
                                 {
@@ -238,7 +240,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
                                         })
                                 }
                             ]
-                        }}
+                        }, animate.x)}
                         css="wi:25 sh-sm he:25 bor:20 overflow:visible">
                     </AnimatedView>
                 </View>

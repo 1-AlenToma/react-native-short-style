@@ -8,16 +8,26 @@ import { ActionSheet } from "./ActionSheet";
 import { Icon } from "./Icon";
 import { TabBar, TabView } from "./TabBar";
 import { VirtualScroller } from "./VirtualScroller";
+import { useLocalMemo } from "../hooks";
+import { Platform } from "react-native";
 
 const DropDownItemController = ({ item, index, state, props }: { props: DropdownListProps, item: DropdownItem, index: number, state: any }) => {
-    const [selected, setSelected] = React.useState<number | undefined>(undefined);
+    const localState = StateBuilder({ selected: undefined as number | undefined }).build();
+    const { mem } = useLocalMemo()
     return (
-        <View onMouseEnter={() => setSelected(index)}
-            onMouseLeave={() => setSelected(undefined)}
-            css={`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "selectedValue" : ""}`}>
+        <View
+            onMouseEnter={mem(() => {
+                if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
+                    localState.selected = index;
+            })}
+            onMouseLeave={mem(() => {
+                if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
+                    localState.selected = undefined;
+            })}
+            css={mem(`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == localState.selected ? props.selectedItemCss ?? "selectedValue" : ""}`, localState.selected, props.selectedItemCss)}>
             {
                 props.render ? props.render(item) : (
-                    <Text css={`fos-sm ${item.value === state.selectedValue || index == selected ? props.selectedItemCss ?? "selectedValue" : ""}`}>{item.label}</Text>
+                    <Text css={`fos-sm ${item.value === state.selectedValue || index == localState.selected ? props.selectedItemCss ?? "selectedValue" : ""}`}>{item.label}</Text>
                 )
             }
         </View>
@@ -33,6 +43,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
     }).ignore("propsSize").build();
+    const { mem } = useLocalMemo();
 
     const mode = props.mode ?? "Modal";
 
@@ -56,7 +67,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
     } as DropdownRefItem);
 
 
-    const Component = mode == "Modal" ? Modal : mode == "ActionSheet" ? ActionSheet : TabView;
+    const Component = mem(mode == "Modal" ? Modal : mode == "ActionSheet" ? ActionSheet : TabView, mode);
     const selectedText = props.items.find(x => x.value == state.selectedValue)?.label;
     let componentsProps: any = { css: `he:${props.size ?? "50%"} DropDownListItems`, addCloser: true, size: props.size ?? "50%", isVisible: state.visible, onHide: () => state.visible = false }
     if (mode == "Fold") {
@@ -66,13 +77,13 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
 
     const Container: any = mode == "Fold" ? TabBar : React.Fragment;
     const Selector = mode == "Fold" ? TabView : React.Fragment;
-    const containerProps = mode == "Fold" ? {
+    const containerProps = mem(mode == "Fold" ? {
         disableScrolling: true,
         onTabChange: (index) => state.index = index,
         style: { flex: null, flexBasis: state.index == 1 ? undefined : 38 },
         selectedTabIndex: state.visible ? 1 : 0,
         css: props.css
-    } : {};
+    } : {}, mode, props.css, state.visible, state.index);
 
 
     if (ifSelector(props.ifTrue) == false)
@@ -80,23 +91,23 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
     return (
         <Container {...containerProps}>
             <Selector>
-                <TouchableOpacity onLayout={({ nativeEvent }) => {
+                <TouchableOpacity onLayout={mem(({ nativeEvent }) => {
                     state.propsSize = nativeEvent.layout;
-                }} onMouseEnter={() => state.shadow = "sh-sm"}
-                    onMouseLeave={() => state.shadow = ""}
-                    onPress={() => state.visible = !state.visible}
-                    css={`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`}>
+                })} onMouseEnter={mem(() => state.shadow = "sh-sm")}
+                    onMouseLeave={mem(() => state.shadow = "")}
+                    onPress={mem(() => state.visible = !state.visible)}
+                    css={mem(`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css)}>
                     <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC bac-transparent">
-                        <Text style={selectedText ? undefined : {color: "#CCC"}} css="fos-sm">
+                        <Text style={mem(selectedText ? undefined : { color: "#CCC" }, selectedText)} css="fos-sm">
                             {selectedText ?? props.placeHolder}
-                            </Text>
+                        </Text>
                     </View>
                     <View css="fl:1 _center wi:30 maw:30 he:100% bac-transparent">
-                        <Icon style={{
+                        <Icon style={mem({
                             transform: [{
                                 rotateX: (mode == "Fold" ? "0deg" : (state.visible ? "180deg" : "0deg"))
                             }]
-                        }} type="AntDesign" name={mode == "Fold" ? "caretright" : "caret-down"} />
+                        }, state.visible)} type="AntDesign" name={mode == "Fold" ? "caretright" : "caret-down"} />
                     </View>
                 </TouchableOpacity>
             </Selector>
@@ -109,24 +120,24 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                         placeholderTextColor={"#CCC"}
                         placeholder={props.textInputPlaceHolder ?? "Search here..."}
                         defaultValue={state.text}
-                        onChangeText={txt => state.text = txt} />
+                        onChangeText={mem(txt => state.text = txt)} />
                 </View>
                 <VirtualScroller
                     updateOn={props.updateOn}
                     initializeIndex={selectedIndex}
                     contentSizeTimer={200}
                     horizontal={false}
-                    onItemPress={({ item }) => {
+                    onItemPress={mem(({ item }) => {
                         state.selectedValue = item.value;
                         props.onSelect?.(item);
                         state.visible = false;
-                    }}
+                    }, props.onSelect)}
                     numColumns={props.numColumns}
                     itemSize={props.itemSize}
                     scrollEventThrottle={16}
-                    keyExtractor={(item) => item.value}
-                    style={{ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }}
-                    renderItem={({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />)}
+                    keyExtractor={mem((item) => item.value)}
+                    style={mem({ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }, props.enableSearch, props.items.length, state.propsSize?.height)}
+                    renderItem={mem(({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />))}
                     items={items}
                 />
             </Component>

@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useRef, useEffect } from 'react';
 import { Animated } from 'react-native';
-import { View, AnimatedView, SliderView, ProgressBar, FormItem } from "../src";
+import { View, AnimatedView, SliderView, ProgressBar, FormItem, useLocalMemo } from "../src";
 import StateBuilder from 'react-smart-state';
 const colorCls = Object.keys({
     primary: '#007bff',
@@ -16,6 +16,7 @@ function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 export const MovingBall = () => {
+    const { mem } = useLocalMemo();
     const ballSize = 50;
     const speed = 200; // pixels per second
     const updateInterval = 60; // min ms between updates
@@ -79,9 +80,9 @@ export const MovingBall = () => {
         };
     }, [state.container]);
     //console.log(`co-${colorCls[state.bacIndex]}`)
-    return (_jsxs(View, { css: "bac-black fl-1 juc-center ali-center", onLayout: ({ nativeEvent }) => {
+    return (_jsxs(View, { css: "bac-black fl-1 juc-center ali-center", onLayout: mem(({ nativeEvent }) => {
             state.container = nativeEvent.layout;
-        }, children: [_jsxs(FormItem, { title: "Speed", css: "he-100 wi-200 op-0.5", children: [_jsx(ProgressBar, { value: state.sliderValue }), _jsx(SliderView, { css: "mat:30", animationType: "spring", minimumValue: 100, value: state.sliderValue, onValueChange: (v) => state.sliderValue = state.vx = state.vy = v[0], maximumValue: 2000, step: 50, enableButtons: true })] }), _jsx(AnimatedView, { css: x => x.joinLeft("_abc to-0 le-0").baC(`.co-${colorCls[state.bacIndex]}`), style: {
+        }), children: [_jsxs(FormItem, { title: "Speed", css: "he-100 wi-200 op-0.5", children: [_jsx(ProgressBar, { value: state.sliderValue }), _jsx(SliderView, { css: "mat:30", animationType: "spring", minimumValue: 100, value: state.sliderValue, onValueChange: mem((v) => state.sliderValue = state.vx = state.vy = v[0]), maximumValue: 2000, step: 50, enableButtons: true })] }), _jsx(AnimatedView, { css: mem(x => x.joinLeft("_abc to-0 le-0").baC(`.co-${colorCls[state.bacIndex]}`), state.bacIndex), style: {
                     width: ballSize,
                     height: ballSize,
                     borderRadius: ballSize / 2,

@@ -2,7 +2,8 @@
 import { View, AnimatedView } from "./ReactNativeComponents";
 import * as React from "react";
 import {
-    useAnimate
+    useAnimate,
+    useLocalMemo
 } from "../hooks";
 import { proc } from "../config";
 import { ProgressBarProps, Size } from "../Typse";
@@ -22,7 +23,8 @@ export const ProgressBar = ({
     const { animate, animateX } = useAnimate({
         speed: speed ?? 50
     });
-    const applyProc = () => {
+    const { mem } = useLocalMemo();
+    const applyProc = mem(() => {
         if (size)
             animateX(
                 Math.round(
@@ -32,7 +34,7 @@ export const ProgressBar = ({
                     )
                 )
             );
-    };
+    }, size, value)
     React.useEffect(() => {
         applyProc();
     }, [value]);
@@ -54,11 +56,11 @@ export const ProgressBar = ({
         <View
             ifTrue={ifTrue}
             inspectDisplayName="ProgressBar"
-            onLayout={e => {
+            onLayout={mem(e => {
                 setSize(e.nativeEvent.layout);
-            }}
+            }, size)}
             style={style}
-            css={x => x.cls("_progressBar", "ProgressBar").joinRight(css)}>
+            css={mem(x => x.cls("_progressBar", "ProgressBar").joinRight(css), css)}>
             <Blur css="zi:1" />
             <View
                 css="zi:3 bac:transparent wi-100% juc-center ali-center fld-row">
@@ -66,7 +68,7 @@ export const ProgressBar = ({
             </View>
             <AnimatedView
                 css="_progressBarAnimatedView"
-                style={{
+                style={mem({
                     backgroundColor: color ?? "green",
                     transform: [
                         {
@@ -77,7 +79,7 @@ export const ProgressBar = ({
                             })
                         }
                     ]
-                }}
+                }, animate.x, bound)}
             />
         </View>
     );

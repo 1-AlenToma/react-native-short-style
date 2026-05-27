@@ -5,6 +5,7 @@ import {
     Platform,
     Easing,
 } from "react-native";
+import { useLocalMemo } from "./useLocalMemo";
 
 export const useAnimate = ({
     y,
@@ -18,6 +19,7 @@ export const useAnimate = ({
         x: undefined,
         y: undefined
     }).current;
+    const { mem } = useLocalMemo();
     const animate = React.useRef(
         new Animated.ValueXY({
             y: y ?? 0,
@@ -25,14 +27,15 @@ export const useAnimate = ({
         })
     ).current;
 
-    const animating = React.useRef<any>({ x: undefined, y: undefined, isAnimating: false }).current;
-    const animateY = (
+    const animating = React.useRef({ x: undefined, y: undefined, isAnimating: false }).current;
+    const animateY = mem((
         value: any,
         onFinished?: Function,
         sp?: any
     ) => {
         if (animate.y == currentValue.y) {
             onFinished?.();
+            animating.isAnimating = false;
             return;
         }
         currentValue.y = value;
@@ -47,15 +50,16 @@ export const useAnimate = ({
             },
             sp
         );
-    };
+    })
 
-    const animateX = (
+    const animateX = mem((
         value: any,
         onFinished?: Function,
         sp?: number
     ) => {
         if (value == currentValue.x) {
             onFinished?.();
+            animating.isAnimating = false;
             return;
         }
         currentValue.x = value;
@@ -70,9 +74,9 @@ export const useAnimate = ({
             },
             sp
         );
-    };
+    })
 
-    const run = (
+    const run = mem((
         value: number,
         animObject: Animated.Value,
         key: "x" | "y",
@@ -106,7 +110,7 @@ export const useAnimate = ({
         } catch (e) {
             console.error("animObject", e);
         }
-    };
+    });
 
 
     return {

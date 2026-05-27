@@ -8,5 +8,9 @@ export declare const useAnimate: ({ y, x, speed, easing, delay, useNativeDriver 
         x: any;
         y: any;
     };
-    animating: any;
+    animating: {
+        x: any;
+        y: any;
+        isAnimating: boolean;
+    };
 };

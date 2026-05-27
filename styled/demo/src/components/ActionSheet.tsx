@@ -1,6 +1,6 @@
 import { View, AnimatedView, Text, TouchableOpacity, ScrollView } from "./ReactNativeComponents";
 import { InternalThemeContext, globalData } from "../theme/ThemeContext";
-import { useAnimate, useTimer } from "../hooks";
+import { useAnimate, useLocalMemo, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform } from "react-native";
 import { newId, proc } from "../config";
@@ -30,10 +30,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
             isTouched: false,
             interpolate: [],
             show: false
-        }
+        } 
     })).ignore("refItem").build();
 
-
+    const {mem} = useLocalMemo();
     let getHeight = () => {
         let h: any = props.size ?? "50%";
         if (props.size == "content") {
@@ -48,9 +48,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         return value;
     }
 
-    let context = useContext(InternalThemeContext);
     const timer = useTimer(100);
-    const renderUpdateTimer = useTimer(100)
     const { animateY, animateX, animate, animating, currentValue } = useAnimate({
         y: 0,
         x: 0,
@@ -174,18 +172,18 @@ export const ActionSheet = (props: ActionSheetProps) => {
         activeOpacity={1}
         onPressIn={() => state.refItem.isTouched = true}
         onPressOut={() => state.refItem.isTouched = false}
-        style={{
+        style={mem({
             backgroundColor: "transparent",
             ...handleStyle
-        }}
+        }, position, isVertical)}
         css={!isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle"}
-        onTouchStart={(e) => {
+        onTouchStart={mem((e) => {
             state.refItem.isTouched = true;
-        }}>
+        })}>
         <TouchableOpacity
-            onPress={() => {
-                toggle(false);
-            }}
+            onPress={mem(() => {
+               state.isVisible = false;
+            })}
             css={!isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button"}>
         </TouchableOpacity>
     </Handle>)
@@ -269,24 +267,20 @@ export const ActionSheet = (props: ActionSheetProps) => {
     return (
         <Portal visible={state.isVisible}>
             <View inspectDisplayName="ActionSheetContainer" css={`co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`}>
-                <Blur style={{
+                <Blur style={mem({
                     opacity: blurAnimation.animate.x.interpolate({
                         inputRange: [0, 1],
                         outputRange: [0, .5]
                     })
-                }} onPress={() => {
+                }, blurAnimation.animate.x)} onPress={mem(() => {
                     if (!props.disableBlurClick)
-                        toggle(false);
-                }} css="zi:1" />
+                       state.isVisible= false;
+                }, props.disableBlurClick)} css="zi:1" />
                 <AnimatedView
                     inspectDisplayName="ActionSheet"
-                    onTouchStart={() => {
-                        //state.refItem.isTouched = true;
-                    }}
-
-                    onTouchEnd={(event) => {
+                    onTouchEnd={mem((event) => {
                         state.refItem.isTouched = false;
-                    }}
+                    })}
                     css={`_actionSheet _actionSheet_${position} zi-2 ActionSheet`}
                     style={[
                         {
@@ -297,17 +291,17 @@ export const ActionSheet = (props: ActionSheetProps) => {
                     ]}  {...state.refItem.panResponse.panHandlers}>
                     <View
                         inspectDisplayName="ActionSheetContent"
-                        style={{
+                        style={mem({
                             flexDirection: !isVertical ? "row" : undefined
-                        }}
+                        }, isVertical)}
                         css="wi:100% he:100% pa:10 flex:1 ActionSheetContent">
                         {position == "Bottom" || position == "Right" ? handle : null}
                         <View ifTrue={state.refItem.show || !props.lazyLoading}
                             css={_css}
-                            style={[(props.size != "content" ? {
+                            style={mem([(props.size != "content" ? {
                                 flex: 1,
                                 flexGrow: 1
-                            } : undefined)]} onLayout={({ nativeEvent }) => {
+                            } : undefined)], props.size)} onLayout={mem(({ nativeEvent }) => {
                                 if (props.size == "content") {
                                     state.batch(() => {
                                         state.size = nativeEvent.layout;
@@ -315,7 +309,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                                         state.size.width += 50 as any;
                                     })
                                 }
-                            }}>
+                            })}>
                             {props.children}
                         </View>
                         {position == "Top" || position == "Left" ? handle : null}

@@ -8,6 +8,7 @@ import { Blur } from "./Blur";
 import { ReadyView } from "./ReadyView";
 import { Platform } from "react-native";
 import { Portal } from "./Portal";
+import { useLocalMemo } from "../hooks";
 
 export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) => {
 
@@ -20,12 +21,13 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
         toolTipSize: undefined as Size | undefined,
         mounted: false,
     })).ignore("ref", "pos", "toolTipSize").build();
+    const { mem } = useLocalMemo();
 
     setRef(ref, {
         visible: (value) => state.visible = value
     } as ToolTipRef);
 
-    const setPostion = () => {
+    const setPostion = mem(() => {
         if (state.ref) {
             state.ref.measureInWindow((x, y, w, h) => {
                 state.pos = {
@@ -38,8 +40,7 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
                 }
             });
         }
-
-    }
+    })
 
 
 
@@ -77,26 +78,26 @@ export const ToolTip = React.forwardRef<ToolTipRef, ToolTipProps>((props, ref) =
 
     if (ifSelector(props.ifTrue) == false)
         return null;
-    const style = optionalStyle(props.containerStyle);
+    const style =mem(optionalStyle(props.containerStyle), props.containerStyle);
     return (
-        <TouchableOpacity onLayout={setPostion} ref={c => {
+        <TouchableOpacity onLayout={setPostion} ref={mem(c => {
             if (c !== state.ref as any)
                 state.ref = c as any
-        }} onPress={() => {
+        })} onPress={mem(() => {
             state.visible = !state.visible;
-        }} style={[style.o]} css={x => x.joinRight(style.c)}>
+        })} style={style.o} css={mem(x => x.joinRight(style.c), style.c)}>
             {props.children}
             <Portal visible={state.visible && state.pos != undefined}>
-                <View css={x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent").zI(300)}>
-                    <Blur css="zi:1 bac:transparent" onPress={() => state.visible = false} />
-                    <View onLayout={({ nativeEvent }) => {
+                <View css={mem(x => x.fillView().maW("95%").cls("_abc").pos(0, 0).baC(".co-transparent").zI(300))}>
+                    <Blur css="zi:1 bac:transparent" onPress={mem(() => state.visible = false)} />
+                    <View onLayout={mem(({ nativeEvent }) => {
                         if (!state.toolTipSize && state.visible) {
                             state.toolTipSize = nativeEvent.layout;
                         }
-                    }} style={[{
+                    })} style={mem([{
                         left: left,
                         top: top,
-                    }]} css={x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip").op(state.toolTipSize ? 1 : 0)}>
+                    }], left, top)} css={mem(x => x.joinLeft(`zi:2 bow:.5 pa:5 bor:5 flg:1 boc:#CCC mar:5`).cls("_abc", "ToolTip").op(state.toolTipSize ? 1 : 0), state.toolTipSize)}>
                         {
                             typeof props.text == "string" ? <Text selectable={true} css=".fos-sm">{props.text}</Text> : props.text
                         }

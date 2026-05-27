@@ -48,14 +48,14 @@ export class CMBuilder {
             let a = prev[key];
             let b = next[key];
 
-            if (key == "css") {
+            if (key == "css" && a !== b) {
                 if (typeof b == "function")
                     b = b(new CSSStyle()).toString();
                 if (typeof a == "function")
                     a = a(new CSSStyle()).toString();
             }
 
-            if (key == "ifTrue" && typeof a == "function") {
+            if (key == "ifTrue" && typeof a == "function" && a !== b) {
                 if (typeof b == "function")
                     b = ifSelector(b)
                 if (typeof a == "function")

@@ -1,16 +1,16 @@
-import { Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { View, AnimatedView, Text, TouchableOpacity } from "./ReactNativeComponents";
 import * as React from "react";
-import { useAnimate } from "../hooks";
+import { useAnimate, useLocalMemo } from "../hooks";
 import { newId } from "../config";
 import StateBuilder from "../States";
-import { globalData, InternalThemeContext } from "../theme/ThemeContext";
+import { globalData } from "../theme/ThemeContext";
 import { Platform, StatusBar } from "react-native";
 import { Blur } from "./Blur";
 import { Portal } from "./Portal";
 export const Fab = (props) => {
-    let context = React.useContext(InternalThemeContext);
     const { animateY, animate, currentValue } = useAnimate();
+    const { mem } = useLocalMemo();
     const state = StateBuilder(() => ({
         visible: false,
         id: newId(),
@@ -31,51 +31,54 @@ export const Fab = (props) => {
     React.useEffect(() => {
         animateState();
     }, []);
-    let style = {};
-    let animatedItemPosition = undefined;
-    let leftDefault = 15;
-    let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : StatusBar.currentHeight ?? 10;
-    switch (props.position) {
-        case "RightBottom":
-            style = {
-                bottom: defaultTop,
-                right: leftDefault
-            };
-            if (state.size) {
-                animatedItemPosition = x => x.ri(leftDefault).maT(-state.size.height);
-            }
-            break;
-        case "LeftBottom":
-            style = {
-                bottom: defaultTop,
-                left: leftDefault
-            };
-            if (state.size) {
-                animatedItemPosition = x => x.le(leftDefault).maT(-state.size.height);
-            }
-            break;
-        case "LeftTop":
-            style = {
-                top: defaultTop,
-                left: leftDefault
-            };
-            if (state.size) {
-                animatedItemPosition = x => x.le(leftDefault).maT(state.size.height);
-            }
-            break;
-        case "RightTop":
-            style = {
-                top: defaultTop,
-                right: leftDefault
-            };
-            if (state.size) {
-                animatedItemPosition = x => x.ri(leftDefault).maT(state.size.height);
-            }
-            break;
-    }
-    const animatedIItem = !state.visible ? null : (_jsx(AnimatedView, { onLayout: ({ nativeEvent }) => {
+    const itemStyle = React.useMemo(() => {
+        let style = {};
+        let animatedItemPosition = undefined;
+        let leftDefault = 15;
+        let defaultTop = Platform.OS == "web" || props.follow == "Parent" ? 10 : StatusBar.currentHeight ?? 10;
+        switch (props.position) {
+            case "RightBottom":
+                style = {
+                    bottom: defaultTop,
+                    right: leftDefault
+                };
+                if (state.size) {
+                    animatedItemPosition = x => x.ri(leftDefault).maT(-state.size.height);
+                }
+                break;
+            case "LeftBottom":
+                style = {
+                    bottom: defaultTop,
+                    left: leftDefault
+                };
+                if (state.size) {
+                    animatedItemPosition = x => x.le(leftDefault).maT(-state.size.height);
+                }
+                break;
+            case "LeftTop":
+                style = {
+                    top: defaultTop,
+                    left: leftDefault
+                };
+                if (state.size) {
+                    animatedItemPosition = x => x.le(leftDefault).maT(state.size.height);
+                }
+                break;
+            case "RightTop":
+                style = {
+                    top: defaultTop,
+                    right: leftDefault
+                };
+                if (state.size) {
+                    animatedItemPosition = x => x.ri(leftDefault).maT(state.size.height);
+                }
+                break;
+        }
+        return { style, animatedItemPosition };
+    }, [props.position, props.follow, state.size, StatusBar.currentHeight]);
+    const animatedIItem = !state.visible ? null : (_jsx(AnimatedView, { onLayout: mem(({ nativeEvent }) => {
             state.size = nativeEvent.layout;
-        }, style: {
+        }), style: mem({
             transform: [
                 {
                     scaleY: animate.y.interpolate({
@@ -85,8 +88,8 @@ export const Fab = (props) => {
                     })
                 }
             ]
-        }, css: x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(animatedItemPosition), children: _jsx(_Fragment, { children: props.children }) }, state.id + "View"));
-    const view = (_jsxs(React.Fragment, { children: [_jsxs(View, { css: x => x.cls("_fab").joinRight(style).joinRight(props.css), style: props.style, children: [!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null, _jsx(TouchableOpacity, { style: typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined, onPress: () => state.visible = !state.visible, css: x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle)), children: typeof props.prefix == "string" ? _jsx(Text, { css: "fos-xs", children: props.prefix }) : props.prefix }), !["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null] }), _jsx(Blur, { onPress: () => state.visible = false, ifTrue: state.visible && props.blureScreen !== false })] }, state.id));
+        }, animate.y), css: mem(x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(itemStyle.animatedItemPosition), itemStyle.animatedItemPosition), children: props.children }, state.id + "View"));
+    const view = (_jsxs(React.Fragment, { children: [_jsxs(View, { css: mem(x => x.cls("_fab").joinRight(itemStyle.style).joinRight(props.css), props.css, itemStyle.style), style: props.style, children: [!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null, _jsx(TouchableOpacity, { style: typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined, onPress: mem(() => state.visible = !state.visible), css: mem(x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle)), props.prefixContainerStyle), children: typeof props.prefix == "string" ? _jsx(Text, { css: "fos-xs", children: props.prefix }) : props.prefix }), !["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null] }), _jsx(Blur, { onPress: mem(() => state.visible = false), ifTrue: state.visible && props.blureScreen !== false })] }, state.id));
     if (props.follow == "Parent")
         return view;
     return (_jsx(Portal, { children: view }));

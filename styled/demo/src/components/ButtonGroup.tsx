@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "./ReactNativeComponents";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import * as React from "react";
 import { ButtonGroupProps, Size, VirtualScrollerViewRefProps } from "../Typse";
@@ -13,8 +13,9 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         scrollView: undefined as VirtualScrollerViewRefProps | undefined,
         sizes: new Map<number, Size>()
     }).ignore("scrollView", "selectedIndex", "sizes").build();
+    const { mem } = useLocalMemo();
     const timer = useTimer(500);
-    const select = (index: number) => {
+    const select = mem((index: number) => {
         if (!props.selectMultiple)
             state.selectedIndex = [index];
         else {
@@ -24,15 +25,15 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         }
 
         props.onPress?.(state.selectedIndex, props.buttons.filter((x, i) => state.selectedIndex.includes(i)));
-    }
+    }, props.onPress, props.selectMultiple)
 
-    const scrollToItem = () => {
+    const scrollToItem = mem(() => {
         timer(() => {
             if (state.scrollView && state.sizes.size > 0 && state.selectedIndex.length == 1) {
                 state.scrollView.scrollToIndex(state.selectedIndex[0]);
             }
         });
-    }
+    })
 
     React.useEffect(() => {
         state.selectedIndex = props.selectedIndex;
@@ -44,7 +45,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         scrollToItem();
     }, "scrollView", "selectedIndex")
 
-    const getItem = (item: string, index: number) => {
+    const getItem = mem((item: string, index: number) => {
         const itemStyle = props.itemStyle?.(item, index);
 
         return (
@@ -58,30 +59,30 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                 }
             </TouchableOpacity>
         )
-    }
+    }, props.render, props.selectedStyle, props.isVertical, props.scrollable, props.itemStyle)
 
 
-    const cProps = props.scrollable ? { contentContainerStyle: { flex: 0, flexGrow: 1 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }
+    const cProps = mem(props.scrollable ? { contentContainerStyle: { flex: 0, flexGrow: 1 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }, props.scrollable, state.scrollView)
     let numColumns = props.numColumns;
     if (numColumns === 0)
         numColumns = 1;
     return (
-        <View ifTrue={props.ifTrue} css={x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css)} style={props.style}>
+        <View ifTrue={props.ifTrue} css={mem(x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css), props.css)} style={props.style}>
             {props.scrollable ? (
                 <VirtualScroller
                     {...cProps}
                     numColumns={numColumns}
                     itemSize={props.itemSize}
                     items={props.buttons}
-                    renderItem={({ item, index }) => getItem(item, index)}
+                    renderItem={mem(({ item, index }) => getItem(item, index))}
                     horizontal={!props.isVertical}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
-                    ref={c => state.scrollView = c}
-                    updateOn={[...state.selectedIndex, ...(props.updateOn ?? [])]}
+                    ref={mem(c => state.scrollView = c)}
+                    updateOn={mem([...state.selectedIndex, ...(props.updateOn ?? [])], props.selectedIndex, props.updateOn)}
                 />
             ) : (<View {...cProps}>
-                <View style={props.style} css={x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css)}>
+                <View style={props.style} css={mem(x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css), props.isVertical, props.css)}>
                     {
                         props.buttons.map((x, index) => getItem(x, index))
                     }

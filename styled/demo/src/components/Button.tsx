@@ -2,33 +2,36 @@ import { TouchableOpacity, Text } from "./ReactNativeComponents";
 import * as React from "react";
 import { ButtonProps } from "../Typse";
 import { ifSelector, RemoveProps } from "../config";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
+import { Platform } from "react-native";
 
 export const Button = (props: ButtonProps) => {
     const [shadow, setShadow] = React.useState("sh-sm");
     const disabled = ifSelector(props.disabled);
     const timer = useTimer(props.whilePressedDelay ?? 300);
     const pressableProps = { ...props };
-    const onPress = (event: any) => {
+    const { mem } = useLocalMemo();
+    const onPress = mem((event: any) => {
         timer.clear();
         event.preventDefault();
         event.stopPropagation();
         props.onPress(event);
-    }
+    }, props.onPress)
 
-    const onLongPress = (event: any) => {
+    const onLongPress = mem((event: any) => {
         props.onLongPress?.(event);
         const fn = () => {
             props.whilePressed();
             timer(fn);
         }
         fn();
-    }
+    }, props.onLongPress, props.whilePressed);
 
-    const onPressOut = (event) => {
+    const onPressOut = mem((event) => {
         props.onPressOut?.(event);
         timer.clear();
-    }
+    }, props.onPressOut);
+
 
     if (disabled === true) {
         RemoveProps(pressableProps, "onPress", "onLongPress", "onPressIn", "onPressOut");
@@ -39,24 +42,25 @@ export const Button = (props: ButtonProps) => {
         pressableProps.onLongPress = onLongPress;
         pressableProps.onPressOut = onPressOut;
     }
-
-    const onMouseEnter = (event: any) => {
-        setShadow("sh-md")
+    const onMouseEnter = mem((event: any) => {
+        if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
+            setShadow("sh-md")
         props.onMouseEnter?.(event)
-    }
+    }, props.onMouseEnter, shadow);
 
-    const onMouseLeave = (event: any) => {
-        setShadow("sh-sm");
+    const onMouseLeave = mem((event: any) => {
+        if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
+            setShadow("sh-sm");
         props.onMouseLeave?.(event);
-    }
+    }, props.onMouseLeave, shadow);
 
 
 
     return (
         <TouchableOpacity inspectDisplayName={"Button"} {...pressableProps}
-            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled"))}>
+            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={mem(x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled)}>
             {props.icon}
-            <Text ifTrue={props.text != undefined} css={x => x.cls("fos-xs").joinRight(props.textCss)}>{props.text}</Text>
+            <Text ifTrue={props.text != undefined} css={mem(x => x.cls("fos-xs").joinRight(props.textCss), props.textCss)}>{props.text}</Text>
         </TouchableOpacity>
     )
 

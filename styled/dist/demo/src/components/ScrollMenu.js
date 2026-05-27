@@ -2,7 +2,7 @@ import { jsx as _jsx } from "react/jsx-runtime";
 import StateBuilder from "../States";
 import { View, AnimatedScrollView } from "./ReactNativeComponents";
 import * as React from "react";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
 import { globalData } from "../theme/ThemeContext";
 import { ReadyView } from "./ReadyView";
 export const ScrollMenu = React.memo((props) => {
@@ -14,9 +14,10 @@ export const ScrollMenu = React.memo((props) => {
             scrollEnabled: true
         },
     }).ignore("size", "scrollView", "private").build();
+    const { mem } = useLocalMemo();
     const timer = useTimer(300);
     const scrollToTimer = useTimer(100);
-    const onScroll = (event) => {
+    const onScroll = mem((event) => {
         if (!state.scrollView || !state.private.scrollEnabled)
             return;
         const { contentOffset } = event.nativeEvent;
@@ -33,8 +34,8 @@ export const ScrollMenu = React.memo((props) => {
             }
             scrollto();
         });
-    };
-    const scrollto = (animate = true) => {
+    }, props.scrollViewProps?.onScroll, props.horizontal);
+    const scrollto = mem((animate = true) => {
         //   state.private.scrollEnabled = false;
         scrollToTimer(() => {
             if (!state.scrollView)
@@ -48,7 +49,7 @@ export const ScrollMenu = React.memo((props) => {
                 // state.scrollEnabled = true;
             }
         });
-    };
+    }, onScroll);
     React.useEffect(() => {
         if (state.selectedIndex != props.selectedIndex)
             state.selectedIndex = props.selectedIndex;
@@ -62,21 +63,22 @@ export const ScrollMenu = React.memo((props) => {
             scrollto(false);
         });
     }, "screen");
-    return (_jsx(ReadyView, { ifTrue: props.ifTrue, onLayout: ({ nativeEvent }) => {
+    const itemStyle = mem({
+        minWidth: state.size?.width,
+        minHeight: state.size?.height,
+        maxHeight: state.size?.height,
+        maxWidth: state.size?.width
+    }, state.size, state.size);
+    return (_jsx(ReadyView, { ifTrue: props.ifTrue, onLayout: mem(({ nativeEvent }) => {
             //  if (!state.size)
             state.size = nativeEvent.layout;
-        }, css: x => x.joinLeft("wi-100% he-100% fl-1").joinRight(props.css), style: props.style, children: _jsx(AnimatedScrollView, { ...props.scrollViewProps, onScrollBeginDrag: () => state.private.scrollEnabled = false, onScrollEndDrag: () => state.private.scrollEnabled = true, horizontal: props.horizontal, decelerationRate: .5, disableIntervalMomentum: false, contentContainerStyle: [{
+        }), css: mem(x => x.joinLeft("wi-100% he-100% fl-1").joinRight(props.css), props.css), style: props.style, children: _jsx(AnimatedScrollView, { ...props.scrollViewProps, onScrollBeginDrag: mem(() => state.private.scrollEnabled = false), onScrollEndDrag: mem(() => state.private.scrollEnabled = true), horizontal: props.horizontal, decelerationRate: .5, disableIntervalMomentum: false, contentContainerStyle: mem([{
                     height: props.horizontal ? undefined : `${(props.children.length * 100)}%`,
                     width: !props.horizontal ? undefined : `${(props.children.length * 100)}%`,
-                }], onScroll: onScroll, ref: c => {
+                }], props.horizontal, props.children.length), onScroll: onScroll, ref: mem(c => {
                 state.scrollView = c;
                 if (state.selectedIndex > 0)
                     scrollto();
-            }, children: props.children.map((x, i) => (_jsx(View, { style: {
-                    minWidth: state.size?.width,
-                    minHeight: state.size?.height,
-                    maxHeight: state.size?.height,
-                    maxWidth: state.size?.width
-                }, css: "fl-1 scrollMenuItem", children: x }, i))) }) }));
+            }, scrollto), children: props.children.map((x, i) => (_jsx(View, { style: itemStyle, css: "fl-1 scrollMenuItem", children: x }, i))) }) }));
 });
 //# sourceMappingURL=ScrollMenu.js.map

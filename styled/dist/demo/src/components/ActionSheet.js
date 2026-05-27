@@ -1,12 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { View, AnimatedView, TouchableOpacity } from "./ReactNativeComponents";
-import { InternalThemeContext, globalData } from "../theme/ThemeContext";
-import { useAnimate, useTimer } from "../hooks";
+import { globalData } from "../theme/ThemeContext";
+import { useAnimate, useLocalMemo, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform } from "react-native";
 import { newId, proc } from "../config";
 import * as React from "react";
-import { useContext } from "react";
 import { PanResponder } from "react-native";
 import { Blur } from "./Blur";
 import { Portal } from "./Portal";
@@ -26,6 +25,7 @@ export const ActionSheet = (props) => {
             show: false
         }
     })).ignore("refItem").build();
+    const { mem } = useLocalMemo();
     let getHeight = () => {
         let h = props.size ?? "50%";
         if (props.size == "content") {
@@ -37,9 +37,7 @@ export const ActionSheet = (props) => {
         let value = Math.min(h, proc(isVertical ? globalData.containerSize.height : globalData.containerSize.width, 90));
         return value;
     };
-    let context = useContext(InternalThemeContext);
     const timer = useTimer(100);
-    const renderUpdateTimer = useTimer(100);
     const { animateY, animateX, animate, animating, currentValue } = useAnimate({
         y: 0,
         x: 0,
@@ -137,14 +135,14 @@ export const ActionSheet = (props) => {
         return x => x.joinLeft("zi-5 maw-99% ._overflow mat-5 bac-transparent").joinRight(props.css).zI(5).importantValue();
     }, [props.css]);
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;
-    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: {
+    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: mem({
             backgroundColor: "transparent",
             ...handleStyle
-        }, css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: (e) => {
+        }, position, isVertical), css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: mem((e) => {
             state.refItem.isTouched = true;
-        }, children: _jsx(TouchableOpacity, { onPress: () => {
-                toggle(false);
-            }, css: !isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button" }) }));
+        }), children: _jsx(TouchableOpacity, { onPress: mem(() => {
+                state.isVisible = false;
+            }), css: !isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button" }) }));
     if (!state.refItem.panResponse) {
         state.refItem.panResponse =
             PanResponder.create({
@@ -211,30 +209,28 @@ export const ActionSheet = (props) => {
         });
     }
     let zIndex = globalData.portals.elems.has(state.id) ? globalData.portals.keys.indexOf(state.id) : globalData.portals.totalItems;
-    return (_jsx(Portal, { visible: state.isVisible, children: _jsxs(View, { inspectDisplayName: "ActionSheetContainer", css: `co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`, children: [_jsx(Blur, { style: {
+    return (_jsx(Portal, { visible: state.isVisible, children: _jsxs(View, { inspectDisplayName: "ActionSheetContainer", css: `co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`, children: [_jsx(Blur, { style: mem({
                         opacity: blurAnimation.animate.x.interpolate({
                             inputRange: [0, 1],
                             outputRange: [0, .5]
                         })
-                    }, onPress: () => {
+                    }, blurAnimation.animate.x), onPress: mem(() => {
                         if (!props.disableBlurClick)
-                            toggle(false);
-                    }, css: "zi:1" }), _jsx(AnimatedView, { inspectDisplayName: "ActionSheet", onTouchStart: () => {
-                        //state.refItem.isTouched = true;
-                    }, onTouchEnd: (event) => {
+                            state.isVisible = false;
+                    }, props.disableBlurClick), css: "zi:1" }), _jsx(AnimatedView, { inspectDisplayName: "ActionSheet", onTouchEnd: mem((event) => {
                         state.refItem.isTouched = false;
-                    }, css: `_actionSheet _actionSheet_${position} zi-2 ActionSheet`, style: [
+                    }), css: `_actionSheet _actionSheet_${position} zi-2 ActionSheet`, style: [
                         {
                             width: !isVertical ? getHeight() : "99%",
                             height: isVertical ? getHeight() : "100%",
                             transform: [transform]
                         },
-                    ], ...state.refItem.panResponse.panHandlers, children: _jsxs(View, { inspectDisplayName: "ActionSheetContent", style: {
+                    ], ...state.refItem.panResponse.panHandlers, children: _jsxs(View, { inspectDisplayName: "ActionSheetContent", style: mem({
                             flexDirection: !isVertical ? "row" : undefined
-                        }, css: "wi:100% he:100% pa:10 flex:1 ActionSheetContent", children: [position == "Bottom" || position == "Right" ? handle : null, _jsx(View, { ifTrue: state.refItem.show || !props.lazyLoading, css: _css, style: [(props.size != "content" ? {
+                        }, isVertical), css: "wi:100% he:100% pa:10 flex:1 ActionSheetContent", children: [position == "Bottom" || position == "Right" ? handle : null, _jsx(View, { ifTrue: state.refItem.show || !props.lazyLoading, css: _css, style: mem([(props.size != "content" ? {
                                         flex: 1,
                                         flexGrow: 1
-                                    } : undefined)], onLayout: ({ nativeEvent }) => {
+                                    } : undefined)], props.size), onLayout: mem(({ nativeEvent }) => {
                                     if (props.size == "content") {
                                         state.batch(() => {
                                             state.size = nativeEvent.layout;
@@ -242,6 +238,6 @@ export const ActionSheet = (props) => {
                                             state.size.width += 50;
                                         });
                                     }
-                                }, children: props.children }), position == "Top" || position == "Left" ? handle : null] }) })] }) }));
+                                }), children: props.children }), position == "Top" || position == "Left" ? handle : null] }) })] }) }));
 };
 //# sourceMappingURL=ActionSheet.js.map

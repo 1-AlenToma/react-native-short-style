@@ -1,7 +1,7 @@
 import * as React from "react";
 import { AnimatedView, TouchableOpacity, View } from "./ReactNativeComponents";
 import { globalData, InternalThemeContext } from "../theme/ThemeContext";
-import { useAnimate, useTimer } from "../hooks";
+import { useAnimate, useLocalMemo, useTimer } from "../hooks";
 import StateBuilder from "../States";
 import { Easing, Platform, ViewStyle } from "react-native";
 import { newId, optionalStyle } from "../config";
@@ -13,9 +13,8 @@ import { Portal } from "./Portal";
 
 
 export const Modal = (props: ModalProps) => {
-    const context = React.useContext(InternalThemeContext);
     const transform = React.useRef<any>({}).current;
-    const renderUpdateTimer = useTimer(100)
+    const {mem} = useLocalMemo();
     const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
         easing: props.easing ?? Easing.bounce
@@ -44,7 +43,7 @@ export const Modal = (props: ModalProps) => {
                 console.error(e)
             }
         });
-    };
+    }
 
     React.useEffect(() => {
         if (!state.isVisible || props.isVisible)
@@ -68,28 +67,28 @@ export const Modal = (props: ModalProps) => {
     let zIndex = globalData.portals.elems.has(state.id) ? globalData.portals.keys.indexOf(state.id) : globalData.portals.totalItems;
     return (
         <Portal visible={state.isVisible}>
-            <View inspectDisplayName="ModalContainer" css="_blur op:1 bac:transparent fl:1 ModalContainer" style={{ zIndex: zIndex + 300 }}>
-                <Blur style={{
+            <View inspectDisplayName="ModalContainer" css="_blur op:1 bac:transparent fl:1 ModalContainer" style={mem({ zIndex: zIndex + 300 }, zIndex)}>
+                <Blur style={mem({
                     opacity: animate.y
-                }} onPress={props.disableBlurClick ? undefined : () => {
-                    toggle(false);
-                }} css="_blur zi:1" />
+                }, animate.y)} onPress={mem(props.disableBlurClick ? undefined : () => {
+                    state.isVisible = false
+                }, props.disableBlurClick)} css="_blur zi:1" />
                 <AnimatedView inspectDisplayName="Modal" {...props}
-                    css={x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css)}
-                    style={[...style,
+                    css={mem(x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css), props.css)}
+                    style={mem([...style,
                     {
                         transform: transform.scale ? [transform] : undefined,
                         opacity: transform.opacity ? transform.opacity : undefined
                     }
-                    ]}>
-                    <View ifTrue={props.addCloser == true} css={x => x.cls("_modalClose").baC(".co-transparent")}>
+                    ], props.style)}>
+                    <View ifTrue={props.addCloser == true} css={mem(x => x.cls("_modalClose").baC(".co-transparent"))}>
                         <Button
-                            onPress={() => toggle(false)}
+                            onPress={mem(() => state.isVisible = false)}
                             css={
-                                x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0)
-                            } icon={<Icon type="AntDesign" name="close" size={15} />} />
+                                mem(x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0))
+                            } icon={mem(<Icon type="AntDesign" name="close" size={15} />)} />
                     </View>
-                    <View inspectDisplayName="ModalContent" css={x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10))}>
+                    <View inspectDisplayName="ModalContent" css={mem(x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), props.addCloser)}>
                         {props.children}
                     </View>
                 </AnimatedView>

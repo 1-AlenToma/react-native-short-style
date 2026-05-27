@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import StateBuilder from "react-smart-state";
-import { ButtonGroup } from "../src";
+import { ButtonGroup, useLocalMemo } from "../src";
 import { Block } from "./Block";
 const colors = [
     {
@@ -58,6 +58,7 @@ export const ButtonGroupView = () => {
     const state = StateBuilder({
         selectedButtons: [8]
     }).build();
-    return (_jsx(Block, { style: { width: 300, minHeight: 200 }, title: 'ButtonGroup', children: _jsx(ButtonGroup, { onPress: (btns) => state.selectedButtons = btns, numColumns: 2, scrollable: true, isVertical: true, buttons: colors, selectedIndex: state.selectedButtons }) }));
+    const { mem } = useLocalMemo();
+    return (_jsx(Block, { style: { width: 300, minHeight: 200 }, title: 'ButtonGroup', children: _jsx(ButtonGroup, { onPress: mem((btns) => state.selectedButtons = btns), numColumns: 2, scrollable: true, isVertical: true, buttons: colors, selectedIndex: state.selectedButtons }) }));
 };
 //# sourceMappingURL=ButtonGroupView.js.map

@@ -1,5 +1,5 @@
 import StateBuilder from "react-smart-state";
-import { ActionSheet, AlertDialog, Button, Modal, ScrollView, Text, TouchableOpacity, View } from "../src";
+import { ActionSheet, AlertDialog, Button, Modal, ScrollView, Text, TouchableOpacity, useLocalMemo, View } from "../src";
 import { Block } from "./Block";
 import { BlockContainer } from "./BlockContainer";
 import { Platform } from "react-native";
@@ -17,13 +17,13 @@ export const ModalView = () => {
             childVis: false
         }
     }).build();
+    const { mem } = useLocalMemo();
 
-
-    const Alert = () => {
+    const Alert = mem(() => {
         AlertDialog.alert({ message: "This a test Text for alert dialog", title: "Success", css: x => x.wi(Platform.OS == "web" ? "30%" : "80%") });
-    }
+    })
 
-    const Toast = (type: any) => {
+    const Toast = mem((type: any) => {
         AlertDialog.toast({
             message: "Loaders are enabled by default. Use `loader`, `loaderBg` to change the default behavior",
             title: type,
@@ -31,10 +31,10 @@ export const ModalView = () => {
             loader: true,
             type: type
         });
-    }
+    });
 
 
-    const Confirm = async () => {
+    const Confirm = mem(async () => {
         let answer = await AlertDialog.confirm({
             message: "Deleting the post will remove it permanently and cannot be undone. Please confirm if you want to proceed.",
             title: "Are you sure you want to delete this post?",
@@ -42,53 +42,53 @@ export const ModalView = () => {
         });
 
         alert(answer)
-    }
+    })
 
     let info = `wi:${Platform.OS == "web" ? "30%" : "80%"}`
 
     return (
         <BlockContainer>
             <Block title="Modal Example">
-                <Button onPress={() => state.modal1 = true} text="Show Modal" />
-                <Modal animationStyle="Opacity" isVisible={state.modal1} addCloser={true} onHide={() => state.modal1 = false}>
+                <Button onPress={mem(() => state.modal1 = true)} text="Show Modal" />
+                <Modal animationStyle="Opacity" isVisible={state.modal1} addCloser={true} onHide={mem(() => state.modal1 = false)}>
                     <Text>this is modal 1</Text>
-                    <Button onPress={() => state.modal2 = true} text="Show Modal 2" />
+                    <Button onPress={mem(() => state.modal2 = true)} text="Show Modal 2" />
                 </Modal>
                 <Modal css={info} isVisible={state.modal2} onHide={() => state.modal2 = false}>
-                    <Text css={x => x.foS(12).co("red")}>this is modal 2</Text>
+                    <Text css={mem(x => x.foS(12).co("red"))}>this is modal 2</Text>
                 </Modal>
             </Block>
 
             <Block title="ActionSheet">
-                <Button onPress={() => {
+                <Button onPress={mem(() => {
                     state.actionSheet.position = "Bottom";
                     state.actionSheet.visible = true
-                }} text="ActionSheet Bottom" />
+                })} text="ActionSheet Bottom" />
 
-                <Button onPress={() => {
+                <Button onPress={mem(() => {
                     state.actionSheet.position = "Top";
                     state.actionSheet.visible = true
-                }} text="ActionSheet Top" />
+                })} text="ActionSheet Top" />
 
-                <Button onPress={() => {
+                <Button onPress={mem(() => {
                     state.actionSheet.position = "Left";
                     state.actionSheet.visible = true
-                }} text="ActionSheet Left" />
+                })} text="ActionSheet Left" />
 
-                <Button onPress={() => {
+                <Button onPress={mem(() => {
                     state.actionSheet.position = "Right";
                     state.actionSheet.visible = true
-                }} text="ActionSheet Right" />
-                <Modal css="he-80% wi-80% dialogtest" isVisible={state.actionSheet.childVis} onHide={() => state.actionSheet.childVis = false}>
+                })} text="ActionSheet Right" />
+                <Modal css="he-80% wi-80% dialogtest" isVisible={state.actionSheet.childVis} onHide={mem(() => state.actionSheet.childVis = false)}>
                     <Text>this is a test</Text>
                 </Modal>
-                <ActionSheet position={state.actionSheet.position} size={Platform.OS == "web" ? "30%" : "50%"} isVisible={state.actionSheet.visible} onHide={() => state.actionSheet.visible = false}>
+                <ActionSheet position={state.actionSheet.position} size={Platform.OS == "web" ? "30%" : "50%"} isVisible={state.actionSheet.visible} onHide={mem(() => state.actionSheet.visible = false)}>
                     <View css="fl-1">
 
-                        <ScrollView style={{ maxHeight: "95%" }}>
+                        <ScrollView style={mem({ maxHeight: "95%" })}>
                             {
 
-                                ["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
+                                mem(["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
                                     <TouchableOpacity onPress={async () => {
                                         if (await AlertDialog.confirm("Close ActionSheet"))
                                             state.actionSheet.visible = false;
@@ -96,7 +96,7 @@ export const ModalView = () => {
                                     }} css="actionButton" key={x} >
                                         <Text>{x}</Text>
                                     </TouchableOpacity>
-                                ))
+                                )))
                             }
                         </ScrollView>
                     </View>
