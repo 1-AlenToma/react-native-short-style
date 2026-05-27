@@ -1,14 +1,13 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import * as React from "react";
 import { CreateView } from "./helper";
-import { useLocalMemo, useTimer } from "../hooks";
+import { useTimer } from "../hooks";
 import { flatStyle } from "../config";
 import { globalData } from "../theme/ThemeContext";
 let styledItems = {};
 export const Icon = (props) => {
     const [flash, setFlash] = React.useState(undefined);
-    const timer = useTimer(1000);
-    const { mem } = useLocalMemo();
+    const timer = useTimer(props.flashSpeed ?? 1000);
     let TypeIcon = globalData.icons[props.type];
     if (TypeIcon == undefined) {
         console.warn(`Icon type ${props.type} not found`, "please set ThemeContainer.icons to your exported icons");
@@ -24,9 +23,12 @@ export const Icon = (props) => {
             else
                 setFlash(props.color);
         });
-    let stl = mem(flatStyle(props.style), props.style);
-    if (flash)
-        stl.color = flash;
+    let stl = React.useMemo(() => {
+        let d = flatStyle(props.style);
+        if (flash)
+            d.color = flash;
+        return d;
+    }, [props.style, flash]);
     return (_jsx(Ico, { ...props, style: stl }));
 };
 //# sourceMappingURL=Icon.js.map

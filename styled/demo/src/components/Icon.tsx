@@ -8,8 +8,7 @@ import { globalData } from "../theme/ThemeContext";
 let styledItems = {};
 export const Icon = (props: IConProps) => {
     const [flash, setFlash] = React.useState<any>(undefined);
-    const timer = useTimer(1000);
-    const { mem } = useLocalMemo();
+    const timer = useTimer(props.flashSpeed ?? 1000);
     let TypeIcon = globalData.icons[props.type];
     if (TypeIcon == undefined) {
         console.warn(`Icon type ${props.type} not found`, "please set ThemeContainer.icons to your exported icons");
@@ -25,9 +24,13 @@ export const Icon = (props: IConProps) => {
             else setFlash(props.color)
         })
 
-    let stl: any = mem(flatStyle(props.style), props.style);
-    if (flash)
-        stl.color = flash;
+    let stl: any = React.useMemo(() => {
+        let d = flatStyle(props.style);
+        if (flash)
+            d.color = flash;
+        return d;
+    }, [props.style, flash]);
+
     return (
         <Ico {...props} style={stl} />
     );

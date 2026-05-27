@@ -129,6 +129,7 @@ export type IConProps = StyledProps & {
     size?: number;
     borderRadius?: number;
     flash?: ColorValue;
+    flashSpeed?: number;
     /**
      * Styles applied to the icon only
      * Good for setting margins or a different color.
