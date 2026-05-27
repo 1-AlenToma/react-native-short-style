@@ -224,9 +224,9 @@ export type ActionSheetProps = Omit<ModalProps, "animationStyle"> & {
     position?: "Bottom" | "Top" | "Left" | "Right";
 };
 export type AlertViewAlertProps = {
-    message: string;
+    message: string | React.ReactNode;
     size?: CssSize;
-    title?: string;
+    title?: React.ReactNode;
     okText?: string;
     css?: CSS_String;
 };

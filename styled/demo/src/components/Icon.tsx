@@ -10,14 +10,7 @@ export const Icon = (props: IConProps) => {
     const [flash, setFlash] = React.useState<any>(undefined);
     const timer = useTimer(props.flashSpeed ?? 1000);
     let TypeIcon = globalData.icons[props.type];
-    if (TypeIcon == undefined) {
-        console.warn(`Icon type ${props.type} not found`, "please set ThemeContainer.icons to your exported icons");
-        return null;
-    }
-    TypeIcon.displayName = props.type;
-    let Ico: (props: IConProps) => React.ReactNode = styledItems[props.type] ?? (styledItems[props.type] = CreateView<any, any>(TypeIcon, "Icon"));
-    // console.log(Ico, props.type)
-    if (props.flash)
+    if (props.flash && TypeIcon)
         timer(() => {
             if (flash != props.flash)
                 setFlash(props.flash)
@@ -30,6 +23,15 @@ export const Icon = (props: IConProps) => {
             d.color = flash;
         return d;
     }, [props.style, flash]);
+
+    if (TypeIcon == undefined) {
+        console.warn(`Icon type ${props.type} not found`, "please set ThemeContainer.icons to your exported icons");
+        return null;
+    }
+    TypeIcon.displayName = props.type;
+    let Ico: (props: IConProps) => React.ReactNode = styledItems[props.type] ?? (styledItems[props.type] = CreateView<any, any>(TypeIcon, "Icon"));
+    // console.log(Ico, props.type)
+
 
     return (
         <Ico {...props} style={stl} />

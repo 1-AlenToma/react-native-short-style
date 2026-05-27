@@ -25,6 +25,6 @@ export const AlertView = () => {
                             state.size.height += data.callBack ? 30 : 0;
                             state.size.height = Math.max(state.size.height, 200);
                         }
-                    }, children: [_jsx(Text, { css: `fos-md fow:bold`, ifTrue: data.title != undefined, children: data.title }), _jsx(Text, { css: `fos-${data.size ?? "sm"} co:gray pal:2`, children: data.message })] }), _jsxs(View, { ifTrue: data.callBack != undefined, css: "alertViewButtonContainer", children: [_jsx(Button, { text: data.yesText ?? "Yes", onPress: () => answer(true) }), _jsx(Button, { text: data.cancelText ?? "No", onPress: () => answer(false) })] }), _jsx(View, { ifTrue: data.callBack == undefined, css: "alertViewButtonContainer", children: _jsx(Button, { text: data.okText ?? "Ok", onPress: () => answer(false) }) })] }) }));
+                    }, children: [_jsx(Text, { css: `fos-md fow:bold`, ifTrue: data.title != undefined, children: data.title }), _jsx(Text, { css: `fos-${data.size ?? "sm"} co:gray pal:2`, children: data.message ?? "" })] }), _jsxs(View, { ifTrue: data.callBack != undefined, css: "alertViewButtonContainer", children: [_jsx(Button, { text: data.yesText ?? "Yes", onPress: () => answer(true) }), _jsx(Button, { text: data.cancelText ?? "No", onPress: () => answer(false) })] }), _jsx(View, { ifTrue: data.callBack == undefined, css: "alertViewButtonContainer", children: _jsx(Button, { text: data.okText ?? "Ok", onPress: () => answer(false) }) })] }) }));
 };
 //# sourceMappingURL=AlertView.js.map

@@ -42,7 +42,7 @@ export const AlertView = () => {
                         }
                     }}>
                     <Text css={`fos-md fow:bold`} ifTrue={data.title != undefined}>{data.title}</Text>
-                    <Text css={`fos-${data.size ?? "sm"} co:gray pal:2`}>{data.message}</Text>
+                    <Text css={`fos-${data.size ?? "sm"} co:gray pal:2`}>{data.message ?? ""}</Text>
                 </View>
                 <View ifTrue={data.callBack != undefined} css="alertViewButtonContainer">
                     <Button text={data.yesText ?? "Yes"} onPress={() => answer(true)} />
