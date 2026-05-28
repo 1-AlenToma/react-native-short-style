@@ -170,8 +170,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;
     const handle = (<Handle
         activeOpacity={1}
-        onPressIn={() => state.refItem.isTouched = true}
-        onPressOut={() => state.refItem.isTouched = false}
+        onPressIn={mem(() => state.refItem.isTouched = true)}
+        onPressOut={mem(() => state.refItem.isTouched = false)}
         style={mem({
             backgroundColor: "transparent",
             ...handleStyle

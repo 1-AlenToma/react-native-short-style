@@ -47,7 +47,7 @@ export class TabView extends React.PureComponent<TabItemProps, {}> {
 const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     const context = React.useContext(TabBarContext);
     const position = context.props.position ?? "Bottom";
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
 
     let menuItems = children.filter(
         x => ifSelector(x.props.ifTrue) !== false
@@ -75,7 +75,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         ), state.manuItemSize.width);
     }, "manuItemSize");
 
-    let header = mem({
+    let header = memo(() => ({
         style: optionalStyle(context.props.header?.style),
         textStyle: optionalStyle(context.props.header?.textStyle),
         selectedStyle: optionalStyle(context.props.header?.selectedStyle),
@@ -85,7 +85,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
             container: optionalStyle(context.props.header?.overlayStyle?.container),
             content: optionalStyle(context.props.header?.overlayStyle?.content)
         }
-    }, context.props.header)
+    }), context.props.header)
 
     const getIcon = mem((icon: IConProps & MenuIcon | undefined, style: any, index: number) => {
         if (!icon)
@@ -116,7 +116,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     let border = (
         <AnimatedView
             css={header.overlayStyle.container.c}
-            style={mem([
+            style={memo(() => [
                 {
                     backgroundColor: "#e5313a",
                 },
@@ -142,7 +142,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                 onTouchStart={mem(e => {
                     context.onMenuChange(state.selectedIndex);
                 })}
-                style={mem([
+                style={memo(() => [
                     header.overlayStyle.content.o,
                     {
                         width: "100%",
@@ -224,7 +224,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
 export const TabBar = (props: TabBarProps) => {
     const children = React.useMemo(() => Array.isArray(props.children) ? props.children : [props.children], [props.children]);
     const position = props.position ?? "Bottom";
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const visibleChildren = children.filter(
         x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon)
     );
@@ -486,13 +486,13 @@ export const TabBar = (props: TabBarProps) => {
             onLayout={mem(async ({ nativeEvent }) => {
                 state.size = nativeEvent.layout;
                 windowChanged();
-            }, windowChanged)} css={React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css])} style={props.style}>
+            }, windowChanged)} css={mem(x => x.cls("_tabBar").joinRight(props.css), props.css)} style={props.style}>
             {position === "Top" ? (
                 tabMenu
             ) : null}
             <AnimatedView
                 css={`_tabBarContainer`}
-                style={mem([
+                style={memo(()=> [
                     (visibleChildren.length <= 1 ? {
                         minHeight: null,
                         height: null

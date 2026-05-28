@@ -10,7 +10,7 @@ const ForGroupContext = React.createContext<{ labelPosition: string }>({} as any
 
 export const FormItem = (props: FormItemProps) => {
     const context = React.useContext(ForGroupContext);
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const labelPosition = props.labelPosition ?? context.labelPosition ?? "Top";
     if (ifSelector(props.ifTrue) == false)
         return null;
@@ -19,10 +19,10 @@ export const FormItem = (props: FormItemProps) => {
     const css = "mar:5";
 
     return (
-        <View style={props.style} css={mem(x => x.cls("_formItem", "FormItem").joinRight(props.css), props.css)}>
-            <View css={mem(x => x.flD(labelPosition == "Top" ? "column" : "row").if(labelPosition == "Top", "ali-flex-start", "ali-center juc-space-between"), props.css)}>
+        <View style={props.style} css={memo(() => x => x.cls("_formItem", "FormItem").joinRight(props.css), props.css)}>
+            <View css={memo(() => x => x.flD(labelPosition == "Top" ? "column" : "row").if(labelPosition == "Top", "ali-flex-start", "ali-center juc-space-between"), props.css)}>
                 <View css="fld-row">
-                    <View ifTrue={icon != undefined} css={mem(x => x.maW(20).joinRight(css), props.css)}>
+                    <View ifTrue={icon != undefined} css={memo(() => x => x.maW(20).joinRight(css), props.css)}>
                         {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                     </View>
                     <View ifTrue={props.title != undefined} css={css}>
@@ -34,7 +34,7 @@ export const FormItem = (props: FormItemProps) => {
                         }
                     </ToolTip>
                 </View>
-                <View css={mem(x => x.cls("_formItemCenter", "_formItemCenter" + labelPosition).if(labelPosition == "Top", x => x.wi("100%")), labelPosition)}>
+                <View css={memo(() => x => x.cls("_formItemCenter", "_formItemCenter" + labelPosition).if(labelPosition == "Top", x => x.wi("100%")), labelPosition)}>
                     {props.children}
                 </View>
                 <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={props.info != undefined && labelPosition != "Top"} text={props.info}>

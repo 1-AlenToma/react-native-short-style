@@ -1,23 +1,24 @@
 import * as React from "react";
 import { devToolsHandlerContext } from "../theme/ThemeContext";
+// @ts-ignore: side-effect import for global CSS
 import "../assets/styles.css";
 import { Platform, View } from "react-native";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
 let isResizing = false;
 export const DevtoolsIframe = ({ children }) => {
 
     const resize = React.useRef<HTMLDivElement>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const timer = useTimer(100)
+    const { mem } = useLocalMemo();
 
-    const mouseDown = () => {
+    const mouseDown = mem(() => {
         isResizing = true;
         document.body.style.cursor = "row-resize";
         document.body.style.userSelect = "none";
         containerRef.current.querySelector("iframe").style.pointerEvents = "none";
-    };
+    }, containerRef.current);
 
-    const mouseMove = (e: MouseEvent) => {
+    const mouseMove = mem((e: MouseEvent) => {
         if (!isResizing || !containerRef.current) return;
 
         const parent = containerRef.current.parentElement!;
@@ -30,16 +31,17 @@ export const DevtoolsIframe = ({ children }) => {
         const newHeight = Math.max(200, Math.min(parentRect.height * 0.8, distanceFromBottom));
 
         containerRef.current.style.height = newHeight + "px";
-    };
+    }, containerRef.current)
 
-    const mouseUp = () => {
+    const mouseUp = mem(() => {
         if (isResizing) {
             isResizing = false;
             document.body.style.cursor = "auto";
             document.body.style.userSelect = "auto";
             containerRef.current.querySelector("iframe").style.pointerEvents = "auto";
         }
-    };
+    }, containerRef.current)
+
     if (Platform.OS == "web" && __DEV__)
         React.useEffect(() => {
             document.addEventListener("mousemove", mouseMove);
@@ -51,13 +53,14 @@ export const DevtoolsIframe = ({ children }) => {
         }, []);
     if (__DEV__ && Platform.OS == "web")
         devToolsHandlerContext.hook("data.isOpened", "host", "data.settings.elementSelection", "data.settings.webDevToolsIsOpen");
+   
     if (!devToolsHandlerContext.host || !devToolsHandlerContext.data.isOpened || !__DEV__ || Platform.OS != "web" || !devToolsHandlerContext.data.settings.webDevToolsIsOpen)
         return children;
 
 
     return (
-        <View style={{ flex: 1, height: "100%", display: "flex", position: "relative" }}>
-            <View style={{ flex: 1 }}>
+        <View style={mem({ flex: 1, height: "100%", display: "flex", position: "relative" })}>
+            <View style={mem({ flex: 1 })}>
                 {children}
             </View>
             <div ref={containerRef} className="iframeDevContainer">

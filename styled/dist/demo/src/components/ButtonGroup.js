@@ -10,7 +10,7 @@ export const ButtonGroup = (props) => {
         scrollView: undefined,
         sizes: new Map()
     }).ignore("scrollView", "selectedIndex", "sizes").build();
-    const { mem } = useLocalMemo();
+    const { mem, memo, memKey, memoKey } = useLocalMemo();
     const timer = useTimer(500);
     const select = mem((index) => {
         if (!props.selectMultiple)
@@ -40,12 +40,12 @@ export const ButtonGroup = (props) => {
     }, "scrollView", "selectedIndex");
     const getItem = mem((item, index) => {
         const itemStyle = props.itemStyle?.(item, index);
-        return (_jsx(TouchableOpacity, { onLayout: ({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout), onPress: () => select(index), style: [props.scrollable ? { height: "auto" } : { flex: 1 }], css: x => x.cls("_buttonGroupButton", "ButtonGroupButton").if(props.isVertical == true, c => c.wi("100%")).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle)).joinRight(itemStyle?.container), children: props.render ? props.render(item, index) : _jsx(Text, { css: x => x.joinRight(itemStyle?.text).if(state.selectedIndex.includes(index), c => c.joinRight(props.selectedStyle)), children: item }) }, index));
+        return (_jsx(TouchableOpacity, { onLayout: memKey("itemOnlayout", ({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout)), onPress: () => select(index), style: memKey("itemStyle", [props.scrollable ? { height: "auto" } : { flex: 1 }], props.scrollable), css: x => x.cls("_buttonGroupButton", "ButtonGroupButton").if(props.isVertical == true, c => c.wi("100%")).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle)).joinRight(itemStyle?.container), children: props.render ? props.render(item, index) : _jsx(Text, { css: x => x.joinRight(itemStyle?.text).if(state.selectedIndex.includes(index), c => c.joinRight(props.selectedStyle)), children: item }) }, index));
     }, props.render, props.selectedStyle, props.isVertical, props.scrollable, props.itemStyle);
     const cProps = mem(props.scrollable ? { contentContainerStyle: { flex: 0, flexGrow: 1 }, ref: c => state.scrollView = c } : { style: { flex: 1, backgroundColor: "transparent" } }, props.scrollable, state.scrollView);
     let numColumns = props.numColumns;
     if (numColumns === 0)
         numColumns = 1;
-    return (_jsx(View, { ifTrue: props.ifTrue, css: mem(x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css), props.css), style: props.style, children: props.scrollable ? (_jsx(VirtualScroller, { ...cProps, numColumns: numColumns, itemSize: props.itemSize, items: props.buttons, renderItem: mem(({ item, index }) => getItem(item, index)), horizontal: !props.isVertical, showsHorizontalScrollIndicator: false, showsVerticalScrollIndicator: false, ref: mem(c => state.scrollView = c), updateOn: mem([...state.selectedIndex, ...(props.updateOn ?? [])], props.selectedIndex, props.updateOn) })) : (_jsx(View, { ...cProps, children: _jsx(View, { style: props.style, css: mem(x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css), props.isVertical, props.css), children: props.buttons.map((x, index) => getItem(x, index)) }) })) }));
+    return (_jsx(View, { ifTrue: props.ifTrue, css: memo(() => x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css), props.css), style: props.style, children: props.scrollable ? (_jsx(VirtualScroller, { ...cProps, numColumns: numColumns, itemSize: props.itemSize, items: props.buttons, renderItem: mem(({ item, index }) => getItem(item, index)), horizontal: !props.isVertical, showsHorizontalScrollIndicator: false, showsVerticalScrollIndicator: false, ref: mem(c => state.scrollView = c), updateOn: mem([...state.selectedIndex, ...(props.updateOn ?? [])], props.selectedIndex, props.updateOn) })) : (_jsx(View, { ...cProps, children: _jsx(View, { style: props.style, css: memo(() => x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css), props.isVertical, props.css), children: props.buttons.map((x, index) => getItem(x, index)) }) })) }));
 };
 //# sourceMappingURL=ButtonGroup.js.map

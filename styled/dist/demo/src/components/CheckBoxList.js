@@ -79,7 +79,7 @@ export const CheckBox = (props) => {
             prev: props.checked,
         }
     })).ignore("refItem").build();
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const context = React.useContext(CheckBoxContext);
     const checkBoxType = context.checkBoxListProps.checkBoxType ?? props.checkBoxType ?? "CheckBox";
     const labelPostion = props.labelPostion ?? context.checkBoxListProps.labelPostion ?? "Right";
@@ -130,17 +130,17 @@ export const CheckBox = (props) => {
     };
     const activeOpacity = disabled ? .5 : 1;
     const disabledCss = disabled ? "disabled" : "";
-    return (_jsxs(_Fragment, { children: [_jsxs(TouchableOpacity, { activeOpacity: activeOpacity, style: props.style, css: mem(`_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css), ifTrue: checkBoxType == "CheckBox", onPress: mem(() => {
+    return (_jsxs(_Fragment, { children: [_jsxs(TouchableOpacity, { activeOpacity: activeOpacity, style: props.style, css: memo(() => `_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css), ifTrue: checkBoxType == "CheckBox", onPress: mem(() => {
                     if (!disabled && !props.onPress)
                         state.checked = !state.checked;
                     props.onPress?.();
-                }, disabled, props.onPress), children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: mem({ backgroundColor: color(state.checked) }, state.checked), css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, type: "AntDesign", css: x => x.co(".co-light"), name: "check", size: 24 }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { style: props.style, css: mem(x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), disabledCss, props.css), ifTrue: checkBoxType == "RadioButton", onPress: mem(() => {
+                }, disabled, props.onPress), children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: memo(() => ({ backgroundColor: color(state.checked) }), state.checked), css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, type: "AntDesign", css: memo(() => x => x.co(".co-light")), name: "check", size: 24 }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { style: props.style, css: memo(() => x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), disabledCss, props.css), ifTrue: checkBoxType == "RadioButton", onPress: mem(() => {
                     if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                         state.checked = !state.checked;
                 }, state.checked, disabled, selectionType), children: [_jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Left", css: "fos-sm", children: props.label }), _jsx(View, { style: mem({ borderRadius: 24, backgroundColor: "transparent" }), css: `_checkBox_${labelPostion}`, children: _jsx(Icon, { ifTrue: state.checked, size: 21, type: "MaterialCommunityIcons", name: "checkbox-blank-circle", color: color(true) }) }), _jsx(Text, { ifTrue: props.label != undefined && labelPostion == "Right", css: "fos-sm", children: props.label })] }), _jsxs(TouchableOpacity, { ifTrue: checkBoxType == "Switch", activeOpacity: activeOpacity, onPress: mem(() => {
                     if (!disabled)
                         state.checked = (!state.checked);
-                }, disabled), style: props.style, css: `fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`, children: [_jsx(Text, { ifTrue: props.label != undefined, css: "fos-sm", style: mem({
+                }, disabled), style: props.style, css: memo(() => `fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css), children: [_jsx(Text, { ifTrue: props.label != undefined, css: "fos-sm", style: mem({
                             flexGrow: 1,
                             maxWidth: "80%",
                             overflow: "hidden"

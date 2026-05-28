@@ -10,13 +10,13 @@ export const Loader = React.forwardRef((props, ref) => {
     const state = StateBuilder({
         loading: props.loading
     }).build();
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     React.useEffect(() => {
         state.loading = props.loading;
     }, [props.loading]);
     setRef(ref, {
         loading: (value) => state.loading = value
     });
-    return (_jsxs(View, { inspectDisplayName: "Loader", style: props.containerProps?.style, css: mem(x => x.joinLeft("wi:100% he:100% flg:1 bac:transparent Loader").joinRight(props.containerProps?.css), props.containerProps?.css), children: [_jsx(Blur, { css: "bor:5 zi:2", ifTrue: props.loading }), _jsxs(View, { ifTrue: props.loading, css: "juc:center ali:center _abc wi:100% he:100% bac:transparent zi:3", children: [_jsx(ActivityIndicator, { color: "white", size: "large", ...props, children: null }), typeof props.text == "string" ? (_jsx(Text, { css: "fos-lg co:white fow:bold", children: props.text })) : props.text] }), _jsx(View, { inspectDisplayName: "LoaderContent", css: 'wi:100% he:100% fl:1 flg:1 zi:1 LoaderContent', children: props.children })] }));
+    return (_jsxs(View, { inspectDisplayName: "Loader", style: props.containerProps?.style, css: memo(() => x => x.joinLeft("wi:100% he:100% flg:1 bac:transparent Loader").joinRight(props.containerProps?.css), props.containerProps?.css), children: [_jsx(Blur, { css: "bor:5 zi:2", ifTrue: props.loading }), _jsxs(View, { ifTrue: props.loading, css: "juc:center ali:center _abc wi:100% he:100% bac:transparent zi:3", children: [_jsx(ActivityIndicator, { color: "white", size: "large", ...props, children: null }), typeof props.text == "string" ? (_jsx(Text, { css: "fos-lg co:white fow:bold", children: props.text })) : props.text] }), _jsx(View, { inspectDisplayName: "LoaderContent", css: 'wi:100% he:100% fl:1 flg:1 zi:1 LoaderContent', children: props.children })] }));
 });
 //# sourceMappingURL=Loader.js.map

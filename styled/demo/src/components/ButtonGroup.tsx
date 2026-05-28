@@ -13,7 +13,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         scrollView: undefined as VirtualScrollerViewRefProps | undefined,
         sizes: new Map<number, Size>()
     }).ignore("scrollView", "selectedIndex", "sizes").build();
-    const { mem } = useLocalMemo();
+    const { mem, memo, memKey, memoKey } = useLocalMemo();
     const timer = useTimer(500);
     const select = mem((index: number) => {
         if (!props.selectMultiple)
@@ -50,9 +50,9 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
 
         return (
             <TouchableOpacity
-                onLayout={({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout)}
+                onLayout={memKey("itemOnlayout", ({ nativeEvent }) => state.sizes.set(index, nativeEvent.layout))}
                 onPress={() => select(index)}
-                style={[props.scrollable ? { height: "auto" } : { flex: 1 }]} key={index}
+                style={memKey("itemStyle", [props.scrollable ? { height: "auto" } : { flex: 1 }], props.scrollable)} key={index}
                 css={x => x.cls("_buttonGroupButton", "ButtonGroupButton").if(props.isVertical == true, c => c.wi("100%")).if(state.selectedIndex.includes(index), c => c.cls("selectedValue").joinRight(props.selectedStyle)).joinRight(itemStyle?.container)}>
                 {
                     props.render ? props.render(item, index) : <Text css={x => x.joinRight(itemStyle?.text).if(state.selectedIndex.includes(index), c => c.joinRight(props.selectedStyle))}>{item}</Text>
@@ -67,7 +67,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
     if (numColumns === 0)
         numColumns = 1;
     return (
-        <View ifTrue={props.ifTrue} css={mem(x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css), props.css)} style={props.style}>
+        <View ifTrue={props.ifTrue} css={memo(()=> x => x.cls("_buttonGroup", "ButtonGroup").joinRight(props.css), props.css)} style={props.style}>
             {props.scrollable ? (
                 <VirtualScroller
                     {...cProps}
@@ -82,7 +82,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
                     updateOn={mem([...state.selectedIndex, ...(props.updateOn ?? [])], props.selectedIndex, props.updateOn)}
                 />
             ) : (<View {...cProps}>
-                <View style={props.style} css={mem(x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css), props.isVertical, props.css)}>
+                <View style={props.style} css={memo(() => x => x.cls("_buttonGroupCenter").if(props.isVertical, c => c.flD("column"), c => c.flD("row")).joinRight(props.css), props.isVertical, props.css)}>
                     {
                         props.buttons.map((x, index) => getItem(x, index))
                     }

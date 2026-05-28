@@ -248,10 +248,11 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
     }, [state.estimatedItemSize, state.containerSize, props.initializeIndex]);
 
     React.useEffect(() => {
+
         if (props.initializeIndex != undefined) {
             state.refItems.ref.scrollToIndex(props.initializeIndex)
         }
-    }, [props.initializeIndex])
+    }, [props.initializeIndex, state.containerSize])
 
     const rowCount = Math.ceil(props.items.length / numColumns);
 
@@ -261,7 +262,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
             itemRows: state.items?.rows ?? new Map(),
             props,
             itemSize
-        }, itemSize, props, state.items?.rows)}>
+        }, itemSize, props, state.items?.rows, state.refItems.ref)}>
             <ScrollView
                 key={state.id}
                 ifTrue={props.ifTrue}
@@ -269,7 +270,9 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 showsVerticalScrollIndicator={props.showsVerticalScrollIndicator}
                 showsHorizontalScrollIndicator={props.showsHorizontalScrollIndicator}
                 horizontal={props.horizontal}
-                ref={c => state.refItems.scrollView = c as any}
+                ref={mem(c => {
+                    state.refItems.scrollView = c as any;
+                })}
                 scrollEventThrottle={props.scrollEventThrottle ?? 16}
                 contentContainerStyle={mem({
                     minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
@@ -309,18 +312,16 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 id={props.id}
                 onLayout={mem(({ nativeEvent }) => {
                     timer(() => {
-                        state.batch(() => {
-                            const { layout } = nativeEvent;
-                            if (
-                                !state.containerSize ||
-                                layout.width !== state.containerSize.width ||
-                                layout.height !== state.containerSize.height
-                            ) {
-                                state.containerSize = layout;
-                            }
-                        });
+                        const { layout } = nativeEvent;
+                        if (
+                            !state.containerSize ||
+                            layout.width !== state.containerSize.width ||
+                            layout.height !== state.containerSize.height
+                        ) {
+                            state.containerSize = layout;
+                        }
                     });
-                })}
+                }, props.initializeIndex)}
             >
                 {state.containerSize && state.items?.children}
             </ScrollView>

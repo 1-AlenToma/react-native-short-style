@@ -10,7 +10,7 @@ export const Button = (props: ButtonProps) => {
     const disabled = ifSelector(props.disabled);
     const timer = useTimer(props.whilePressedDelay ?? 300);
     const pressableProps = { ...props };
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const onPress = mem((event: any) => {
         timer.clear();
         event.preventDefault();
@@ -58,9 +58,9 @@ export const Button = (props: ButtonProps) => {
 
     return (
         <TouchableOpacity inspectDisplayName={"Button"} {...pressableProps}
-            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={mem(x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled)}>
+            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={memo(()=> x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled)}>
             {props.icon}
-            <Text ifTrue={props.text != undefined} css={mem(x => x.cls("fos-xs").joinRight(props.textCss), props.textCss)}>{props.text}</Text>
+            <Text ifTrue={props.text != undefined} css={memo(()=> x => x.cls("fos-xs").joinRight(props.textCss), props.textCss)}>{props.text}</Text>
         </TouchableOpacity>
     )
 

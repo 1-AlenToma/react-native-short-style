@@ -14,7 +14,7 @@ import { Portal } from "./Portal";
 
 export const Modal = (props: ModalProps) => {
     const transform = React.useRef<any>({}).current;
-    const {mem} = useLocalMemo();
+    const {mem, memo} = useLocalMemo();
     const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
         easing: props.easing ?? Easing.bounce
@@ -74,7 +74,7 @@ export const Modal = (props: ModalProps) => {
                     state.isVisible = false
                 }, props.disableBlurClick)} css="_blur zi:1" />
                 <AnimatedView inspectDisplayName="Modal" {...props}
-                    css={mem(x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css), props.css)}
+                    css={memo(()=> x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css), props.css)}
                     style={mem([...style,
                     {
                         transform: transform.scale ? [transform] : undefined,
@@ -86,7 +86,7 @@ export const Modal = (props: ModalProps) => {
                             onPress={mem(() => state.isVisible = false)}
                             css={
                                 mem(x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0))
-                            } icon={mem(<Icon type="AntDesign" name="close" size={15} />)} />
+                            } icon={memo(()=> <Icon type="AntDesign" name="close" size={15} />)} />
                     </View>
                     <View inspectDisplayName="ModalContent" css={mem(x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), props.addCloser)}>
                         {props.children}

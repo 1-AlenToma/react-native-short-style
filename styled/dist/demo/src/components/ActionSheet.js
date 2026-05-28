@@ -135,7 +135,7 @@ export const ActionSheet = (props) => {
         return x => x.joinLeft("zi-5 maw-99% ._overflow mat-5 bac-transparent").joinRight(props.css).zI(5).importantValue();
     }, [props.css]);
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;
-    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: () => state.refItem.isTouched = true, onPressOut: () => state.refItem.isTouched = false, style: mem({
+    const handle = (_jsx(Handle, { activeOpacity: 1, onPressIn: mem(() => state.refItem.isTouched = true), onPressOut: mem(() => state.refItem.isTouched = false), style: mem({
             backgroundColor: "transparent",
             ...handleStyle
         }, position, isVertical), css: !isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle", onTouchStart: mem((e) => {

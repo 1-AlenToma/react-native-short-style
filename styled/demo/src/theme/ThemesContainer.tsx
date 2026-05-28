@@ -8,7 +8,7 @@ import { GestureResponderEvent, Platform, StyleSheet, View as NativeView, Image 
 import { parseSelector } from "../config/CssSelectorParser";
 import { svgSelect } from "../constant";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
 
 const StaticView = () => {
     const [, forceUpdate] = React.useState(0);
@@ -49,6 +49,7 @@ const ThemeInternalContainer = ({ children }: any) => {
     const state = StateBuilder({
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
     }).ignore("containerSize").build();
+    const { memo, mem } = useLocalMemo();
 
 
     const contextValue = React.useMemo(() => ({
@@ -61,7 +62,7 @@ const ThemeInternalContainer = ({ children }: any) => {
     return (
         <InternalThemeContext.Provider value={contextValue}>
             <DevtoolsIframe>
-                <NativeView onLayout={(event) => {
+                <NativeView onLayout={mem((event) => {
                     if (Platform.OS !== "web") {
                         event.target.measure(
                             (x, y, width, height) => {
@@ -79,16 +80,16 @@ const ThemeInternalContainer = ({ children }: any) => {
                         state.containerSize.x = event.nativeEvent.layout.x;
                         globalData.containerSize = state.containerSize;
                     }
-                }} style={{ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }}>
+                })} style={mem({ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" })}>
                     <DevToolLayoutSelector />
                     <StaticView />
                     <ToastView />
                     <AlertView />
-                    <NativeView style={{
+                    <NativeView style={mem({
                         width: "100%",
                         height: "100%",
                         zIndex: 1
-                    }}>
+                    })}>
                         {children}
                     </NativeView>
                 </NativeView>

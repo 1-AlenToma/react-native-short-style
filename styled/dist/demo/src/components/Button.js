@@ -9,7 +9,7 @@ export const Button = (props) => {
     const disabled = ifSelector(props.disabled);
     const timer = useTimer(props.whilePressedDelay ?? 300);
     const pressableProps = { ...props };
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const onPress = mem((event) => {
         timer.clear();
         event.preventDefault();
@@ -48,6 +48,6 @@ export const Button = (props) => {
             setShadow("sh-sm");
         props.onMouseLeave?.(event);
     }, props.onMouseLeave, shadow);
-    return (_jsxs(TouchableOpacity, { inspectDisplayName: "Button", ...pressableProps, onMouseLeave: onMouseLeave, onMouseEnter: onMouseEnter, css: mem(x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled), children: [props.icon, _jsx(Text, { ifTrue: props.text != undefined, css: mem(x => x.cls("fos-xs").joinRight(props.textCss), props.textCss), children: props.text })] }));
+    return (_jsxs(TouchableOpacity, { inspectDisplayName: "Button", ...pressableProps, onMouseLeave: onMouseLeave, onMouseEnter: onMouseEnter, css: memo(() => x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled), children: [props.icon, _jsx(Text, { ifTrue: props.text != undefined, css: memo(() => x => x.cls("fos-xs").joinRight(props.textCss), props.textCss), children: props.text })] }));
 };
 //# sourceMappingURL=Button.js.map

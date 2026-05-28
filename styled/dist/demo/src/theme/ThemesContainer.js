@@ -7,7 +7,7 @@ import { View, AlertView, ToastView, TouchableOpacity, Text } from "../component
 import { Platform, View as NativeView } from "react-native";
 import { parseSelector } from "../config/CssSelectorParser";
 import { DevtoolsIframe } from "../components/DevtoolsIframe";
-import { useTimer } from "../hooks";
+import { useLocalMemo, useTimer } from "../hooks";
 const StaticView = () => {
     const [, forceUpdate] = React.useState(0);
     const timer = useTimer(10);
@@ -34,10 +34,11 @@ const ThemeInternalContainer = ({ children }) => {
     const state = StateBuilder({
         containerSize: { height: 0, width: 0, y: 0, x: 0 }
     }).ignore("containerSize").build();
+    const { memo, mem } = useLocalMemo();
     const contextValue = React.useMemo(() => ({
         containerSize: () => state.containerSize
     }), []);
-    return (_jsx(InternalThemeContext.Provider, { value: contextValue, children: _jsx(DevtoolsIframe, { children: _jsxs(NativeView, { onLayout: (event) => {
+    return (_jsx(InternalThemeContext.Provider, { value: contextValue, children: _jsx(DevtoolsIframe, { children: _jsxs(NativeView, { onLayout: mem((event) => {
                     if (Platform.OS !== "web") {
                         event.target.measure((x, y, width, height) => {
                             state.containerSize.height = height;
@@ -54,11 +55,11 @@ const ThemeInternalContainer = ({ children }) => {
                         state.containerSize.x = event.nativeEvent.layout.x;
                         globalData.containerSize = state.containerSize;
                     }
-                }, style: { backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }, children: [_jsx(DevToolLayoutSelector, {}), _jsx(StaticView, {}), _jsx(ToastView, {}), _jsx(AlertView, {}), _jsx(NativeView, { style: {
+                }), style: mem({ backgroundColor: "transparent", flex: 1, width: "100%", height: "100%" }), children: [_jsx(DevToolLayoutSelector, {}), _jsx(StaticView, {}), _jsx(ToastView, {}), _jsx(AlertView, {}), _jsx(NativeView, { style: mem({
                             width: "100%",
                             height: "100%",
                             zIndex: 1
-                        }, children: children })] }) }) }));
+                        }), children: children })] }) }) }));
 };
 export const DevToolLayoutSelector = () => {
     try {

@@ -11,7 +11,7 @@ export const Collabse = React.forwardRef((props, ref) => {
         visible: props.defaultActive ?? false,
         prefix: props.defaultActive ? "minus" : "plus"
     }).build();
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const { animate, animateY, animateX } = useAnimate({ speed: 300, useNativeDriver: false });
     const show = mem(() => {
         animateX(state.visible ? 1 : 0, () => {
@@ -31,10 +31,10 @@ export const Collabse = React.forwardRef((props, ref) => {
     state.useEffect(() => show(), "visible");
     if (ifSelector(props.ifTrue) == false)
         return null;
-    return (_jsxs(View, { style: props.style, css: mem(x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), props.css), children: [_jsxs(TouchableOpacity, { onPress: mem(() => {
+    return (_jsxs(View, { style: props.style, css: memo(() => x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), props.css), children: [_jsxs(TouchableOpacity, { onPress: mem(() => {
                     props.onActiveStateChange?.(!state.visible);
                     state.visible = !state.visible;
-                }, props.onActiveStateChange), css: mem(x => x.joinLeft("wi:100% he:30 ali:center fld:row").joinRight(props.headerStyle), props.headerStyle), children: [props.icon, _jsx(Text, { css: "fos-lg fow:bold", children: props.text }), _jsx(Icon, { type: "AntDesign", css: "_abc ri:2", size: 20, name: state.prefix })] }), _jsx(AnimatedView, { css: "wi:100%", style: {
+                }, props.onActiveStateChange), css: memo(() => x => x.joinLeft("wi:100% he:30 ali:center fld:row").joinRight(props.headerStyle), props.headerStyle), children: [props.icon, _jsx(Text, { css: "fos-lg fow:bold", children: props.text }), _jsx(Icon, { type: "AntDesign", css: "_abc ri:2", size: 20, name: state.prefix })] }), _jsx(AnimatedView, { css: "wi:100%", style: {
                     overflow: "hidden",
                     maxHeight: animate.y.interpolate({
                         inputRange: [0, 1],

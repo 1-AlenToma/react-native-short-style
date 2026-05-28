@@ -13,7 +13,7 @@ import { Platform } from "react-native";
 
 const DropDownItemController = ({ item, index, state, props }: { props: DropdownListProps, item: DropdownItem, index: number, state: any }) => {
     const localState = StateBuilder({ selected: undefined as number | undefined }).build();
-    const { mem } = useLocalMemo()
+    const { mem, memo } = useLocalMemo()
     return (
         <View
             onMouseEnter={mem(() => {
@@ -43,7 +43,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
     }).ignore("propsSize").build();
-    const { mem } = useLocalMemo();
+    const { mem , memo} = useLocalMemo();
 
     const mode = props.mode ?? "Modal";
 
@@ -96,7 +96,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                 })} onMouseEnter={mem(() => state.shadow = "sh-sm")}
                     onMouseLeave={mem(() => state.shadow = "")}
                     onPress={mem(() => state.visible = !state.visible)}
-                    css={mem(`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css)}>
+                    css={memo(()=> `wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css)}>
                     <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC bac-transparent">
                         <Text style={mem(selectedText ? undefined : { color: "#CCC" }, selectedText)} css="fos-sm">
                             {selectedText ?? props.placeHolder}

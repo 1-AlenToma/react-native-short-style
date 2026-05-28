@@ -12,7 +12,7 @@ import { useLocalMemo } from "../hooks";
 import { Platform } from "react-native";
 const DropDownItemController = ({ item, index, state, props }) => {
     const localState = StateBuilder({ selected: undefined }).build();
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     return (_jsx(View, { onMouseEnter: mem(() => {
             if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
                 localState.selected = index;
@@ -30,7 +30,7 @@ export const DropdownList = React.forwardRef((props, ref) => {
         selectedValue: props.selectedValue,
         propsSize: undefined,
     }).ignore("propsSize").build();
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const mode = props.mode ?? "Modal";
     const items = props.items.filter((item) => (state.text == "" || props.onSearch?.(item, state.text) || item.label.toLowerCase().indexOf(state.text.toLowerCase()) != -1));
     let selectedIndex = items.findIndex(x => x.value == state.selectedValue);
@@ -66,7 +66,7 @@ export const DropdownList = React.forwardRef((props, ref) => {
         return null;
     return (_jsxs(Container, { ...containerProps, children: [_jsx(Selector, { children: _jsxs(TouchableOpacity, { onLayout: mem(({ nativeEvent }) => {
                         state.propsSize = nativeEvent.layout;
-                    }), onMouseEnter: mem(() => state.shadow = "sh-sm"), onMouseLeave: mem(() => state.shadow = ""), onPress: mem(() => state.visible = !state.visible), css: mem(`wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css), children: [_jsx(View, { css: "fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC bac-transparent", children: _jsx(Text, { style: mem(selectedText ? undefined : { color: "#CCC" }, selectedText), css: "fos-sm", children: selectedText ?? props.placeHolder }) }), _jsx(View, { css: "fl:1 _center wi:30 maw:30 he:100% bac-transparent", children: _jsx(Icon, { style: mem({
+                    }), onMouseEnter: mem(() => state.shadow = "sh-sm"), onMouseLeave: mem(() => state.shadow = ""), onPress: mem(() => state.visible = !state.visible), css: memo(() => `wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css), children: [_jsx(View, { css: "fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC bac-transparent", children: _jsx(Text, { style: mem(selectedText ? undefined : { color: "#CCC" }, selectedText), css: "fos-sm", children: selectedText ?? props.placeHolder }) }), _jsx(View, { css: "fl:1 _center wi:30 maw:30 he:100% bac-transparent", children: _jsx(Icon, { style: mem({
                                     transform: [{
                                             rotateX: (mode == "Fold" ? "0deg" : (state.visible ? "180deg" : "0deg"))
                                         }]

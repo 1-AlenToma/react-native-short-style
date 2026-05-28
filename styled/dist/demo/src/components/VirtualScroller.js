@@ -191,14 +191,16 @@ export const VirtualScroller = React.forwardRef((props, ref) => {
         if (props.initializeIndex != undefined) {
             state.refItems.ref.scrollToIndex(props.initializeIndex);
         }
-    }, [props.initializeIndex]);
+    }, [props.initializeIndex, state.containerSize]);
     const rowCount = Math.ceil(props.items.length / numColumns);
     return (_jsx(ScrollContext.Provider, { value: mem({
             parentState: state,
             itemRows: state.items?.rows ?? new Map(),
             props,
             itemSize
-        }, itemSize, props, state.items?.rows), children: _jsx(ScrollView, { ifTrue: props.ifTrue, css: props.css, showsVerticalScrollIndicator: props.showsVerticalScrollIndicator, showsHorizontalScrollIndicator: props.showsHorizontalScrollIndicator, horizontal: props.horizontal, ref: c => state.refItems.scrollView = c, scrollEventThrottle: props.scrollEventThrottle ?? 16, contentContainerStyle: mem({
+        }, itemSize, props, state.items?.rows, state.refItems.ref), children: _jsx(ScrollView, { ifTrue: props.ifTrue, css: props.css, showsVerticalScrollIndicator: props.showsVerticalScrollIndicator, showsHorizontalScrollIndicator: props.showsHorizontalScrollIndicator, horizontal: props.horizontal, ref: mem(c => {
+                state.refItems.scrollView = c;
+            }), scrollEventThrottle: props.scrollEventThrottle ?? 16, contentContainerStyle: mem({
                 minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
                 minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
                 flexDirection: props.horizontal ? "row" : "column",
@@ -226,15 +228,13 @@ export const VirtualScroller = React.forwardRef((props, ref) => {
                 }
             }, props.onScroll, props.onEndReachedThreshold, props.onEndReached), style: props.style, id: props.id, onLayout: mem(({ nativeEvent }) => {
                 timer(() => {
-                    state.batch(() => {
-                        const { layout } = nativeEvent;
-                        if (!state.containerSize ||
-                            layout.width !== state.containerSize.width ||
-                            layout.height !== state.containerSize.height) {
-                            state.containerSize = layout;
-                        }
-                    });
+                    const { layout } = nativeEvent;
+                    if (!state.containerSize ||
+                        layout.width !== state.containerSize.width ||
+                        layout.height !== state.containerSize.height) {
+                        state.containerSize = layout;
+                    }
                 });
-            }), children: state.containerSize && state.items?.children }, state.id) }));
+            }, props.initializeIndex), children: state.containerSize && state.items?.children }, state.id) }));
 });
 //# sourceMappingURL=VirtualScroller.js.map

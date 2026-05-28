@@ -5,7 +5,7 @@ import { useLocalMemo } from "../hooks";
 
 export const Blur = (props: BlurProps) => {
     let hProps = { ...props };
-    const { mem } = useLocalMemo();
+    const { mem, memo} = useLocalMemo();
     const Component = props.onPress ? AnimatedTouchableOpacity : AnimatedView;
     const onPress = mem((event: any) => {
         props?.onPress?.(event);
@@ -15,5 +15,5 @@ export const Blur = (props: BlurProps) => {
     if (props.onPress)
         hProps.onPress = onPress;
 
-    return (<Component inspectDisplayName="Blur" {...hProps} css={mem(x => x.cls("_blur").joinRight(hProps.css), hProps.css)} />)
+    return (<Component inspectDisplayName="Blur" {...hProps} css={memo(()=> x => x.cls("_blur").joinRight(hProps.css), hProps.css)} />)
 }

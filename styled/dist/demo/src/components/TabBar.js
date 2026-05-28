@@ -18,7 +18,7 @@ export class TabView extends React.PureComponent {
 const TabBarMenu = ({ children }) => {
     const context = React.useContext(TabBarContext);
     const position = context.props.position ?? "Bottom";
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     let menuItems = children.filter(x => ifSelector(x.props.ifTrue) !== false);
     const state = StateBuilder({
         selectedIndex: context.selectedIndex,
@@ -36,7 +36,7 @@ const TabBarMenu = ({ children }) => {
     state.useEffect(() => {
         context.onMenuChange(undefined, menuItems.map((_, i) => (state.manuItemSize?.width ?? i) * i), state.manuItemSize.width);
     }, "manuItemSize");
-    let header = mem({
+    let header = memo(() => ({
         style: optionalStyle(context.props.header?.style),
         textStyle: optionalStyle(context.props.header?.textStyle),
         selectedStyle: optionalStyle(context.props.header?.selectedStyle),
@@ -46,7 +46,7 @@ const TabBarMenu = ({ children }) => {
             container: optionalStyle(context.props.header?.overlayStyle?.container),
             content: optionalStyle(context.props.header?.overlayStyle?.content)
         }
-    }, context.props.header);
+    }), context.props.header);
     const getIcon = mem((icon, style, index) => {
         if (!icon)
             return null;
@@ -69,7 +69,7 @@ const TabBarMenu = ({ children }) => {
     if (menuItems.length <= 1)
         return null; // its a single View no need to display Menu Header;
     const width = (100 / menuItems.length) + "%";
-    let border = (_jsx(AnimatedView, { css: header.overlayStyle.container.c, style: mem([
+    let border = (_jsx(AnimatedView, { css: header.overlayStyle.container.c, style: memo(() => [
             {
                 backgroundColor: "#e5313a",
             },
@@ -92,7 +92,7 @@ const TabBarMenu = ({ children }) => {
             }
         ], context.animated.x, header, interpolate, width), children: _jsx(View, { onStartShouldSetResponder: mem(event => false), onTouchStart: mem(e => {
                 context.onMenuChange(state.selectedIndex);
-            }), style: mem([
+            }), style: memo(() => [
                 header.overlayStyle.content.o,
                 {
                     width: "100%",
@@ -137,7 +137,7 @@ const TabBarMenu = ({ children }) => {
 export const TabBar = (props) => {
     const children = React.useMemo(() => Array.isArray(props.children) ? props.children : [props.children], [props.children]);
     const position = props.position ?? "Bottom";
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const visibleChildren = children.filter(x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon));
     const { animate, animateX, currentValue } = useAnimate({ easing: Easing.out(Easing.cubic) });
     const menuAnimation = useAnimate({ easing: Easing.out(Easing.cubic) });
@@ -331,7 +331,7 @@ export const TabBar = (props) => {
     return (_jsxs(AnimatedView, { onLayout: mem(async ({ nativeEvent }) => {
             state.size = nativeEvent.layout;
             windowChanged();
-        }, windowChanged), css: React.useMemo(() => x => x.cls("_tabBar").joinRight(props.css), [props.css]), style: props.style, children: [position === "Top" ? (tabMenu) : null, _jsx(AnimatedView, { css: `_tabBarContainer`, style: mem([
+        }, windowChanged), css: mem(x => x.cls("_tabBar").joinRight(props.css), props.css), style: props.style, children: [position === "Top" ? (tabMenu) : null, _jsx(AnimatedView, { css: `_tabBarContainer`, style: memo(() => [
                     (visibleChildren.length <= 1 ? {
                         minHeight: null,
                         height: null

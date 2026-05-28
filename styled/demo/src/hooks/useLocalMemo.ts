@@ -1,49 +1,83 @@
 import * as React from "react";
 
-export const useLocalMemo = () => {
-  const cacheNumber = React.useRef([]);
-  const cashKeys = React.useRef({});
-  const index = React.useRef(0);
+class LocalMemory {
+  private cacheNumber: { value: any, deps: any[] }[] = [];
+  private cashKeys: Record<string, { value: any, deps: any[] }> = {};
+  index: number = 0;
 
-  index.current = 0; // reset every render
-
-  const memKey = <T>(key: string, fn: T, ...deps: any[]): T => {
-    const prev = cashKeys.current[key];
+  memKey<T>(key: string, fn: T, ...deps: any[]): T {
+    const prev = this.cashKeys[key];
     const changed = !prev ||
       prev.deps.length !== deps.length ||
       deps.some((d, idx) => d !== prev.deps[idx]);
     if (changed) {
-      cashKeys.current[key] = {
+      this.cashKeys[key] = {
         deps,
         value: fn
       };
     }
-    return cashKeys.current[key].value;
+    return this.cashKeys[key].value;
   }
 
-  const mem = <T>(
-    fn: T,
-    ...deps: any[]
-  ): T => {
-    const i = index.current++;
-    const prev = cacheNumber.current[i];
-    const changed = !prev || prev.changed ||
+  memoKey<T>(key: string, fn: () => T, ...deps: any[]): T {
+    const prev = this.cashKeys[key];
+    const changed = !prev ||
       prev.deps.length !== deps.length ||
       deps.some((d, idx) => d !== prev.deps[idx]);
     if (changed) {
-      if (!prev && i < cacheNumber.current.length) {
-        for (let index = i; index < cacheNumber.current.length; index++)
-          if (cacheNumber.current[index])
-            cacheNumber.current[index].changed = true;
-      }
-      cacheNumber.current[i] = {
+      this.cashKeys[key] = {
         deps,
-        value: fn,
-        changed: false
+        value: fn()
       };
     }
-    return cacheNumber.current[i].value;
+    return this.cashKeys[key].value;
+  }
+
+  memo<T>(
+    fn: () => T,
+    ...deps: any[]
+  ): T {
+    const i = this.index++;
+    const prev = this.cacheNumber[i];
+    const changed = !prev ||
+      prev.deps.length !== deps.length ||
+      deps.some((d, idx) => d !== prev.deps[idx]);
+    if (changed) {
+      this.cacheNumber[i] = {
+        deps,
+        value: fn()
+      };
+    }
+    return this.cacheNumber[i].value;
   };
 
-  return { mem, memKey };
+  mem<T>(
+    fn: T,
+    ...deps: any[]
+  ): T {
+    const i = this.index++;
+    const prev = this.cacheNumber[i];
+    const changed = !prev ||
+      prev.deps.length !== deps.length ||
+      deps.some((d, idx) => d !== prev.deps[idx]);
+    if (changed) {
+      this.cacheNumber[i] = {
+        deps,
+        value: fn
+      };
+    }
+    return this.cacheNumber[i].value;
+  };
+
+  get funcs() {
+    return { mem: this.mem.bind(this), memo: this.memo.bind(this), memKey: this.memKey.bind(this), memoKey: this.memoKey.bind(this) };
+  }
+}
+
+export const useLocalMemo = () => {
+  const item = React.useRef<LocalMemory>(undefined);
+  if (!item.current)
+    item.current = new LocalMemory();
+  item.current.index = 0;
+  return item.current.funcs;
 };

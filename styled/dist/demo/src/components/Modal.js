@@ -12,7 +12,7 @@ import { Blur } from "./Blur";
 import { Portal } from "./Portal";
 export const Modal = (props) => {
     const transform = React.useRef({}).current;
-    const { mem } = useLocalMemo();
+    const { mem, memo } = useLocalMemo();
     const { animate, animateX, animateY } = useAnimate({
         speed: props.speed ?? 200,
         easing: props.easing ?? Easing.bounce
@@ -60,11 +60,11 @@ export const Modal = (props) => {
                         opacity: animate.y
                     }, animate.y), onPress: mem(props.disableBlurClick ? undefined : () => {
                         state.isVisible = false;
-                    }, props.disableBlurClick), css: "_blur zi:1" }), _jsxs(AnimatedView, { inspectDisplayName: "Modal", ...props, css: mem(x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css), props.css), style: mem([...style,
+                    }, props.disableBlurClick), css: "_blur zi:1" }), _jsxs(AnimatedView, { inspectDisplayName: "Modal", ...props, css: memo(() => x => x.cls("_modalDefaultStyle zi:2 _modal sh-sm _overflow Modal").joinRight(props.css), props.css), style: mem([...style,
                         {
                             transform: transform.scale ? [transform] : undefined,
                             opacity: transform.opacity ? transform.opacity : undefined
                         }
-                    ], props.style), children: [_jsx(View, { ifTrue: props.addCloser == true, css: mem(x => x.cls("_modalClose").baC(".co-transparent")), children: _jsx(Button, { onPress: mem(() => state.isVisible = false), css: mem(x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0)), icon: mem(_jsx(Icon, { type: "AntDesign", name: "close", size: 15 })) }) }), _jsx(View, { inspectDisplayName: "ModalContent", css: mem(x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), props.addCloser), children: props.children })] })] }) }));
+                    ], props.style), children: [_jsx(View, { ifTrue: props.addCloser == true, css: mem(x => x.cls("_modalClose").baC(".co-transparent")), children: _jsx(Button, { onPress: mem(() => state.isVisible = false), css: mem(x => x.cls("sh-none", "_center").size(25, 25).baC(".co-transparent").juC("flex-end").pa(0).paL(1).boW(0)), icon: memo(() => _jsx(Icon, { type: "AntDesign", name: "close", size: 15 })) }) }), _jsx(View, { inspectDisplayName: "ModalContent", css: mem(x => x.fillView().cls("ModalContent").zI(1).baC(".co-transparent").if(props.addCloser == true, x => x.maT(Platform.OS == "web" ? 5 : 10)), props.addCloser), children: props.children })] })] }) }));
 };
 //# sourceMappingURL=Modal.js.map
