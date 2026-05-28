@@ -1,5 +1,13 @@
 import * as React from "react";
 
+type ILocalMemo = {
+  memKey<T>(key: string, fn: T, ...deps: any[]): T;
+  memoKey<T>(key: string, fn: () => T, ...deps: any[]): T;
+  memo<T>(fn: () => T,...deps: any[]): T;
+  mem<T>(fn: T,...deps: any[]): T;
+
+}
+
 class LocalMemory {
   private cacheNumber: { value: any, deps: any[] }[] = [];
   private cashKeys: Record<string, { value: any, deps: any[] }> = {};
@@ -33,10 +41,7 @@ class LocalMemory {
     return this.cashKeys[key].value;
   }
 
-  memo<T>(
-    fn: () => T,
-    ...deps: any[]
-  ): T {
+  memo<T>(fn: () => T,...deps: any[]): T {
     const i = this.index++;
     const prev = this.cacheNumber[i];
     const changed = !prev ||
@@ -51,10 +56,7 @@ class LocalMemory {
     return this.cacheNumber[i].value;
   };
 
-  mem<T>(
-    fn: T,
-    ...deps: any[]
-  ): T {
+  mem<T>(fn: T,...deps: any[]): T {
     const i = this.index++;
     const prev = this.cacheNumber[i];
     const changed = !prev ||
@@ -69,7 +71,7 @@ class LocalMemory {
     return this.cacheNumber[i].value;
   };
 
-  get funcs() {
+  get funcs() : ILocalMemo {
     return { mem: this.mem.bind(this), memo: this.memo.bind(this), memKey: this.memKey.bind(this), memoKey: this.memoKey.bind(this) };
   }
 }
