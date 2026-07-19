@@ -32,9 +32,10 @@ const StaticView = () => {
     );
 };
 
+// To Do later, preparse rules on render by babel script. this will simplify and make per faster
 function parseStyles(obj: Record<string, any>, selectedIndex: number): Rule[] {
     const parsedTheme = React.useRef({}).current;
-    if (!parsedTheme[selectedIndex] && obj)
+    if ((!parsedTheme[selectedIndex] || __DEV__) && obj)
         parsedTheme[selectedIndex] = Object.entries(obj).map(([selector, style]) => ({
             selectors: selector.split(",").map((s) => s.trim()),
             parsedSelector: selector.split(",").map(x => parseSelector(x.trim())),
@@ -377,7 +378,6 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
         globalData.icons = props.icons ?? {} as any;
 
     const theme = currentTheme(props);
-    // console.log(theme)
     const rules = parseStyles(theme, props.selectedIndex);
     if ((!ready || devToolsHandlerContext.data.rerender) && devToolsHandlerContext.data.isOpened && __DEV__) {
         devToolsHandlerContext.sendTree({

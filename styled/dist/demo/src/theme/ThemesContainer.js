@@ -20,9 +20,10 @@ const StaticView = () => {
     }, []);
     return (_jsx(_Fragment, { children: globalData.portals.keys.map(key => (_jsx(React.Fragment, { children: globalData.portals.elems.get(key)?.children }, key))) }));
 };
+// To Do later, preparse rules on render by babel script. this will simplify and make per faster
 function parseStyles(obj, selectedIndex) {
     const parsedTheme = React.useRef({}).current;
-    if (!parsedTheme[selectedIndex] && obj)
+    if ((!parsedTheme[selectedIndex] || __DEV__) && obj)
         parsedTheme[selectedIndex] = Object.entries(obj).map(([selector, style]) => ({
             selectors: selector.split(",").map((s) => s.trim()),
             parsedSelector: selector.split(",").map(x => parseSelector(x.trim())),
@@ -274,7 +275,6 @@ export const ThemeContainer = (props) => {
     if (!globalData.icons)
         globalData.icons = props.icons ?? {};
     const theme = currentTheme(props);
-    // console.log(theme)
     const rules = parseStyles(theme, props.selectedIndex);
     if ((!ready || devToolsHandlerContext.data.rerender) && devToolsHandlerContext.data.isOpened && __DEV__) {
         devToolsHandlerContext.sendTree({

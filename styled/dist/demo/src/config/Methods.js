@@ -60,7 +60,7 @@ export const currentTheme = (context) => {
     const key = `${StyledKey}${context.selectedIndex}`;
     const themes = React.useRef({}).current;
     if (__DEV__ || !globalData.storage.has(key)) {
-        if (!themes[context.selectedIndex] && context.themes.length > 0 && context.defaultTheme) {
+        if ((!themes[context.selectedIndex] || __DEV__) && context.themes.length > 0 && context.defaultTheme) {
             let thisTheme = themeStyle();
             let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
             themes[context.selectedIndex] = {
