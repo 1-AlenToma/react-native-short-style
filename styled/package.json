@@ -3,8 +3,8 @@
   "version": "1.3.3",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
-  "type": "module",
   "license": "MIT",
+  "type": "commonjs",
   "repository": "https://github.com/1-AlenToma/react-native-short-style",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -17,7 +17,8 @@
     "./mems": {
       "types": "./dist/mems.d.ts",
       "default": "./dist/mems.js"
-    }
+    },
+    "./babel-style-transformer": "./dist/babel-style-transformer.js"
   },
   "engines": {
     "node": ">=10"
@@ -30,10 +31,11 @@
   ],
   "scripts": {
     "clean": "rmdir /s /q dist",
-    "build": "tsc && cd demo && npm run export",
-    "assets": "cpx \"demo/assets/**/*\" dist/demo/assets && cpx \"demo/src/assets/**/*\" dist/demo/src/assets",
-    "ready": "npm run clean && npm run build && npm run assets",
-    "web": "cd demo && npx expo start",
+    "buildThis": "npm run clean && tsc",
+    "build": "npm run buildThis && cd ../demo && npm run export",
+    "assets": "cpx \"src/assets/**/*\" dist/src/assets",
+    "ready": "npm run build && npm run assets",
+    "web": "cd ../demo && npx expo start",
     "test": "tsc  && jest tsx ./dist/test/Methods.test.js",
     "beta": "npm publish --tag beta"
   },
@@ -52,9 +54,9 @@
     "dist"
   ],
   "dependencies": {
-    "msgpackr": "*",
     "@miblanchard/react-native-slider": "*",
-    "react-smart-state": "*",
-    "react-native-short-style-devtools": "*"
+    "msgpackr": "*",
+    "react-native-short-style-devtools": "*",
+    "react-smart-state": "^1.1.5"
   }
 }

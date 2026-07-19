@@ -1,0 +1,167 @@
+import css_translator, { serilizeCssStyle, clearAll } from "../styles/cssTranslator";
+import { defaultTheme, ComponentsStyles } from "../theme/DefaultStyle";
+import { globalData } from "../theme/ThemeContext";
+import { AlertViewAlertProps, AlertViewProps, IThemeContext, Size, StyledKey, ToastProps } from "../Typse";
+import { CSSStyle } from "../styles/CSSStyle"
+import { PlatformStyleSheet } from "../theme/PlatformStyles";
+import React from "react";
+import { MeasureOnSuccessCallback, View } from "react-native";
+
+export const measure = function (item: View) {
+    return new Promise<Size | undefined>(r => {
+        if (item.measure) {
+            item.measure((x, y, width, height, py, px) => {
+                r({ x, y, width, px, py, height })
+            })
+        } else r(undefined)
+    })
+}
+
+export const toArray = (item: any) => {
+    if (!item) return [];
+    if (Array.isArray(item)) return item;
+    return [item];
+}
+
+export const RemoveProps = <T extends object>(props: T, ...items: (keyof T)[]) => {
+    items.forEach(x => {
+        if (x in props)
+            delete props[x]
+    });
+
+    return props;
+}
+
+export const readAble = function (nr: number | string, total: number = 2) {
+    if (Array.isArray(nr))
+        nr = nr[0];
+    let nrs = nr?.toString().split(".") ?? [];
+    if (nrs.length <= 1) return nr;
+    return parseFloat((nr as any)?.toFixed(total));
+};
+
+export const optionalStyle = (style: any) => {
+    if (style && Array.isArray(style) && typeof style == "object")
+        style = style.reduce((a, v) => {
+            if (v)
+                a = { ...a, ...v };
+            return a;
+        }, {});
+
+    if (style && typeof style == "function")
+        style = style(new CSSStyle()).toString();
+
+    let item = {
+        o: typeof style == "object" ? style ?? null : null,
+        c: typeof style == "string" ? style ?? "" : ""
+    }
+
+    return item as { c: string, o: any };
+}
+
+export const renderCss = (css: string, style: any) => {
+    return css_translator(css, style);
+}
+
+
+
+export const useCurrentTheme = (context: IThemeContext) => {
+    const key = `${StyledKey}${context.selectedIndex}`;
+    const themes = React.useRef({}).current;
+    if (__DEV__ || !globalData.storage.has(key)) {
+        if ((!themes[context.selectedIndex] || __DEV__) && context.themes.length > 0 && context.defaultTheme) {
+            let thisTheme = themeStyle();
+            let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
+            themes[context.selectedIndex] = {
+                ...thisTheme, ...selectedTheme, ...ComponentsStyles
+            }
+        }
+
+        globalData.storage.set(key, themes[context.selectedIndex])
+    }
+    return globalData.storage.get(key);
+}
+
+export const clearAllCss = () => {
+    clearAll();
+}
+
+let serilizeTheme = undefined;
+
+export const themeStyle = () => {
+    if (serilizeTheme)
+        return serilizeTheme;
+    let style: any = PlatformStyleSheet();
+    for (let key in defaultTheme) {
+        let value = defaultTheme[key];
+        let key0 = key;
+        let key1 = key.split("").filter((x, i) => i <= 1 || x == x.toUpperCase()).join("").toLocaleLowerCase();
+        if (typeof value === "object") {
+            for (let sKey in value) {
+                let o = {};
+                o[key] = value[sKey];
+                if (typeof value[sKey] === "object")
+                    o = value[sKey];
+                style[`${key0}-${sKey}`] = o;
+                style[`${key1}-${sKey}`] = o;
+            }
+        }
+    }
+
+    serilizeTheme = style;
+    return style;
+}
+
+
+export const ifSelector = (item?: boolean | Function) => {
+    if (item === undefined || item === null)
+        return undefined;
+    if (typeof item == "function")
+        item = item();
+    return item;
+}
+
+export const proc = (partialValue, totalValue) => {
+    return (partialValue / 100) * totalValue;
+}
+
+export class AlertDialog {
+    static alert(props: AlertViewAlertProps | string) {
+        globalData.alertViewData.alert(props);
+    }
+
+    static toast(props: ToastProps | string) {
+        globalData.alertViewData.toast(props);
+    }
+
+    static async confirm(props: AlertViewProps | string) {
+        return globalData.alertViewData.confirm(props);
+    }
+}
+
+export const setRef = (ref: any, item: any) => {
+    if (!ref)
+        return;
+    if (typeof ref === "function")
+        ref(item);
+    else if ("current" in ref)
+        ref.current = item;
+    else if (ref && typeof ref === "object")
+        Object.assign(ref, item);
+}
+
+export const refCreator = function <T>(
+    useMem: boolean,
+    forwardRef: (props: any, ref: any) => React.ReactNode,
+    name: string,
+    view: any,
+    compare?: (prevProps: any, nextProps: any) => boolean
+) {
+    name = view.displayName || name;
+
+    const Component = React.forwardRef(forwardRef);
+
+    (Component as any).displayName = `StyledItem(${name})`;
+
+    return (useMem ? React.memo(Component, compare) : Component) as T;
+}

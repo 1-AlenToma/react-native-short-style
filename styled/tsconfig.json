@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "module": "ESNext",
-    "target": "esnext",
+    "module": "CommonJS",
+    "target": "ES2019",
     "lib": [
       "dom",
       "esnext"
     ],
-    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "sourceMap": true,
+    "strict": true,
     "declaration": true,
     "esModuleInterop": true,
     "noImplicitReturns": true,
@@ -23,12 +23,10 @@
   },
   "include": [
     "./**/*",
-    "./test/*",
-    "./demo/*"
+    "./test/*"
   ],
   "exclude": [
     "node_modules",
-    "demo/node_modules",
     "docs",
     "./dist"
   ]
