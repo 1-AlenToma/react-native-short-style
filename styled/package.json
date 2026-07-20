@@ -44,14 +44,14 @@
     "react-native": "*"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/generator": "^8.0.0",
-    "@babel/parser": "^8.0.4",
-    "@types/node": "^26.1.1",
+    "@babel/core": "*",
+    "@babel/generator": "*",
+    "@babel/parser": "*",
+    "@types/node": "*",
     "@types/react": "*",
     "@types/react-native": "*",
     "cpx": "*",
-    "tsx": "^4.23.1",
+    "tsx": "*",
     "typescript": "*"
   },
   "files": [
@@ -59,7 +59,7 @@
   ],
   "dependencies": {
     "@miblanchard/react-native-slider": "*",
-    "css-to-react-native": "^3.2.0",
+    "css-to-react-native": "*",
     "msgpackr": "*",
     "react-native-short-style-devtools": "*",
     "react-smart-state": "^1.1.5"

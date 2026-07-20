@@ -75,7 +75,7 @@ export const useCurrentTheme = (context: IThemeContext) => {
             let thisTheme = themeStyle();
             let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
             themes[context.selectedIndex] = {
-                ...thisTheme, ...selectedTheme, ...ComponentsStyles
+                ...thisTheme, ...selectedTheme, ...serilizeCssStyle(ComponentsStyles)
             }
         }
 
@@ -93,7 +93,7 @@ let serilizeTheme = undefined;
 export const themeStyle = () => {
     if (serilizeTheme)
         return serilizeTheme;
-    let style: any = PlatformStyleSheet();
+    let style: any = serilizeCssStyle(PlatformStyleSheet());
     for (let key in defaultTheme) {
         let value = defaultTheme[key];
         let key0 = key;

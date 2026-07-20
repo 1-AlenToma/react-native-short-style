@@ -1,7 +1,5 @@
 import { Platform } from "react-native";
 import NestedStyleSheet from "../styles/NestedStyleSheet";
-import CssStyleSheet from "../styles/CssStyleSheet";
-
 
 const cachedCss: any = { web: undefined, android: undefined }
 
@@ -10,7 +8,7 @@ const cachedCss: any = { web: undefined, android: undefined }
 const userStyle = NestedStyleSheet.create({
     header: "bac-#292e34",
     "header > Text": x => x.foS(".fos-lg").co(".co-light").foW("bold"),
-    headerLine: x => x.joinRight("bac-transparent _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1").if(Platform.OS == "web", x => x.baC("inherit")),
+    headerLine: x => x.joinRight("bac-transparent _abc wi-90% fl-0 flg-1 pa-5 _center to--10 zi-1 mah-30").if(Platform.OS == "web", x => x.baC("inherit")),
     "headerLine >View": "ali-center",
     "headerLine> View> Text": x => x.foS(".fos-lg").foW("bold"),
     disabled: x => x.op(.8).baC(".co-gray400"),

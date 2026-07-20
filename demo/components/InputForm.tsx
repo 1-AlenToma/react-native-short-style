@@ -259,9 +259,9 @@ export const InputForm = () => {
     }).build();
     const { mem } = useLocalMemo();
     return (
-        <FormGroup css={"maw-300"} formStyle="Headless" labelPosition="Top" title='User-Form'>
+        <FormGroup  formStyle="Headless" labelPosition="Top" title='User-Form'>
             <FormItem title="FullName" icon={mem({ type: "AntDesign", name: "user" })}>
-                <TextInput css="fl:1" onChangeText={mem(txt => console.log(txt))} />
+                <TextInput onChangeText={mem(txt => console.log(txt))} />
             </FormItem>
             <FormItem title="UserName" icon={mem({ type: "AntDesign", name: "user" })}>
                 <TextInput css="fl:1" />

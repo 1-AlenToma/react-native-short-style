@@ -1,6 +1,10 @@
 //import { globalData } from "../theme/ThemeContext";
 
-const getGlobalContext = ()=> require("../theme/ThemeContext").globalData;
+import { GlobalState } from "../Typse";
+
+let globalData: GlobalState;
+
+const getGlobalContext = () => globalData ?? (globalData = require("../theme/ThemeContext").globalData as GlobalState);
 
 export const flatStyle = function <T>(style: T, ...removeKeys: (keyof T | string)[]) {
     if (style && Array.isArray(style) && typeof style == "object")
@@ -10,8 +14,8 @@ export const flatStyle = function <T>(style: T, ...removeKeys: (keyof T | string
             return a;
         }, {});
 
-    let item : any = style ?? {};
-    item={...item}
+    let item: any = style ?? {};
+    item = { ...item }
     removeKeys.forEach(x => delete item[x]);
     return item;
 }

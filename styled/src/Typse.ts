@@ -119,6 +119,7 @@ export type StyledProps = {
     id?: string;
     inspectDisplayName?: string;
     noneDevtools?: boolean;
+    logGeneratedCSS?: { logIdentifier?: string; }
 };
 
 type IConType = "AntDesign" | "Entypo" | "EvilIcons" | "Feather" | "FontAwesome" | "FontAwesome5" | "FontAwesome6" | "Fontisto" | "Foundation" | "Ionicons" | "MaterialCommunityIcons" | "MaterialIcons" | "Octicons" | "SimpleLineIcons" | "Zocial";

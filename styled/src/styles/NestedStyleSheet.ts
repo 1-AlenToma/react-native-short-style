@@ -11,7 +11,7 @@ const validKeys = (key: string) => {
     console.warn(`style key(${key}) cannot start with ${key[0]}`);
 }
 
-const tryFunc = (value: any, toStr?: boolean) => {
+export const tryFunc = (value: any, toStr?: boolean) => {
   try {
     value = value(new CSSStyleSheetStyle()) as any;
     if (toStr && value)

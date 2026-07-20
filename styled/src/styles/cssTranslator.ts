@@ -2,6 +2,7 @@ import { extractProps } from "../config/CSSMethods";
 import { Storage, TStorage } from "../config/Storage";
 import { StylesAttributes, ShortCSS } from "./validStyles";
 import { ValueIdentity } from "../config/CSSMethods";
+import {tryFunc} from "./NestedStyleSheet"
 
 let styleKeys = [...StylesAttributes]
 
@@ -80,17 +81,14 @@ const checkObject = (value: string) => {
 const cleanKey = (k: string) => {
   return (k ?? "").indexOf(".") != -1 ? k.substring(1) : k;
 }
-
-const newId = () => Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
-
-
-
 export const serilizeCssStyle = (style: any) => {
 
 
   let sItem = {};
   let fn = (s: any, parentKey: string) => {
     let item = {};
+    if (typeof s == "function")
+        return tryFunc(s, true);
     if (typeof s !== "object" || typeof s === "string" || Array.isArray(s))
       return s;
     for (let k in s) {

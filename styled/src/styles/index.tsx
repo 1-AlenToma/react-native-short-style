@@ -307,7 +307,8 @@ export class CMBuilder {
         if (ifTrue == false)
             return null;
 
-
+        if (props.logGeneratedCSS && __DEV__)
+            console.info(`generated log for:`, props.logGeneratedCSS.logIdentifier, "generatedStyles:", styles);
         return (
             <StyleContext.Provider
                 value={{
