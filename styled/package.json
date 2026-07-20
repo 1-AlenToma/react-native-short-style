@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "clean": "rmdir /s /q dist",
-    "buildThis": "npm run clean && tsc",
+    "buildThis": "npm run clean && tsc && tsx scripts/transform-dist.ts",
     "build": "npm run buildThis && cd ../demo && npm run export",
     "assets": "cpx \"src/assets/**/*\" dist/src/assets",
     "ready": "npm run build && npm run assets",
@@ -44,10 +44,14 @@
     "react-native": "*"
   },
   "devDependencies": {
-    "@types/node": "*",
+    "@babel/core": "^7.29.7",
+    "@babel/generator": "^8.0.0",
+    "@babel/parser": "^8.0.4",
+    "@types/node": "^26.1.1",
     "@types/react": "*",
     "@types/react-native": "*",
     "cpx": "*",
+    "tsx": "^4.23.1",
     "typescript": "*"
   },
   "files": [

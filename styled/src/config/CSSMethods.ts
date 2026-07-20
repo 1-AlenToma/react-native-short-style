@@ -1,4 +1,6 @@
-import { globalData } from "../theme/ThemeContext";
+//import { globalData } from "../theme/ThemeContext";
+
+const getGlobalContext = ()=> require("../theme/ThemeContext").globalData;
 
 export const flatStyle = function <T>(style: T, ...removeKeys: (keyof T | string)[]) {
     if (style && Array.isArray(style) && typeof style == "object")
@@ -185,8 +187,8 @@ export const ValueIdentity = {
         if (!css || typeof css !== "string") return [];
 
         const cacheKey = `${css}_splitCss_Result`;
-        if (globalData.tStorage.has(cacheKey)) {
-            return globalData.tStorage.get(cacheKey);
+        if (getGlobalContext().tStorage.has(cacheKey)) {
+            return getGlobalContext().tStorage.get(cacheKey);
         }
 
         // Remove spaces around ':' and '-' only
@@ -218,7 +220,7 @@ export const ValueIdentity = {
         if (current) {
             result.push(current);
         }
-        globalData.tStorage.set(cacheKey, result);
+        getGlobalContext().tStorage.set(cacheKey, result);
         return result;
     },
     getClasses: (css: string, globalStyle?: any, itemIndex?: number) => {

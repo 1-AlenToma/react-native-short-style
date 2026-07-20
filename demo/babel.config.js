@@ -1,7 +1,14 @@
-module.exports = function(api) {
+const path = require("path");
+
+module.exports = function (api) {
   api.cache(true);
+
   return {
-    presets: ['babel-preset-expo'],
-    plugins:["react-native-short-style/babel-style-transformer"]
+    presets: [
+      "babel-preset-expo"
+    ],
+    plugins: [
+      "react-native-short-style/babel-style-transformer"
+    ],
   };
 };

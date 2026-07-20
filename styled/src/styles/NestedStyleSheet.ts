@@ -8,6 +8,18 @@ const validKeys = (key: string) => {
     throw `style key(${key}) cannot start with .`;
 }
 
+const tryFunc = (value: any, toStr?: boolean) => {
+  try {
+    value = value(new CSSStyleSheetStyle()) as any;
+    if (toStr && value)
+      return value.toString().trim();
+    return value;
+  } catch {
+    console.warn("failed to parse", value.toString());
+    return value
+  }
+}
+
 class NestedStyleSheet {
   static create<T extends NamedStyles<T> | NamedStyles<any>>(obj: T & NamedStyles<any>): { [key: string]: number } {
     let keysItems = Object.keys(obj);
@@ -34,7 +46,7 @@ class NestedStyleSheet {
         value = value.trim();
       oItem[key] = value;
       if (value && typeof value == "function") {
-        value = value(new CSSStyleSheetStyle()) as any;
+        value = tryFunc(value);
       }
 
       if (value && value instanceof CSSStyleSheetStyle) {
@@ -46,13 +58,12 @@ class NestedStyleSheet {
             keysItems.push(v.key);
           }
         }
-
       }
 
 
 
       if (value && typeof value == "function") {
-        oItem[key] = value = value(new CSSStyleSheetStyle()).toString().trim();
+        oItem[key] = value = tryFunc(value, true);
       }
     }
 

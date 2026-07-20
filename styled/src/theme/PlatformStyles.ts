@@ -95,5 +95,5 @@ export const PlatformStyleSheet = () => {
         "_formGroup>View:eq-of-type(1)": "bor:5 bow:.5 boc:gray _center ma:5 fld-row _overflow wi-100% he-100% pat-20",
         "_formGroup>View>View": "fl-1 flg-1 wi-100%",
         ...userStyle
-    }))
+    })) 
 }
