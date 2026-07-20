@@ -7,6 +7,8 @@ import { PlatformStyleSheet } from "../theme/PlatformStyles";
 import React from "react";
 import { MeasureOnSuccessCallback, View } from "react-native";
 
+
+
 export const measure = function (item: View) {
     return new Promise<Size | undefined>(r => {
         if (item.measure) {

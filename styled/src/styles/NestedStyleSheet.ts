@@ -5,7 +5,10 @@ type NamedStyles<T> = { [P in keyof T]: ReactNative.ViewStyle | ReactNative.Text
 
 const validKeys = (key: string) => {
   if (key.startsWith("."))
-    throw `style key(${key}) cannot start with .`;
+    throw `style key(${key}) cannot start with ${key[0]}`;
+
+  if (key.startsWith("#"))
+    console.warn(`style key(${key}) cannot start with ${key[0]}`);
 }
 
 const tryFunc = (value: any, toStr?: boolean) => {
@@ -60,8 +63,6 @@ class NestedStyleSheet {
         }
       }
 
-
-
       if (value && typeof value == "function") {
         oItem[key] = value = tryFunc(value, true);
       }
@@ -70,5 +71,13 @@ class NestedStyleSheet {
     return oItem;
   }
 };
+
+class CssStyleSheet {
+  static create<T extends NamedStyles<T> | NamedStyles<any>>(path: `${string}.css`): { [key: string]: number } {
+    return path as any;
+  }
+
+}
+
 
 export default NestedStyleSheet;

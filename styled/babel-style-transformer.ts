@@ -1,7 +1,49 @@
 import { PluginObj, types as t, NodePath } from "@babel/core";
 import { parseExpression } from "@babel/parser";
 import NestedStyleSheet from "./src/styles/NestedStyleSheet";
+import fs from "fs";
+import * as filePath from "path";
 import generate from "@babel/generator";
+import transform from 'css-to-react-native';
+
+export function parseCssToTuples(cssString: string) {
+    const result = {} as Record<string, [[string, any, boolean]]>
+
+    // Clean up whitespace and remove CSS comments
+    const cleanCss = cssString
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .trim();
+
+    // Regex matches: selector { contents }
+    const blockRegex = /([^{]+)\s*\{\s*([^}]+)\s*\}/g;
+    let match;
+
+    while ((match = blockRegex.exec(cleanCss)) !== null) {
+        const selector = match[1].trim();
+        const rulesString = match[2].trim();
+
+        // Split declarations by semicolons
+        const declarations = rulesString.split(';').map(d => d.trim()).filter(Boolean);
+
+        const tuples = declarations.map(decl => {
+            // Split into property and value at the first colon
+            const colonIndex = decl.indexOf(':');
+            if (colonIndex === -1) return null;
+
+            const property = decl.slice(0, colonIndex).trim();
+            let value = decl.slice(colonIndex + 1).trim();
+            const isImportant = typeof value == "string" && /!important/i.test(value);
+            if (isImportant)
+                value = value.replace(/!important/i, "");
+
+            return [property, value, isImportant];
+        }).filter(Boolean); // Filter out any malformed lines
+
+        result[selector] = tuples;
+    }
+
+    return result 
+}
 
 
 function valueToAST(value: any): t.Expression {
@@ -123,9 +165,19 @@ function resolveIdentifier(
 
 function astToValue(
     node: t.Node,
-    path: NodePath
+    pathNode: NodePath
 ): any {
 
+
+    if (
+        t.isCallExpression(node) &&
+        t.isIdentifier(node.callee, { name: "require" }) &&
+        node.arguments.length === 1 &&
+        t.isStringLiteral(node.arguments[0])
+    ) {
+
+        return node.arguments[0].value;
+    }
 
     // Arrow functions
     if (
@@ -161,7 +213,7 @@ function astToValue(
     if (t.isIdentifier(node)) {
         return resolveIdentifier(
             node,
-            path
+            pathNode
         );
     }
 
@@ -203,7 +255,7 @@ function astToValue(
                 const spreadValue =
                     resolveIdentifier(
                         prop.argument,
-                        path
+                        pathNode
                     );
 
 
@@ -244,7 +296,7 @@ function astToValue(
             obj[key] =
                 astToValue(
                     prop.value,
-                    path
+                    pathNode
                 );
         }
 
@@ -286,6 +338,32 @@ function isNestedStyleSheetCreate(
 }
 
 
+function isCssStyleSheetCreate(
+    node: t.MemberExpression
+) {
+
+    if (t.isIdentifier(node.object) && node.object.name?.indexOf("CssStyleSheet") !== -1) {
+        console.info("found CssStyleSheet")
+        return true;
+    }
+
+
+    if (
+        t.isMemberExpression(node.object) &&
+        t.isIdentifier(node.object.object) &&
+        node.object.object.name?.indexOf("CssStyleSheet") !== -1 &&
+        t.isIdentifier(node.object.property) &&
+        node.object.property.name === "default"
+    ) {
+        console.info("found CssStyleSheet")
+        return true;
+    }
+
+
+    return false;
+}
+
+
 
 export default function styleTransformer(): PluginObj {
 
@@ -302,47 +380,91 @@ export default function styleTransformer(): PluginObj {
                 if (!t.isMemberExpression(callee))
                     return;
 
-                if (!isNestedStyleSheetCreate(callee))
-                    return;
+                if (isNestedStyleSheetCreate(callee)) {
+                    const arg =
+                        path.node.arguments[0];
 
 
 
-                const arg =
-                    path.node.arguments[0];
+                    if (!t.isObjectExpression(arg))
+                        return;
+
+                    try {
+
+                        const value =
+                            astToValue(
+                                arg,
+                                path
+                            );
+
+
+                        // console.warn("Converting Value",value);
+
+
+                        const newValue =
+                            NestedStyleSheet.create(
+                                value
+                            );
+
+
+                        // console.warn("New Value",newValue);
 
 
 
-                if (!t.isObjectExpression(arg))
-                    return;
-
-                try {
-
-                    const value =
-                        astToValue(
-                            arg,
-                            path
+                        path.replaceWith(
+                            valueToAST(newValue)
                         );
+                    } catch (e) {
+                        console.warn("babel-style-transformer:Warning", e);
+                    }
+                } else if (isCssStyleSheetCreate(callee)) {
+                    try {
+                        const arg = path.node.arguments[0];
+                        const value: string =
+                            astToValue(
+                                arg,
+                                path
+                            );
 
 
-                    // console.warn("Converting Value",value);
+                        const _path = filePath.resolve(value);
+                        if (!fs.existsSync(_path)) {
+                            console.error(_path, "css file not found");
+                            return;
+                        }
+                        console.info("babel-style-transformer parsing the css file", _path);
 
+                        let cssString = parseCssToTuples(fs.readFileSync(_path, { encoding: "utf8" }));
 
-                    const newValue =
-                        NestedStyleSheet.create(
-                            value
+                        let newValue = {};
+                        for (let k in cssString) {
+                            let itemKey = k.startsWith(".") ? k.substring(1) : k;
+                            let data = cssString[k];
+                            newValue[itemKey]={};
+                            for (let d of data) {
+                                let item = transform([d as any]);
+                                if (d[2])
+                                {
+                                    for(let tm in item)
+                                        item[tm]+= "-!important";
+                                }
+                                Object.assign(newValue[itemKey], item);
+                            }
+                        }
+
+                        newValue = NestedStyleSheet.create(
+                            newValue
                         );
-
-
-                    // console.warn("New Value",newValue);
-
-
-
-                    path.replaceWith(
-                        valueToAST(newValue)
-                    );
-                } catch (e) {
-                    console.warn("babel-style-transformer:Warning", e);
+                        console.info("css Parsed");
+                        //console.log("parsed", newValue)
+                        path.replaceWith(
+                            valueToAST(newValue)
+                        );
+                    } catch (e) {
+                        throw e;
+                    }
                 }
+
             }
         }
     };

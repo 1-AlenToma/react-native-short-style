@@ -9,6 +9,7 @@ import { devToolsHandlerContext, globalData, StyleContext, ThemeContext } from "
 import { CSSProps, CSSStyle } from "./CSSStyle";
 import { ifSelector, newId, refCreator, setRef, ValueIdentity, flatStyle } from "../config";
 import NestedStyleSheet from "./NestedStyleSheet";
+import CssStyleSheet from "./CssStyleSheet";
 import cssTranslator, { clearCss } from "./cssTranslator";
 import { IParent } from "../Typse";
 import { useStyled, PositionContext, useLocalRef, useTimer } from "../hooks";
@@ -334,5 +335,6 @@ export class CMBuilder {
 
 export {
     NestedStyleSheet,
+    CssStyleSheet,
     cssTranslator
 };

@@ -1,8 +1,11 @@
 import { Platform } from "react-native";
 import NestedStyleSheet from "../styles/NestedStyleSheet";
+import CssStyleSheet from "../styles/CssStyleSheet";
 
 
 const cachedCss: any = { web: undefined, android: undefined }
+
+//let cssS = CssStyleSheet.create(("./src/assets/userStyle.css"));
 
 const userStyle = NestedStyleSheet.create({
     header: "bac-#292e34",

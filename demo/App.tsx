@@ -23,7 +23,8 @@ import {
   FormItem,
   TextInput,
   CSSStorage,
-  useLoader
+  useLoader, 
+  CssStyleSheet
 } from 'react-native-short-style';
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
@@ -32,11 +33,12 @@ import { newId } from 'react-native-short-style';
 import React, { useEffect, useRef } from 'react';
 import * as icons from "@expo/vector-icons";
 
-const userDefined = {
+/*const userDefined = {
   textStyle: "co-yellow pa-5 !important",
   "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red textStyle-!important",
   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
-}
+}*/
+const userDefined = CssStyleSheet.create("./assets/userStyle.css");
 const themes = [
   NestedStyleSheet.create({
     AnimatedView: {

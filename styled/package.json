@@ -31,10 +31,10 @@
   ],
   "scripts": {
     "clean": "rmdir /s /q dist",
-    "buildThis": "npm run clean && tsc && tsx scripts/transform-dist.ts",
+    "buildThis": "npm run clean && tsc && npm run assets && tsx scripts/transform-dist.ts",
     "build": "npm run buildThis && cd ../demo && npm run export",
     "assets": "cpx \"src/assets/**/*\" dist/src/assets",
-    "ready": "npm run build && npm run assets",
+    "ready": "npm run build",
     "web": "cd ../demo && npx expo start",
     "test": "tsc  && jest tsx ./dist/test/Methods.test.js",
     "beta": "npm publish --tag beta"
@@ -59,6 +59,7 @@
   ],
   "dependencies": {
     "@miblanchard/react-native-slider": "*",
+    "css-to-react-native": "^3.2.0",
     "msgpackr": "*",
     "react-native-short-style-devtools": "*",
     "react-smart-state": "^1.1.5"
