@@ -72,12 +72,5 @@ class NestedStyleSheet {
   }
 };
 
-class CssStyleSheet {
-  static create<T extends NamedStyles<T> | NamedStyles<any>>(path: `${string}.css`): { [key: string]: number } {
-    return path as any;
-  }
-
-}
-
 
 export default NestedStyleSheet;
