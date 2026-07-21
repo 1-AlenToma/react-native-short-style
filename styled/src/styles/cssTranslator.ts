@@ -35,7 +35,6 @@ const buildShortCss = () => {
           shortKey += s;
           continue;
         }
-
         if (s === s.toUpperCase()) shortKey += s;
       }
     while (shortCss.find(x => x[shortKey])) {
@@ -131,7 +130,6 @@ const css_translator = (
         if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
           continue;
         if (ValueIdentity.isClass(c)) {
-          //   console.log(c)
           c = c.trim().substring(1);
         }
         let style = CSS[c] ?? CSS[c.toLowerCase()];

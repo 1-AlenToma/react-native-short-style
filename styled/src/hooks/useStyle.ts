@@ -257,23 +257,13 @@ export function useStyled(parentId: string, context: StyleContextType, type: str
         let keySelector: Record<string, any> = {};
         let keySelectorImportant: Record<string, any> = {};
         for (const item of rule.parsedSelector) {
-            //const selectorParts = parseSelector(selStr);
-            //  const selectorParts = selStr.
             const lastPart = item[item.length - 1];
 
             if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
                 continue;
 
-            /*  if (rule.selectors.find(x => x.indexOf("virtualItemSelector:nth") !== -1) && fullPath.find(x => x.indexOf("virtualItemSelector") != -1)) {
-                  console.log(rule)
-      
-              }*/
             if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
                 continue;
-            // if (lastPart.type == "Text" && rule.selectors.includes("container> Text"))
-            //   console.log("here")
-
-
             if (typeof rule.style === "string") {
                 let st = cssTranslator(rule.style as any as string, systemTheme);
                 merged = { ...merged, ...st };

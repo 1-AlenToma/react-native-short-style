@@ -182,7 +182,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
         })}>
         <TouchableOpacity
             onPress={mem(() => {
-               state.isVisible = false;
+                toggle(false);
+              // state.isVisible = false;
             })}
             css={!isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button"}>
         </TouchableOpacity>
@@ -274,7 +275,8 @@ export const ActionSheet = (props: ActionSheetProps) => {
                     })
                 }, blurAnimation.animate.x)} onPress={mem(() => {
                     if (!props.disableBlurClick)
-                       state.isVisible= false;
+                        toggle(false);
+                      // state.isVisible= false;
                 }, props.disableBlurClick)} css="zi:1" />
                 <AnimatedView
                     inspectDisplayName="ActionSheet"

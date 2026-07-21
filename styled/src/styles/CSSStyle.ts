@@ -358,7 +358,6 @@ export abstract class ExtraCssStyle {
         if (value && typeof value == "object" && (value as CSSStyle).type == this.type) {
             this.value = `${(value as CSSStyle).value} ${this.value}`;
         } else if (value && typeof value == "object") {
-            let css = ""
             let style = flatStyle(value);
             for (let key in style) {
                 let v = style[key]

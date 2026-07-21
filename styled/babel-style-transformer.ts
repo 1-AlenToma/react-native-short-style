@@ -6,6 +6,30 @@ import * as filePath from "path";
 import generate from "@babel/generator";
 import transform from 'css-to-react-native';
 
+function isCssPath(cssFilePathOrCssString: string): boolean {
+    const trimmed = cssFilePathOrCssString.trim();
+
+    // 1. Explicitly check for CSS file paths/URLs
+    if (trimmed.endsWith(".css") || trimmed.includes(".css?")) {
+        return true;
+    }
+
+    // 2. Safely check for CSS style properties (e.g., "color: red" or "margin-top: 10px")
+    // This regex looks for a valid CSS property name immediately followed by a colon.
+    // It avoids tripping over structural colons like "div:hover" or "https://".
+    const hasStylePropertyPattern = /^[a-zA-Z-]+[:]\s*/.test(trimmed);
+    if (hasStylePropertyPattern) {
+        return false;
+    }
+
+    // 3. Fallback validation: Ensure it actually looks like a CSS selector path
+    // Valid paths usually start with a tag, class (.), ID (#), or attribute ([)
+    const isValidSelectorPattern = /^[a-zA-Z0-9_*.\s>+#~\[:]/.test(trimmed);
+
+    return isValidSelectorPattern;
+}
+
+
 export function parseCssToTuples(cssString: string) {
     const result = {} as Record<string, [[string, any, boolean]]>
 
@@ -42,7 +66,7 @@ export function parseCssToTuples(cssString: string) {
         result[selector] = tuples;
     }
 
-    return result 
+    return result
 }
 
 
@@ -317,7 +341,7 @@ function isNestedStyleSheetCreate(
 ) {
 
     if (t.isIdentifier(node.object) && node.object.name?.indexOf("NestedStyleSheet") !== -1) {
-        console.info("found NestedSheet")
+        //  console.info("found NestedSheet")
         return true;
     }
 
@@ -329,7 +353,7 @@ function isNestedStyleSheetCreate(
         t.isIdentifier(node.object.property) &&
         node.object.property.name === "default"
     ) {
-        console.info("found NestedSheet")
+        // console.info("found NestedSheet")
         return true;
     }
 
@@ -343,7 +367,7 @@ function isCssStyleSheetCreate(
 ) {
 
     if (t.isIdentifier(node.object) && node.object.name?.indexOf("CssStyleSheet") !== -1) {
-        console.info("found CssStyleSheet")
+        //  console.info("found CssStyleSheet")
         return true;
     }
 
@@ -355,7 +379,7 @@ function isCssStyleSheetCreate(
         t.isIdentifier(node.object.property) &&
         node.object.property.name === "default"
     ) {
-        console.info("found CssStyleSheet")
+        //  console.info("found CssStyleSheet")
         return true;
     }
 
@@ -426,27 +450,30 @@ export default function styleTransformer(): PluginObj {
                                 path
                             );
 
+                        let cssString;
+                        if (isCssPath(value)) {
+                            const _path = filePath.resolve(value);
+                            if (!fs.existsSync(_path)) {
+                                console.error(_path, "css file not found");
+                                return;
+                            }
+                            console.info("babel-style-transformer parsing the css file", _path);
 
-                        const _path = filePath.resolve(value);
-                        if (!fs.existsSync(_path)) {
-                            console.error(_path, "css file not found");
-                            return;
+                            cssString = parseCssToTuples(fs.readFileSync(_path, { encoding: "utf8" }));
+                        } else {
+                            cssString = parseCssToTuples(value);
                         }
-                        console.info("babel-style-transformer parsing the css file", _path);
-
-                        let cssString = parseCssToTuples(fs.readFileSync(_path, { encoding: "utf8" }));
 
                         let newValue = {};
                         for (let k in cssString) {
                             let itemKey = k.startsWith(".") ? k.substring(1) : k;
                             let data = cssString[k];
-                            newValue[itemKey]={};
+                            newValue[itemKey] = {};
                             for (let d of data) {
                                 let item = transform([d as any]);
-                                if (d[2])
-                                {
-                                    for(let tm in item)
-                                        item[tm]+= "-!important";
+                                if (d[2]) {
+                                    for (let tm in item)
+                                        item[tm] += "-!important";
                                 }
                                 Object.assign(newValue[itemKey], item);
                             }

@@ -238,10 +238,14 @@ export class CMBuilder {
         //**
         // style.important override cssStyle and cssStyle.important override the style.important
         // and style tag override all */
-        if (_styles && _styles.important)
-            cssStyle = Object.assign(cssStyle, _styles.important)
-        if (cssStyle.important)
+        if (_styles && _styles.important) {
+            cssStyle = Object.assign(cssStyle, _styles.important);
+            delete _styles.important;
+        }
+        if (cssStyle.important) {
             Object.assign(cssStyle, cssStyle.important)
+            delete cssStyle.important;
+        }
 
         let styles = changedProps ? [style] : (Array.isArray(style)
             ? [_styles, cssStyle, ...style]
@@ -253,7 +257,6 @@ export class CMBuilder {
         }
 
         if (inspect && ifTrue != false) {
-            //styles = flatStyle(styles);
             if (changedProps && changedProps._deletedItems?.style)
                 devToolsHandlerContext.cleanDeletedItemsStyle(styles, changedProps._deletedItems.style);
         }
@@ -270,39 +273,42 @@ export class CMBuilder {
             }
         }, [])
 
-        useEffect(() => {
-            const patch = async () => {
-                if (inspect && ifTrue != false) {
-                    if (internalProps?.inspectDisplayName)
-                        delete internalProps.inspectDisplayName;
-                    devToolsHandlerContext.patch({
-                        name: props.inspectDisplayName ?? this.__name,
-                        children: [],
-                        props: {
-                            ifTrue,
-                            ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
-                            classes: devToolsHandlerContext.withKeysOnly(keySelectors),
-                            _viewId: id,
-                            _elementIndex: positionContext.index,
-                            _parent_viewId: positionContext.parentId ?? "__0__",
-                            ...(typeof children == "string" ? { children } : {})
-                        }
-                    });
-                } else if (inspect) {
-                    devToolsHandlerContext.delete(id);
-                    devToolsHandlerContext.components.delete(id);
-                };
-            }
 
-            if (inspect) {
-                patch();
-            }
-        }, [
-            inspect,
-            styles,
-            internalProps,
-            children
-        ]);
+        if (__DEV__) {
+            useEffect(() => {
+                const patch = async () => {
+                    if (inspect && ifTrue != false) {
+                        if (internalProps?.inspectDisplayName)
+                            delete internalProps.inspectDisplayName;
+                        devToolsHandlerContext.patch({
+                            name: props.inspectDisplayName ?? this.__name,
+                            children: [],
+                            props: {
+                                ifTrue,
+                                ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
+                                classes: devToolsHandlerContext.withKeysOnly(keySelectors),
+                                _viewId: id,
+                                _elementIndex: positionContext.index,
+                                _parent_viewId: positionContext.parentId ?? "__0__",
+                                ...(typeof children == "string" ? { children } : {})
+                            }
+                        });
+                    } else if (inspect) {
+                        devToolsHandlerContext.delete(id);
+                        devToolsHandlerContext.components.delete(id);
+                    };
+                }
+
+                if (inspect) {
+                    patch();
+                }
+            }, [
+                inspect,
+                styles,
+                internalProps,
+                children
+            ]);
+        }
 
         if (ifTrue == false)
             return null;
