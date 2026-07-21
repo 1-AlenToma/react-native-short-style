@@ -15,16 +15,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository code (Upgraded to v6 for Node 24 support)
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload dist folder
-        uses: actions/upload-pages-artifact@v3
+      # 2. Force Node.js 24 environment inside the runner container
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
         with:
-          path: demo/dist   # 👈 your folder
+          node-version: 24
 
+      # 3. Optional Build Steps: Uncomment if you build the site inside GitHub Actions
+      # - name: Install Dependencies
+      #   run: npm ci
+      # - name: Build Static Site
+      #   run: npm run build
+
+      # 4. Setup GitHub Pages configuration (Upgraded to v5+)
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 5. Compress and stage the dist directory (Upgraded to v4+)
+      - name: Upload dist folder
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: demo/dist
+
+      # 6. Execute deployment pipeline to live GitHub Pages servers (Upgraded to v4.0.5+)
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
