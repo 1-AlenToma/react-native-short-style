@@ -73,10 +73,8 @@ export const useCurrentTheme = (context: IThemeContext) => {
     if (__DEV__ || !globalData.storage.has(key)) {
         if ((!themes[context.selectedIndex] || __DEV__) && context.themes.length > 0 && context.defaultTheme) {
             let thisTheme = themeStyle();
-            let selectedTheme = serilizeCssStyle({ ...context.defaultTheme, ...context.themes[context.selectedIndex] });
-            themes[context.selectedIndex] = {
-                ...thisTheme, ...selectedTheme, ...serilizeCssStyle(ComponentsStyles)
-            }
+            let selectedTheme = serilizeCssStyle(context.defaultTheme, context.themes[context.selectedIndex], ComponentsStyles);
+            themes[context.selectedIndex] = { ...thisTheme, ...selectedTheme }
         }
 
         globalData.storage.set(key, themes[context.selectedIndex])

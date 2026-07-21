@@ -1,8 +1,7 @@
-import { extractProps } from "../config/CSSMethods";
 import { Storage, TStorage } from "../config/Storage";
 import { StylesAttributes, ShortCSS } from "./validStyles";
 import { ValueIdentity } from "../config/CSSMethods";
-import {tryFunc} from "./NestedStyleSheet"
+import { tryFunc } from "./NestedStyleSheet"
 
 let styleKeys = [...StylesAttributes]
 
@@ -81,32 +80,21 @@ const checkObject = (value: string) => {
 const cleanKey = (k: string) => {
   return (k ?? "").indexOf(".") != -1 ? k.substring(1) : k;
 }
-export const serilizeCssStyle = (style: any) => {
-
-
+export const serilizeCssStyle = (...styles: any[]) => {
   let sItem = {};
-  let fn = (s: any, parentKey: string) => {
-    let item = {};
+  let fn = (s: any) => {
     if (typeof s == "function")
-        return tryFunc(s, true);
-    if (typeof s !== "object" || typeof s === "string" || Array.isArray(s))
-      return s;
-    for (let k in s) {
-      if (k && k.indexOf("$") != -1) {
-        let pKey = `${parentKey}.${cleanKey(k)}`;
-        sItem[pKey] = fn(s[k], pKey);
-        continue;
-      }
-      item[k] = s[k];
-    }
-    return item;
+      return tryFunc(s, true);
+    return s;
   };
-
-  for (let k in style) {
-    let ck = cleanKey(k);
-    sItem[ck] = fn(style[k], ck);
+  for (let style of styles) {
+    for (let k in style) {
+      let ck = cleanKey(k);
+      sItem[ck] = fn(style[k]);
+      if (typeof style[k] == "function")
+        style[k] = sItem[ck];
+    }
   }
-
   return sItem;
 };
 
@@ -123,98 +111,85 @@ const css_translator = (
   css?: string,
   styleFile?: any,
   id?: string
-): object & { _props: any, important?: any } => {
-  try{
-  let important = {};
-  let cssItem = { _props: {} };
-  if (!css || css.trim().length <= 0) return cssItem;
+): object & { important?: any } => {
+  try {
+    let important = {};
+    let cssItem = {};
+    if (!css || css.trim().length <= 0) return cssItem;
 
-  if (id !== undefined && Storage.has(id))
-    return { ...Storage.get(id) };
-  else if (TStorage.has(css))
-    return { ...TStorage.get(css) }
+    if (id !== undefined && Storage.has(id))
+      return { ...Storage.get(id) };
+    else if (TStorage.has(css))
+      return { ...TStorage.get(css) }
 
-  let CSS = styleFile ?? {};
-  let translatedItem = extractProps(css);
-  if (translatedItem._hasValue) {
-    css = translatedItem.css;
-    delete translatedItem.css;
-    delete translatedItem._hasValue;
-    cssItem._props = { ...translatedItem }
-  }
+    let CSS = styleFile ?? {};
 
-  let items = ValueIdentity.splitCss(css);
-  let isImportant = /(^|[^-])!important\b/.test(css);
-  if (items && items.length > 0) {
-    for (let c of items) {
-      if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
-        continue;
-      if (ValueIdentity.isClass(c)) {
-        //   console.log(c)
-        c = c.trim().substring(1);
-      }
-      let style = CSS[c] ?? CSS[c.toLowerCase()];
-      let _isImportend = isImportant;
-      if (style === undefined && (ValueIdentity.has(c))) {
-        let kValue = ValueIdentity.keyValue(c);
-        if (kValue.important) {
-          _isImportend = true;
-        }
-        let k = kValue.key;
-        let value = kValue.isClassName ? kValue.value : checkObject(checkNumber(kValue.value));
-        if (typeof value == "string" && /(undefined)|(null)/gi.test(value))
-          value = undefined;
-        else if (kValue.isClassName) {
-          if (value in CSS || value.toLowerCase() in CSS) {
-            let tValue = CSS[value] ?? CSS[value.toLowerCase()];
-            if (typeof tValue === "object")
-              value = Object.values(tValue)[0];
-            else value = tValue;
-          } else continue; // its a class that is not used in this context
-        }
-        let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
-        if (!kValue.isClassName || short) {
-          if (short) {
-            (_isImportend ? important : cssItem)[short] = value;
-          } else {
-            (_isImportend ? important : cssItem)[k] = value;
-            if (__DEV__)
-              console.warn(kValue, value, "not found in react-native style props, but we will still add it")
-          }
+    let items = ValueIdentity.splitCss(css);
+    let isImportant = /(^|[^-])!important\b/.test(css);
+    if (items && items.length > 0) {
+      for (let c of items) {
+        if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
           continue;
-        } else style = value;
-      }
-
-
-      if (style && typeof style === "string") {
-        style = css_translator(style, styleFile);
-        CSS[c] = { ...style } // so as to not parse it again
-      }
-
-      if (typeof style == "object")
-        style = {...style}
-
-      if (style) {
-        if (style._props) {
-          Object.assign(cssItem._props, style._props)
-          delete style._props;
+        if (ValueIdentity.isClass(c)) {
+          //   console.log(c)
+          c = c.trim().substring(1);
+        }
+        let style = CSS[c] ?? CSS[c.toLowerCase()];
+        let _isImportend = isImportant;
+        if (style === undefined && (ValueIdentity.has(c))) {
+          let kValue = ValueIdentity.keyValue(c);
+          if (kValue.important) {
+            _isImportend = true;
+          }
+          let k = kValue.key;
+          let value = kValue.isClassName ? kValue.value : checkObject(checkNumber(kValue.value));
+          if (typeof value == "string" && /(undefined)|(null)/gi.test(value))
+            value = undefined;
+          else if (kValue.isClassName) {
+            if (value in CSS || value.toLowerCase() in CSS) {
+              let tValue = CSS[value] ?? CSS[value.toLowerCase()];
+              if (typeof tValue === "object")
+                value = Object.values(tValue)[0];
+              else value = tValue;
+            } else continue; // its a class that is not used in this context
+          }
+          let short = (ShortCSS[k] ?? ShortCSS[k.toLowerCase()]);
+          if (!kValue.isClassName || short) {
+            if (short) {
+              (_isImportend ? important : cssItem)[short] = value;
+            } else {
+              (_isImportend ? important : cssItem)[k] = value;
+              if (__DEV__)
+                console.warn(kValue, value, "not found in react-native style props, but we will still add it")
+            }
+            continue;
+          } else style = value;
         }
 
-        important = { ...important, ...style.important }
-        //Object.assign(important, style);
-        Object.assign(cssItem, style)
-        continue;
+
+        if (style && typeof style === "string") {
+          style = css_translator(style, styleFile);
+          CSS[c] = { ...style } // so as to not parse it again
+        }
+
+        if (typeof style == "object")
+          style = { ...style }
+
+        if (style) {
+          important = { ...important, ...style.important }
+          Object.assign(cssItem, style)
+          continue;
+        }
       }
     }
+    if (id !== undefined)
+      Storage.set(id, { ...cssItem, important: { ...important } });
+    else TStorage.set(css, { ...cssItem, important: { ...important } });
+    return { ...cssItem, important: { ...important } }
+  } catch (e) {
+    console.error("css translator error", css, e);
+    throw e
   }
-  if (id !== undefined)
-    Storage.set(id, { ...cssItem, important: { ...important } });
-  else TStorage.set(css, { ...cssItem, important: { ...important } });
-  return { ...cssItem, important: { ...important } }
-}catch(e){
-  console.error("css translator error", css, e);
-  throw e
-}
 };
 
 export default css_translator;
