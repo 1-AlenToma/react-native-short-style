@@ -143,7 +143,7 @@ const themes = [
   // All your components have to be contained within ThemeContainer
   <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
 
-  <View css="texto-!important">
+  <View css="texto-!important he-300">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>
   </ThemeContainer>
