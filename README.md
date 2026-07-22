@@ -5,6 +5,31 @@ With this css you wont need to devide your style across components, and style ea
 
 So like CSS you could have selectors like container > Button Text[children*='submit']:"width-100 he-20 di-flex" etc.
 
+## Babel.config
+`react-native-short-style` parse all `NestedStyleSheet` and `CSSStyleSheet` at build time. 
+that is why you will need to add `react-native-short-style/babel-style-transformer` plugins to your `build.config.js`
+here is an example with expo.
+note: this is only applicable for version >`1.3.3`
+```js
+
+const path = require("path");
+
+module.exports = function (api) {
+  api.cache(true);
+
+  return {
+    presets: [
+      "babel-preset-expo"
+    ],
+    plugins: [
+      "react-native-short-style/babel-style-transformer"
+    ],
+  };
+};
+
+
+```
+
 App using react-native-short-style
 [Novelo](https://github.com/1-AlenToma/Novelo)
 
@@ -50,6 +75,7 @@ here is a predifined Components you could use, like ActionSheet, Modal etc.
   Button,
   Icon,
   NestedStyleSheet,
+  CSSStyleSheet,
   Modal,
   ActionSheet,
   TouchableOpacity,

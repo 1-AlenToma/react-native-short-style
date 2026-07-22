@@ -14,19 +14,9 @@ function isCssPath(cssFilePathOrCssString: string): boolean {
         return true;
     }
 
-    // 2. Safely check for CSS style properties (e.g., "color: red" or "margin-top: 10px")
-    // This regex looks for a valid CSS property name immediately followed by a colon.
-    // It avoids tripping over structural colons like "div:hover" or "https://".
-    const hasStylePropertyPattern = /^[a-zA-Z-]+[:]\s*/.test(trimmed);
-    if (hasStylePropertyPattern) {
-        return false;
-    }
+    return false;
 
-    // 3. Fallback validation: Ensure it actually looks like a CSS selector path
-    // Valid paths usually start with a tag, class (.), ID (#), or attribute ([)
-    const isValidSelectorPattern = /^[a-zA-Z0-9_*.\s>+#~\[:]/.test(trimmed);
 
-    return isValidSelectorPattern;
 }
 
 
@@ -191,6 +181,24 @@ function astToValue(
     node: t.Node,
     pathNode: NodePath
 ): any {
+    if (t.isTemplateLiteral(node)) {
+
+        // Fast path: no expressions
+        if (node.expressions.length === 0) {
+            return node.quasis[0].value.cooked;
+        }
+
+        try {
+            const code = generate(node).code;
+            return eval(code);
+        } catch (e: any) {
+            throw new Error(
+                `Could not statically evaluate template literal:\n\n` +
+                `${generate(node).code}\n\n` +
+                `Reason: ${e.message}`
+            );
+        }
+    }
 
 
     if (

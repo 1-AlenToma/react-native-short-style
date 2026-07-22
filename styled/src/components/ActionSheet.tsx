@@ -30,10 +30,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
             isTouched: false,
             interpolate: [],
             show: false
-        } 
+        }
     })).ignore("refItem").build();
 
-    const {mem} = useLocalMemo();
+    const { mem } = useLocalMemo();
     let getHeight = () => {
         let h: any = props.size ?? "50%";
         if (props.size == "content") {
@@ -112,11 +112,10 @@ export const ActionSheet = (props: ActionSheetProps) => {
 
                 state.refItem.panResponse = undefined;
                 state.refItem.show = show;
-                if (state.isVisible != props.isVisible && !show)
-                    state.isVisible = props.isVisible;
-                if (state.isVisible && !show && props.isVisible) {
+                if (!show && props.isVisible) {
                     props.onHide?.();
-                }
+                } else if (state.isVisible != props.isVisible && !show)
+                    state.isVisible = props.isVisible;
             }
         );
     };
@@ -143,14 +142,13 @@ export const ActionSheet = (props: ActionSheetProps) => {
 
 
     React.useEffect(() => {
-        if (state.isVisible != props.isVisible && props.isVisible)
-            state.isVisible = props.isVisible;
-        else toggle(props.isVisible);
+        state.isVisible = props.isVisible;
     }, [props.isVisible]);
 
+    // Run the animation whenever the internal visibility actually shifts
     React.useEffect(() => {
-        toggle(state.isVisible)
-    }, [state.isVisible])
+        toggle(state.isVisible);
+    }, [state.isVisible]);
 
 
     const handleStyle: any = {};
@@ -183,7 +181,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         <TouchableOpacity
             onPress={mem(() => {
                 toggle(false);
-              // state.isVisible = false;
+                // state.isVisible = false;
             })}
             css={!isVertical ? "_actionSheet_horizontal_handle_Button" : "_actionSheet_vertical_handle_Button"}>
         </TouchableOpacity>
@@ -276,7 +274,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
                 }, blurAnimation.animate.x)} onPress={mem(() => {
                     if (!props.disableBlurClick)
                         toggle(false);
-                      // state.isVisible= false;
+                    // state.isVisible= false;
                 }, props.disableBlurClick)} css="zi:1" />
                 <AnimatedView
                     inspectDisplayName="ActionSheet"
