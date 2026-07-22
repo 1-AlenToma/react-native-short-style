@@ -160,6 +160,7 @@ const themes = [
 ## Devtools
 
 For enabling devTools, edit `metro.config.js`
+Note: this is not perfect yet, use rn devtools is better as for now.
 ```js
 const { startDevServer } = require("react-native-short-style-devtools");
 
