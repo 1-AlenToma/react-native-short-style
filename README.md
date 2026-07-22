@@ -51,16 +51,7 @@ The overriden rules are as follow. css prop override NestedStyleSheet, and style
 
 Note: Do not use dynamic style in css to much, eg a moving ball as its value changes to much and the lib caches all css values. The cache have max size and it will reset when the size reaches, so no need to be worry even if you dynamic css
 
-Convert
-To Convert Any component to styled component use CreateView eg
 ```ts 
-const Custom = ({style, css, ifTrue, ...}, ref) => {
-
-  return null
-
-}
-
-const StyledCustome =CreateView<Custom, any>(Custom);
 
 /// the current code is used for View
  const View = CreateView<Native.View, ViewProps>(Native.View);
