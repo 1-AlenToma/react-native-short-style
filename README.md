@@ -103,6 +103,7 @@ import * as icons from "@expo/vector-icons";
 # Simple test
 
 ```ts
+import * as icons from '@expo/vector-icons';
 const userDefined = {
   textStyle: "co-yellow pa-5 !important",
   "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red .textStyle-!important",
