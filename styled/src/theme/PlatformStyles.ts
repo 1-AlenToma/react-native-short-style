@@ -1,25 +1,8 @@
 import { Platform } from "react-native";
 import NestedStyleSheet from "../styles/NestedStyleSheet";
-import CssStyleSheet from "../styles/CssStyleSheet";
 
 const cachedCss: any = { web: undefined, android: undefined }
 
-let cssS = CssStyleSheet.create(`textStyle {
-    color: yellow !important;
-    padding: 5px !important;
-}
-
-texto,
-texto Text > Text:eq-of-type(0) {
-    background-color: green !important;
-    color: red;
-}
-
-virtualItemSelector:not(>:has(selectedValue)):nth(even) *{
-    background-color: black !important;
-    color: white !important;
-    font-weight: bold !important;   
-}`);
 
 const userStyle = NestedStyleSheet.create({
     header: "bac-#292e34",
