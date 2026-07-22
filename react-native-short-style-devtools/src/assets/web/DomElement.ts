@@ -15,7 +15,7 @@ class DomElement<T = IDomElement> {
 
     flash(byStyle: any = {}): this {
         let node = this.el;
-        if (!node || !(node instanceof HTMLElement)) return;
+        if (!node || ! (node instanceof HTMLElement)) return this;
 
         // Save original styles so we can restore them later
         const originalTransition = node.style.transition;

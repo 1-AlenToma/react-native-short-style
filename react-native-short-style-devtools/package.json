@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style-devtools",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "devtools for inpecting rendered views",
   "keywords": [
     "react-native-short-style-devtools"

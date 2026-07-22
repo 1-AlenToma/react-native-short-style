@@ -179,7 +179,8 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-lastly assign localIp to ThemeContainer
+lastly assign localIp to ThemeContainer.
+localIp could be found in cmd => ipconfig
 ```
 
 Note: some components is using settings for @expo/vector-icons 15 like FormGroup info icons, so if used below the current version then assign your own icons for ex infoIcon props

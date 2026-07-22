@@ -18,7 +18,7 @@ config.resolver.extraNodeModules = new Proxy({}, {
 config.resolver.assetExts.push("ttf", "png", "jpg", "jpeg");
 
 // Only run in Node + dev mode
-/*if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production") {
     try {
         const root = path.resolve(
             __dirname,
@@ -30,7 +30,7 @@ config.resolver.assetExts.push("ttf", "png", "jpg", "jpeg");
     } catch (err) {
         console.error("Failed to start DevTools server:", err);
     }
-}*/
+}
 
 
 module.exports = config;

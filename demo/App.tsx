@@ -95,7 +95,7 @@ export default function App() {
 
 
   return (
-    <ThemeContainer icons={icons}  selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+    <ThemeContainer icons={icons} localIp='192.168.103.112' selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
       {debug ? (<View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (

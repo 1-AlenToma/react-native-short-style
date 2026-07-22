@@ -284,7 +284,7 @@ export class CMBuilder {
                             name: props.inspectDisplayName ?? this.__name,
                             children: [],
                             props: {
-                                ifTrue,
+                                ifTrue: ifTrue !== false,
                                 ...devToolsHandlerContext.cleanProps({ ...internalProps, style: { ...flatStyle(styles, "_props", "transforms", "important") }, css }),
                                 classes: devToolsHandlerContext.withKeysOnly(keySelectors),
                                 _viewId: id,

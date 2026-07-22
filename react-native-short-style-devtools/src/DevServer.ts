@@ -116,7 +116,7 @@ export class DevServer {
                     // Inject appSettings + fix paths for Chrome
 
                     content = content.replace(/\{\{(.*?)\}\}/g, (_, key) => {
-                        return this.appSettings.data[key] ?? ""; // fallback if missing
+                        return (this.appSettings.data as any)[key] ?? ""; // fallback if missing
                     });
 
                     content = content

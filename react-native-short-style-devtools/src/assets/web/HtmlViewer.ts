@@ -14,16 +14,16 @@ class HtmlViewer {
     socketIsOpen: boolean = false;
     inputForm: (propKey: string, jsonItem: any, viewId?: string, isSingleValue?: boolean, parent?: any, isReadOnly?: boolean, parentKey?: string) => void;
     socket: {
-        postMessage: (type, payload) => void;
+        postMessage: (type: string, payload: any) => void;
         handChake: () => void;
         socketIsOpen: boolean;
         open: () => void;
-    }
+    } = {} as any;
     parseMessage: (event: any) => void | Promise<void>;
     collapsedNodes: Record<string, boolean> = {};
     loader: any;
     platform?: string;
-    searchedItems = {};
+    searchedItems = {} as any;
     constructor(inputform: Function, parseMessage: (event: any) => void | Promise<void>, loader: any) {
         this.loader = loader;
         this.inputForm = inputform as any;
@@ -88,7 +88,7 @@ class HtmlViewer {
         while (current) {
             pathNodes.unshift(current); // add to start of array
             const parentId = current.props._parent_viewId;
-            current = parentId ? this.trees[parentId] : undefined;
+            current = parentId ? this.trees[parentId] as any : undefined;
         }
 
         this.path.html("");
@@ -113,7 +113,7 @@ class HtmlViewer {
     createSocket() {
         const item = {
             worker: undefined,
-            socket: undefined as WebSocket,
+            socket: undefined as WebSocket | undefined,
             socketIsOpen: false,
 
             postMessage: (type, payload) => {
@@ -314,14 +314,11 @@ class HtmlViewer {
         } else if (elementCloser?.added())
             elementCloser.remove()
 
-        if (this.selectedViewId == node.props._viewId) {
+      /*  if (this.selectedViewId == node.props._viewId) {
             if (!nodeui.parent().hasClass("selected")) {
                 this.selectNode(node.props._viewId, false);
-                /*   nodeui.parent().addClass("selected");
-                   elementCloser?.addClass("selected");
-                   this.showProps(node);*/
             }
-        }
+        } */
 
     }
 
