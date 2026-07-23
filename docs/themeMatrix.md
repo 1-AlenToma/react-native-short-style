@@ -9,6 +9,8 @@ The design system consists of **two framework styles**:
 
 Each framework contains both a **Light** and **Dark** variant.
 
+Click [here to view userThemes.ts](https://github.com/1-AlenToma/react-native-short-style/blob/main/styled/src/theme/userThemes.ts) to see the fullcode instead
+
 ---
 
 # Theme Index
