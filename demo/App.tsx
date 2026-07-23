@@ -24,7 +24,8 @@ import {
   TextInput,
   CSSStorage,
   useLoader, 
-  CssStyleSheet
+  CssStyleSheet,
+  getSystemTheme
 } from 'react-native-short-style';
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
@@ -39,44 +40,7 @@ const userDefined = {
   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll(),
 }
 
-const themes = [
-  NestedStyleSheet.create({
-    AnimatedView: {
-      backgroundColor: "#fff"
-    },
-    View: {
-      backgroundColor: "#fff"
-    },
-    Text: {
-      color: "#000"
-    },
-    TextInput: {
-      color: "#000"
-    },
-    Icon: {
-      color: "#000"
-    },
-    ...userDefined
-    // "virtualItemSelector:not(*:has(selectedValue)):nth(even) *": x => x.baC("gray").co("white").foW("bold").importantAll()
-  }),
-  NestedStyleSheet.create({
-    AnimatedView: {
-      backgroundColor: "rgb(70 70 70)"
-    },
-    View: {
-      backgroundColor: "rgb(70 70 70)"
-    },
-    Text: {
-      color: "#fff"
-    },
-    TextInput: {
-      color: "#fff"
-    },
-    Icon: x => x.co(".co-light"),
-    header: "bac:red",
-    ...userDefined
-  })
-]
+const themes = getSystemTheme("Tailwind");
 
 export default function App() {
   const state = buildState({
@@ -95,7 +59,7 @@ export default function App() {
 
 
   return (
-    <ThemeContainer icons={icons} localIp='192.168.103.112' selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+    <ThemeContainer icons={icons} localIp='192.168.103.112' selectedIndex={state.selectedTheme} themes={themes} defaultTheme={{...GlobalStyles, ...userDefined}}>
       {debug ? (<View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (

@@ -5,6 +5,31 @@ With this css you wont need to devide your style across components, and style ea
 
 So like CSS you could have selectors like container > Button Text[children*='submit']:"width-100 he-20 di-flex" etc.
 
+## Babel.config
+`react-native-short-style` parse all `NestedStyleSheet` and `CSSStyleSheet` at build time. 
+that is why you will need to add `react-native-short-style/babel-style-transformer` plugins to your `build.config.js`
+here is an example with expo.
+note: this is only applicable for version >`1.3.3`
+```js
+
+const path = require("path");
+
+module.exports = function (api) {
+  api.cache(true);
+
+  return {
+    presets: [
+      "babel-preset-expo"
+    ],
+    plugins: [
+      "react-native-short-style/babel-style-transformer"
+    ],
+  };
+};
+
+
+```
+
 App using react-native-short-style
 [Novelo](https://github.com/1-AlenToma/Novelo)
 
@@ -50,6 +75,7 @@ here is a predifined Components you could use, like ActionSheet, Modal etc.
   Button,
   Icon,
   NestedStyleSheet,
+  CSSStyleSheet,
   Modal,
   ActionSheet,
   TouchableOpacity,
@@ -69,6 +95,8 @@ here is a predifined Components you could use, like ActionSheet, Modal etc.
   ToolTip,
   FormItem,
   TextInput,
+  getSystemTheme
+
 } from 'react-native-short-style';
 // if you are using expo, or your use react-native-vector-icons
 import * as icons from "@expo/vector-icons";
@@ -77,62 +105,33 @@ import * as icons from "@expo/vector-icons";
 # Simple test
 
 ```ts
+import * as icons from '@expo/vector-icons';
 const userDefined = {
   textStyle: "co-yellow pa-5 !important",
   "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red .textStyle-!important",
    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
 }
-const themes = [
-  NestedStyleSheet.create({
-    AnimatedView: {
-      backgroundColor: "#fff"
-    },
-    View: {
-      backgroundColor: "#fff"
-    },
-    Text: {
-      color: "#000"
-    },
-    TextInput: {
-      color: "#000"
-    },
-    Icon: {
-      color: "#000"
-    },
-   ...userDefined
-  }),
-  NestedStyleSheet.create({
-    AnimatedView: {
-      backgroundColor: "rgb(70 70 70)"
-    },
-    View: {
-      backgroundColor: "rgb(70 70 70)"
-    },
-    Text: {
-      color: "#fff"
-    },
-    TextInput: {
-      color: "#fff"
-    },
-    Icon: x => x.co(".co-light"),
-    header: "bac:red",
-    ...userDefined
-  })
-]
 
-
+// here you could use already defined themes.
+// there is bootstrap and Tailwind.
+  const themes = getSystemTheme("Tailwind");
 
   // All your components have to be contained within ThemeContainer
-  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={{...GlobalStyles, ...userDefined}}>
 
   <View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>
   </ThemeContainer>
 ```
+
+
+
+
 ## Devtools
 
 For enabling devTools, edit `metro.config.js`
+Note: this is not perfect yet, use rn devtools is better as for now.
 ```js
 const { startDevServer } = require("react-native-short-style-devtools");
 
@@ -151,60 +150,8 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-lastly assign localIp to ThemeContainer
-```
-
-## Cashing
-`react-native-short-style` uses its own `useMemo` called (`useLocalMemo`) that dose not depends on where you place the `useMemo`
-Note hat it works best with `react-smart-state`
-
-## Example
-```ts
-export const InputForm = () => {
-    const state = StateBuilder({
-        checkBoxes: [true, false],
-        selectedValue: countries[countries.length - 100].value // Default to the last country
-    }).build();
-    const { mem } = useLocalMemo();
-    return (
-        <FormGroup css={"maw-300"} formStyle="Headless" labelPosition="Top" title='User-Form'>
-            <FormItem title="FullName" icon={mem({ type: "AntDesign", name: "user" })}>
-                <TextInput css="fl:1" onChangeText={mem(txt => console.log(txt))} />
-            </FormItem>
-            <FormItem title="UserName" icon={mem({ type: "AntDesign", name: "user" })}>
-                <TextInput css="fl:1" />
-            </FormItem>
-            <FormItem title="Passowrd" info="Passowrd must at least containes one upper char" icon={mem({ type: "AntDesign", name: "lock" })}>
-                <TextInput css="fl:1" />
-            </FormItem>
-            <FormItem title="Country" info="Select where you are from" icon={mem({ type: "AntDesign", name: "flag" })}>
-                <DropdownList itemSize={mem({ size: 35, overscanCount: 100 })} numColumns={undefined} mode="ActionSheet" enableSearch={true} css="wi:100%"
-                    selectedValue={state.selectedValue} onSelect={mem((value) => {
-                        state.selectedValue = value.value
-                    })}
-                    items={countries} />
-            </FormItem>
-            <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={mem({ type: "AntDesign", name: "lock" })}>
-                <CheckBox checked checkBoxType="CheckBox"></CheckBox>
-            </FormItem>
-            <FormItem title="Stay logged in" info="Passowrd must at least containes one upper char" icon={mem({ type: "AntDesign", name: "lock" })}>
-                <CheckBox checked checkBoxType="Switch"></CheckBox>
-            </FormItem>
-            <FormItem title="is User">
-                <CheckBoxList labelPostion="Left" css={"wi:100% ali:flex-end"} onChange={mem((changes) => {
-                    state.checkBoxes = changes.map(x => x.checked)
-                })} checkBoxType="RadioButton" selectionType="Radio">
-                    {
-                        mem(state.checkBoxes.map((x, i) => (
-                            <CheckBox key={i} label={i == 0 ? "Yes" : "No"} checked={x} />
-                        )), state.checkBoxes)
-                    }
-                </CheckBoxList>
-            </FormItem>
-        </FormGroup>
-    )
-}
-
+lastly assign localIp to ThemeContainer.
+localIp could be found in cmd => ipconfig
 ```
 
 Note: some components is using settings for @expo/vector-icons 15 like FormGroup info icons, so if used below the current version then assign your own icons for ex infoIcon props

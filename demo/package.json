@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "link": "npm link file:../react-native-short-style-devtools --legacy-peer-deps",
-    "linkS": "cd ../styled && npm run buildThis && npm run assets && npm pack && cd ../demo && npm install ../styled/react-native-short-style-1.3.3.tgz",
+    "linkS": "cd ../styled && npm run buildThis && npm run assets && npm pack && cd ../demo && npm install ../styled/react-native-short-style-1.3.5.tgz",
     "export": "rmdir /s /q dist && expo export",
     "start": "npm run link && npm run linkS && expo start -c",
     "android": "npm run link && npm run linkS && expo start --android",
@@ -40,7 +40,7 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
-    "react-native-short-style": "file:../styled/react-native-short-style-1.3.3.tgz",
+    "react-native-short-style": "file:../styled/react-native-short-style-1.3.5.tgz",
     "react-native-short-style-devtools": "^1.0.3",
     "react-native-web": "^0.21.2",
     "react-smart-state": "^1.1.5"

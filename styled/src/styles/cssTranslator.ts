@@ -87,7 +87,7 @@ export const serilizeCssStyle = (...styles: any[]) => {
     return s;
   };
   for (let style of styles) {
-    for (let k in style) {
+    for (let k in style ?? {}) {
       let ck = cleanKey(k);
       sItem[ck] = fn(style[k]);
       if (typeof style[k] == "function")

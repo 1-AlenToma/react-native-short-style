@@ -183,7 +183,7 @@ export type IThemeContext = {
     /**
      * This will always be loaded and its style could also be overridden by selected theme
      */
-    defaultTheme: { [key: string]: number };
+    defaultTheme?: { [key: string]: any };
     /**
         cache the parsed style, right now its cached on start, on web its smater to use somthing like 
         @react-native-async-storage/async-storage to save and retrieve the parsed styles

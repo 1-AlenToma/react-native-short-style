@@ -95,6 +95,8 @@ here is a predifined Components you could use, like ActionSheet, Modal etc.
   ToolTip,
   FormItem,
   TextInput,
+  getSystemTheme
+
 } from 'react-native-short-style';
 // if you are using expo, or your use react-native-vector-icons
 import * as icons from "@expo/vector-icons";
@@ -109,45 +111,10 @@ const userDefined = {
   "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red .textStyle-!important",
    "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
 }
-const themes = [
-  NestedStyleSheet.create({
-    AnimatedView: {
-      backgroundColor: "#fff"
-    },
-    View: {
-      backgroundColor: "#fff"
-    },
-    Text: {
-      color: "#000"
-    },
-    TextInput: {
-      color: "#000"
-    },
-    Icon: {
-      color: "#000"
-    },
-   ...userDefined
-  }),
-  NestedStyleSheet.create({
-    AnimatedView: {
-      backgroundColor: "rgb(70 70 70)"
-    },
-    View: {
-      backgroundColor: "rgb(70 70 70)"
-    },
-    Text: {
-      color: "#fff"
-    },
-    TextInput: {
-      color: "#fff"
-    },
-    Icon: x => x.co(".co-light"),
-    header: "bac:red",
-    ...userDefined
-  })
-]
 
-
+// here you could use already defined themes.
+// there is bootstrap and Tailwind.
+  const themes = getSystemTheme("Tailwind");
 
   // All your components have to be contained within ThemeContainer
   <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
@@ -157,6 +124,10 @@ const themes = [
       </View>
   </ThemeContainer>
 ```
+
+
+
+
 ## Devtools
 
 For enabling devTools, edit `metro.config.js`
