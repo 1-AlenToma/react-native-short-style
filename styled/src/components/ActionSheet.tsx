@@ -132,6 +132,12 @@ export const ActionSheet = (props: ActionSheetProps) => {
         })
     }
 
+    React.useEffect(() => {
+        animate.flattenOffset();
+        state.refItem.panResponse = undefined;
+        screenSizeUpdated();
+    }, [position]);
+
     globalData.useEffect(() => {
         screenSizeUpdated();
     }, "screen");

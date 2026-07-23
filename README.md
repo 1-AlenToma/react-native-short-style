@@ -97,11 +97,12 @@ import * as icons from "@expo/vector-icons";
 
 ```ts
 import * as icons from '@expo/vector-icons';
-const userDefined = {
+const userDefined =NestedStyleSheet.create({
   textStyle: "co-yellow pa-5 !important",
   "texto, texto Text>Text:eq-of-type(0)": "bac-green co-red .textStyle-!important",
-   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll()
-}
+   "virtualItemSelector:not(>:has(selectedValue)):nth(even) *": x => x.baC("black").co("white").foW("bold").importantAll(),
+   TouchableOpacity: "bac-transparent"
+});
 
 // here you could use already defined themes.
 // there is bootstrap and Tailwind.
