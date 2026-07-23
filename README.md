@@ -115,8 +115,9 @@ const userDefined = {
       </View>
   </ThemeContainer>
 ```
+## ThemeMatrix
 
-
+For to know how to use the themes for the above code, Visit [ThemeMatrix](https://github.com/1-AlenToma/react-native-short-style/blob/main/docs/themeMatrix.md)
 
 
 ## Devtools
