@@ -64,7 +64,7 @@ getSystemTheme("Tailwind")
 
 ### Global Components
 
-| Component | Value |
+| Component | DefaultVale |
 |----------|-------|
 | AnimatedView | `backgroundColor: #212529` |
 | View | `backgroundColor: #2b3035` |
@@ -227,7 +227,7 @@ border-bottom-style-solid
 
 ### Global Components
 
-| Component | Value |
+| Component | DefaultVale |
 |----------|-------|
 | AnimatedView | `backgroundColor: #f9fafb` |
 | View | `backgroundColor: #ffffff` |
@@ -249,7 +249,7 @@ border-bottom-style-solid
 
 ### Global Components
 
-| Component | Value |
+| Component | DefaultVale |
 |----------|-------|
 | AnimatedView | `backgroundColor: #030712` |
 | View | `backgroundColor: #1f2937` |
@@ -373,7 +373,6 @@ const [lightTheme, darkTheme] = getSystemTheme("Bootstrap");
 
 <ThemeContainer
     themes={[lightTheme, darkTheme]}
-    defaultTheme={lightTheme}
 />
 ```
 
