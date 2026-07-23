@@ -1,385 +1,194 @@
 # Theme Matrix
 
-This document describes the available design system themes bundled with the project.
+The library includes **4 ready-to-use themes**.
 
-The design system consists of **two framework styles**:
+| Index | Framework | Theme |
+| ----: | --------- | ----- |
+|     0 | Bootstrap | Light |
+|     1 | Bootstrap | Dark  |
+|     2 | Tailwind  | Light |
+|     3 | Tailwind  | Dark  |
 
-- Bootstrap
-- Tailwind
-
-Each framework contains both a **Light** and **Dark** variant.
-
-Click [here to view userThemes.ts](https://github.com/1-AlenToma/react-native-short-style/blob/main/styled/src/theme/userThemes.ts) to see the fullcode instead
-
----
-
-# Theme Index
-
-| Index | Framework | Mode |
-|-------:|-----------|------|
-| 0 | Bootstrap | Light |
-| 1 | Bootstrap | Dark |
-| 2 | Tailwind | Light |
-| 3 | Tailwind | Dark |
-
-`getSystemTheme()` resolves these into framework pairs.
+Use `getSystemTheme()` to get the Light/Dark pair for a framework.
 
 ```ts
-getSystemTheme("Bootstrap")
-// => [BootstrapLight, BootstrapDark]
+const [lightTheme, darkTheme] = getSystemTheme("Bootstrap");
 
-getSystemTheme("Tailwind")
-// => [TailwindLight, TailwindDark]
+// or
+
+const [lightTheme, darkTheme] = getSystemTheme("Tailwind");
 ```
 
 ---
 
-# Bootstrap Theme
+# Bootstrap
+
+## Shared Bootstrap Classes
+
+These classes are available in **both** Bootstrap Light and Dark themes.
+
+### Layout
+
+| Class                     | Description             |
+| ------------------------- | ----------------------- |
+| `container`               | Main page container     |
+| `row`                     | Flex row with wrapping  |
+| `col-6`                   | Half-width column       |
+| `d-flex`                  | Display flex            |
+| `justify-content-between` | Space between children  |
+| `align-items-center`      | Center items vertically |
+
+### Spacing
+
+* `mt-1`
+* `mt-3`
+* `mb-3`
+
+### Typography
+
+* `h2`
+* `fw-bold`
+* `text-primary`
+* `text-success`
+* `text-muted`
+
+### Components
+
+* `btn`
+* `btn-outline-primary`
+* `card`
+* `card-title`
+* `card-text`
+* `form-control`
+* `form-label`
+* `list-group`
+* `list-group-item`
+
+---
 
 ## Bootstrap Light
 
-### Global Components
+### Default Colors
 
-| Component | Value |
-|----------|-------|
-| AnimatedView | `backgroundColor: #f8f9fa` |
-| View | `backgroundColor: #ffffff` |
-| Text | `color: #212529` |
-| TextInput | `color: #212529` |
-| Icon | `color: #212529` |
-
-### Theme Overrides
-
-| Class | Style |
-|------|-------|
-| card | `border-color: #dee2e6` `background: #ffffff` |
-| form-control | `border-color: #ced4da` `background: #ffffff` `color: #212529` |
-| form-label | `color: #212529` |
-| list-group | `border-color: #dee2e6` |
-| list-group-item | `border-bottom-color: #dee2e6` `background: #ffffff` `color: #212529` |
+| Element    | Color                 |
+| ---------- | --------------------- |
+| Background | White                 |
+| Text       | Dark Gray (`#212529`) |
+| Card       | White                 |
+| Input      | White                 |
+| Borders    | Light Gray            |
 
 ---
 
 ## Bootstrap Dark
 
-### Global Components
+### Default Colors
 
-| Component | DefaultVale |
-|----------|-------|
-| AnimatedView | `backgroundColor: #212529` |
-| View | `backgroundColor: #2b3035` |
-| Text | `color: #f8f9fa` |
-| TextInput | `color: #f8f9fa` |
-| Icon | `color: #f8f9fa` |
-
-### Theme Overrides
-
-| Class | Style |
-|------|-------|
-| card | `border-color: #495057` `background: #2b3035` |
-| form-control | `border-color: #495057` `background: #1c1f23` `color: #f8f9fa` |
-| form-label | `color: #dee2e6` |
-| list-group | `border-color: #495057` |
-| list-group-item | `border-bottom-color: #495057` `background: #2b3035` `color: #f8f9fa` |
-| text-muted | `color: #adb5bd` |
+| Element    | Color        |
+| ---------- | ------------ |
+| Background | Dark Gray    |
+| Text       | White        |
+| Card       | Dark Gray    |
+| Input      | Almost Black |
+| Borders    | Medium Gray  |
 
 ---
 
-# Bootstrap Utility Classes
+# Tailwind
 
-## Layout
+## Shared Tailwind Classes
 
-| Class | Expands To |
-|------|------------|
-| container | `pa-15 width-100%` |
-| row | `di-flex flex-direction-row flex-wrap-wrap maR--15 maL--15` |
-| col-6 | `width-50% paR-15 paL-15` |
-| d-flex | `di-flex` |
-| justify-content-between | `justify-content-space-between` |
-| align-items-center | `align-items-center` |
+These classes are available in **both** Tailwind Light and Dark themes.
 
----
+### Layout
 
-## Spacing
+* `flex`
+* `flex-row`
+* `flex-wrap`
+* `justify-between`
+* `items-center`
+* `max-w-xl`
+* `w-1/2`
 
-| Class | Expands To |
-|------|------------|
-| mt-1 | `maT-4` |
-| mt-3 | `maT-16` |
-| mb-3 | `maB-16` |
+### Spacing
 
----
+* `p-3`
+* `p-4`
+* `mt-1`
+* `mt-4`
+* `mb-4`
+* `space-y-4`
 
-## Typography
+### Typography
 
-| Class | Expands To |
-|------|------------|
-| h2 | `fs-32 foW-bold maB-8` |
-| fw-bold | `foW-bold` |
-| text-primary | `co-#0d6efd` |
-| text-success | `co-#198754` |
-| text-muted | `co-#6c757d` |
+* `text-3xl`
+* `text-xl`
+* `text-sm`
+* `text-xs`
+* `font-bold`
+* `font-semibold`
+* `text-blue-600`
+* `text-green-600`
+* `text-gray-500`
 
----
+### Components
 
-## Components
-
-### Button
-
-```css
-btn
-```
-
-```
-pa-10
-border-radius-6
-align-items-center
-justify-content-center
-di-flex
-border-width-1
-border-style-solid
-border-color-transparent
-```
-
-### Button Text
-
-```
-foW-600
-text-center
-fs-16
-```
-
-### Outline Button
-
-```
-bac-transparent
-border-color-#0d6efd
-co-#0d6efd
-```
-
-### Card
-
-```
-border-width-1
-border-style-solid
-border-radius-6
-pa-16
-box-shadow-0px-1px-2px-rgba(0,0,0,0.075)
-```
-
-### Card Title
-
-```
-fs-20
-foW-500
-maB-8
-```
-
-### Card Text
-
-```
-fs-14
-line-height-20
-```
-
-### Form Control
-
-```
-border-width-1
-border-style-solid
-border-radius-6
-pa-10
-fs-16
-height-45
-width-100%
-```
-
-### Form Label
-
-```
-fs-14
-foW-600
-maB-6
-```
-
-### List Group
-
-```
-border-width-1
-border-style-solid
-border-radius-6
-overflow-hidden
-```
-
-### List Group Item
-
-```
-pa-12
-border-bottom-width-1
-border-bottom-style-solid
-```
+* `btn-tw`
+* `btn-outline-blue`
+* `rounded-lg`
+* `border`
+* `shadow-sm`
 
 ---
-
-# Tailwind Theme
 
 ## Tailwind Light
 
-### Global Components
+### Default Colors
 
-| Component | DefaultVale |
-|----------|-------|
-| AnimatedView | `backgroundColor: #f9fafb` |
-| View | `backgroundColor: #ffffff` |
-| Text | `color: #111827` |
-| TextInput | `color: #111827` |
-| Icon | `color: #111827` |
-
-### Theme Tokens
-
-| Token | Style |
-|------|-------|
-| border-base | `border-color: #e5e7eb` |
-| bg-surface | `background: #ffffff` |
-| input-base | `border-color: #d1d5db background:#ffffff color:#111827` |
+| Element    | Color    |
+| ---------- | -------- |
+| Background | White    |
+| Text       | Gray 900 |
+| Surface    | White    |
+| Border     | Gray 200 |
+| Input      | White    |
 
 ---
 
 ## Tailwind Dark
 
-### Global Components
+### Default Colors
 
-| Component | DefaultVale |
-|----------|-------|
-| AnimatedView | `backgroundColor: #030712` |
-| View | `backgroundColor: #1f2937` |
-| Text | `color: #f9fafb` |
-| TextInput | `color: #f9fafb` |
-| Icon | `color: #f9fafb` |
-
-### Theme Tokens
-
-| Token | Style |
-|------|-------|
-| border-base | `border-color: #374151` |
-| bg-surface | `background: #1f2937` |
-| input-base | `border-color: #4b5563 background:#111827 color:#f9fafb` |
-| text-gray-500 | `color:#9ca3af` |
+| Element    | Color    |
+| ---------- | -------- |
+| Background | Gray 950 |
+| Text       | Gray 50  |
+| Surface    | Gray 800 |
+| Border     | Gray 700 |
+| Input      | Gray 900 |
 
 ---
 
-# Tailwind Utility Classes
-
-## Layout
-
-| Class | Expands To |
-|------|------------|
-| flex | `di-flex` |
-| flex-row | `flex-direction-row` |
-| flex-wrap | `flex-wrap-wrap` |
-| justify-between | `justify-content-space-between` |
-| items-center | `align-items-center` |
-| max-w-xl | `width-100% max-width-576` |
-| w-1/2 | `width-50%` |
-
----
-
-## Spacing
-
-| Class | Expands To |
-|------|------------|
-| p-3 | `pa-12` |
-| p-4 | `pa-16` |
-| mt-1 | `maT-4` |
-| mt-4 | `maT-16` |
-| mb-4 | `maB-16` |
-| space-y-4 | `maB-16` |
-
----
-
-## Typography
-
-| Class | Expands To |
-|------|------------|
-| text-3xl | `fs-30 line-height-36` |
-| text-xl | `fs-20 line-height-28` |
-| text-sm | `fs-14 line-height-20` |
-| text-xs | `fs-12 line-height-16` |
-| font-bold | `foW-700` |
-| font-semibold | `foW-600` |
-| text-blue-600 | `co-#2563eb` |
-| text-green-600 | `co-#16a34a` |
-| text-gray-500 | `co-#6b7280` |
-
----
-
-## Components
-
-### Button
-
-```
-pa-10
-border-radius-8
-align-items-center
-justify-content-center
-di-flex
-border-width-1
-border-style-solid
-```
-
-### Button Text
-
-```
-foW-500
-text-center
-fs-14
-```
-
-### Outline Button
-
-```
-bac-transparent
-border-color-#3b82f6
-co-#3b82f6
-```
-
-### Rounded
-
-```
-border-radius-8
-```
-
-### Border
-
-```
-border-width-1
-border-style-solid
-```
-
-### Shadow
-
-```
-box-shadow-0px-1px-2px-rgba(0,0,0,0.05)
-```
-
----
-
-# Runtime Selection
-
-Use `getSystemTheme()` to resolve framework-specific themes.
+# Example
 
 ```ts
+import { getSystemTheme } from "./themes";
+
 const [lightTheme, darkTheme] = getSystemTheme("Bootstrap");
 
+// or
+
+const [lightTheme, darkTheme] = getSystemTheme("Tailwind");
+```
+
+Pass the returned themes to your `ThemeContainer`.
+
+```ts
 <ThemeContainer
     themes={[lightTheme, darkTheme]}
 />
 ```
 
-or
-
-```ts
-const [lightTheme, darkTheme] = getSystemTheme("Tailwind");
-```
+Click [here to view userThemes.ts](https://github.com/1-AlenToma/react-native-short-style/blob/main/styled/src/theme/userThemes.ts) to see the fullcode instead
 
 This API always returns a two-element array containing the Light and Dark variants for the requested framework.
