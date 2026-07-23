@@ -232,82 +232,89 @@ function matchSelector(
 
 
 // --- useStyled ---
-export function useStyled(parentId: string, context: StyleContextType, type: string, index: number, total: number, variant?: string, thisParent?: IParent, systemTheme?: any) {
-    try{
-    const id = `${parentId}_useStyled`;
-    const current = variant ? `${type}.${variant}` : type;
-    const classNames = thisParent?.classPath ?? [];
-    const idDev = devToolsHandlerContext.data.isOpened && __DEV__;
+export function useStyled(parentId: string,
+    context: StyleContextType,
+    type: string,
+    index: number,
+    total: number,
+    variant?: string,
+    thisParent?: IParent,
+    systemTheme?: any) {
+    try {
+        const id = `${parentId}_useStyled`;
+        const current = variant ? `${type}.${variant}` : type;
+        const classNames = thisParent?.classPath ?? [];
+        const idDev = devToolsHandlerContext.data.isOpened && __DEV__;
 
-    React.useEffect(() => {
-        return () => clearCss(id);
-    })
+        React.useEffect(() => {
+            return () => clearCss(id);
+        })
 
-    const fullPath = expandFullPath(context.parent, current, classNames);
-    //console.log(fullPath)
+        const fullPath = expandFullPath(context.parent, current, classNames);
+        //console.log(fullPath)
 
-    // Build indices, totals, typeIndex, totalTypes, props
-    const { indices, totals, typeIndex, totalTypes, props } = buildNodeMeta(fullPath, context.parent, thisParent, type, index, total);
+        // Build indices, totals, typeIndex, totalTypes, props
+        const { indices, totals, typeIndex, totalTypes, props } = buildNodeMeta(fullPath, context.parent, thisParent, type, index, total);
 
-    let merged: Record<string, any> = {};
-    let important: Record<string, any> = {};
-    let keyStyle: Record<string, any> = {};
+        let merged: Record<string, any> = {};
+        let important: Record<string, any> = {};
+        let keyStyle: Record<string, any> = {};
 
-    for (const rule of context.rules) {
-        let keySelector: Record<string, any> = {};
-        let keySelectorImportant: Record<string, any> = {};
-        for (const item of rule.parsedSelector) {
-            const lastPart = item[item.length - 1];
+        for (const rule of context.rules) {
+            let keySelector: Record<string, any> = {};
+            let keySelectorImportant: Record<string, any> = {};
+            for (const item of rule.parsedSelector) {
+                const lastPart = item[item.length - 1];
 
-            if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
-                continue;
+                if (lastPart && lastPart.type !== "*" && !fullPath[fullPath.length - 1].includes(lastPart.type))
+                    continue;
 
-            if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
-                continue;
-            if (typeof rule.style === "string") {
-                let st = cssTranslator(rule.style as any as string, systemTheme);
-                merged = { ...merged, ...st };
-                if (merged.important) important = { ...important, ...cleanStyle(merged.important) };
-                merged = cleanStyle(merged);
-                if (idDev) {
-                    keySelector = ({ ...keySelector, ...st });
-                    if (keySelector.important)
-                        keySelectorImportant = { ...keySelectorImportant, ...cleanStyle(keySelector.important) };
-                    keySelector = cleanStyle(keySelector);
+                if (!matchSelector(fullPath, item, indices, totals, totalTypes, typeIndex, props))
+                    continue;
+                if (typeof rule.style === "string") {
+                    let st = cssTranslator(rule.style as any as string, systemTheme);
+                    merged = { ...merged, ...st };
+                    if (merged.important) important = { ...important, ...cleanStyle(merged.important) };
+                    merged = cleanStyle(merged);
+                    if (idDev) {
+                        keySelector = ({ ...keySelector, ...st });
+                        if (keySelector.important)
+                            keySelectorImportant = { ...keySelectorImportant, ...cleanStyle(keySelector.important) };
+                        keySelector = cleanStyle(keySelector);
 
-                }
-            } else {
-                const isWholeImportant = (rule.style as any)["!important"] === true;
-                for (const [key, value] of Object.entries(rule.style)) {
-                    if (key === "!important") continue;
-                    if (typeof value === "string" && value.endsWith("!important")) {
-                        important[key] = value.replace(/(\-)?!important/gi, "").trim();
-                        if (idDev)
-                            keySelectorImportant[key] = important[key]
-                    } else if (isWholeImportant) {
-                        important[key] = value;
-                        if (idDev)
-                            keySelectorImportant[key] = value;
-                    } else {
-                        if (!(key in important))
-                            merged[key] = value;
-                        if (idDev && !(key in keySelectorImportant))
-                            keySelectorImportant[key] = value;
+                    }
+                } else {
+                    const isWholeImportant = (rule.style as any)["!important"] === true;
+                    for (const [key, value] of Object.entries(rule.style)) {
+                        if (key === "!important") continue;
+                        if (typeof value === "string" && value.endsWith("!important")) {
+                            important[key] = value.replace(/(\-)?!important/gi, "").trim();
+                            if (idDev)
+                                keySelectorImportant[key] = important[key]
+                        } else if (isWholeImportant) {
+                            important[key] = value;
+                            if (idDev)
+                                keySelectorImportant[key] = value;
+                        } else {
+                            if (!(key in important))
+                                merged[key] = value;
+                            if (idDev && !(key in keySelectorImportant))
+                                keySelectorImportant[key] = value;
+                        }
                     }
                 }
+
+
             }
 
-
+            keyStyle[rule.selectors.join(",")] = { ...keySelector, ...keySelectorImportant };
         }
 
-        keyStyle[rule.selectors.join(",")] = { ...keySelector, ...keySelectorImportant };
+        return [{ ...merged, important }, keyStyle] as [Record<string, any> & { important: typeof important }, Record<string, any>];
+    } catch (e) {
+        console.error("usestyle error");
+        throw e;
     }
-
-    return [{ ...merged, important }, keyStyle] as [Record<string, any> & { important: typeof important }, Record<string, any>];
-}catch(e){
-    console.error("usestyle error");
-    throw e;
-}
 }
 
 

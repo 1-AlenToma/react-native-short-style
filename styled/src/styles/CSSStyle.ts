@@ -3,6 +3,7 @@ import { flatStyle } from "../config/CSSMethods";
 import { defaultTheme } from "../theme/DefaultStyle";
 import { ShortStyles } from "./validStyles";
 import { CSS_String, StyledProps } from "../Typse";
+import { userDefinedBootstrap, userDefinedTailwind } from "../theme/userThemes";
 
 
 type ValueType = ViewStyle & TextStyle & ImageStyle;
@@ -67,13 +68,11 @@ export type CSSProps<T extends object> = T & StyledProps & { refererId?: string;
 
 //let test: SizeValue<"%"> | SizeValue<"vh"> | SizeValue<"vw"> = ""
 
-type classNames = (`.sh-${keyof typeof defaultTheme.shadow}` | `.sp-${keyof typeof defaultTheme.spacing}`) | (string & {})
+type classNames = (`.sh-${keyof typeof defaultTheme.shadow}` | `.sp-${keyof typeof defaultTheme.spacing}` | keyof typeof userDefinedBootstrap | keyof typeof userDefinedTailwind) | (string & {});
 
 export abstract class ExtraCssStyle {
     value: string = "";
     type: string = "CSSStyled";
-
-
 
     /** Add classNames  eg container*/
     classNames(...cls: classNames[]) {
@@ -380,6 +379,10 @@ export abstract class ExtraCssStyle {
         }
 
         return this;
+    }
+
+    join(value: CSSStyle | string | StyleProp<ViewStyle> | StyleProp<ImageStyle> | StyleProp<TextStyle> | ((x: CSSStyle) => CSSStyle)) {
+        return this.joinRight(value);
     }
 
 }

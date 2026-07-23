@@ -180,6 +180,7 @@ const css_translator = (
         }
       }
     }
+    
     if (id !== undefined)
       Storage.set(id, { ...cssItem, important: { ...important } });
     else TStorage.set(css, { ...cssItem, important: { ...important } });

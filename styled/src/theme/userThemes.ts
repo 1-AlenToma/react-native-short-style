@@ -4,7 +4,7 @@ import NestedStyleSheet from '../styles/NestedStyleSheet';
 // ==========================================
 // 1. BOOTSTRAP ATOMIC DICTIONARY
 // ==========================================
-const userDefinedBootstrap = {
+export const userDefinedBootstrap = {
     "container": "pa-15 width-100%",
     "row": "di-flex fld-row flexWrap-wrap maR--15 maL--15",
     "col-6": "wi-50% paR-15 paL-15 !important",
@@ -43,7 +43,7 @@ const userDefinedBootstrap = {
 // ==========================================
 // 2. TAILWIND ATOMIC DICTIONARY
 // ==========================================
-const userDefinedTailwind = {
+export const userDefinedTailwind = {
     "max-w-xl": "wi-100% maw-576 !important",
     "flex": "di-flex !important",
     "flex-row": "fld-row !important",
