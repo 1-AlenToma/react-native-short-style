@@ -126,7 +126,7 @@ export class CMBuilder {
             //   if (cls.length > 0)
             //  console.log(cls.join(","));
             return cls;
-        }, [_css]);
+        }, [_css, themeContext.systemThemes]);
         const className = React.useMemo(() => classNames.join(" "), [classNames]);
 
         const dataSet =

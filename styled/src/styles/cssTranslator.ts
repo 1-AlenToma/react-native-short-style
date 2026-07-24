@@ -129,10 +129,13 @@ const css_translator = (
       for (let c of items) {
         if (!c || c.trim().length <= 0 || c.indexOf(" !important") !== -1)
           continue;
-        if (ValueIdentity.isClass(c)) {
+
+        let style = CSS[c] ?? CSS[c.toLowerCase()];
+        if (!style && ValueIdentity.isClass(c)) {
           c = c.trim().substring(1);
         }
-        let style = CSS[c] ?? CSS[c.toLowerCase()];
+        if (!style)
+          style = CSS[c] ?? CSS[c.toLowerCase()];
         let _isImportend = isImportant;
         if (style === undefined && (ValueIdentity.has(c))) {
           let kValue = ValueIdentity.keyValue(c);
@@ -180,7 +183,7 @@ const css_translator = (
         }
       }
     }
-    
+
     if (id !== undefined)
       Storage.set(id, { ...cssItem, important: { ...important } });
     else TStorage.set(css, { ...cssItem, important: { ...important } });
