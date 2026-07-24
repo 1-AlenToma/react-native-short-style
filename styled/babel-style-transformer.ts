@@ -19,6 +19,53 @@ function isCssPath(cssFilePathOrCssString: string): boolean {
 
 }
 
+function resolveMemberExpression(
+    node: t.MemberExpression,
+    pathNode: NodePath
+) {
+    if (
+        t.isIdentifier(node.object) &&
+        node.object.name === "exports" &&
+        t.isIdentifier(node.property)
+    ) {
+
+        const name = node.property.name;
+
+        const program = pathNode.findParent(
+            p => p.isProgram()
+        );
+
+        for (const stmt of program.node.body) {
+
+            if (
+                t.isExpressionStatement(stmt) &&
+                t.isAssignmentExpression(stmt.expression)
+            ) {
+
+                const left = stmt.expression.left;
+
+                if (
+                    t.isMemberExpression(left) &&
+                    t.isIdentifier(left.object) &&
+                    left.object.name === "exports" &&
+                    t.isIdentifier(left.property) &&
+                    left.property.name === name
+                ) {
+                    return astToValue(
+                        stmt.expression.right,
+                        pathNode
+                    );
+                }
+            }
+        }
+    }
+
+    throw new Error(
+        `Cannot resolve ${generate(node).code}`
+    );
+
+}
+
 
 export function parseCssToTuples(cssString: string) {
     const result = {} as Record<string, [[string, any, boolean]]>
@@ -276,26 +323,34 @@ function astToValue(
             // ...userDefined
             if (t.isSpreadElement(prop)) {
 
+                let spreadValue;
 
-                if (!t.isIdentifier(prop.argument)) {
-                    throw new Error(
-                        "Only identifier spreads are supported"
-                    );
-                }
+                if (t.isIdentifier(prop.argument)) {
 
-
-                const spreadValue =
-                    resolveIdentifier(
+                    spreadValue = resolveIdentifier(
                         prop.argument,
                         pathNode
                     );
+
+                } else if (t.isMemberExpression(prop.argument)) {
+
+                    spreadValue = resolveMemberExpression(
+                        prop.argument,
+                        pathNode
+                    );
+
+                } else {
+                    throw new Error(
+                        "Unsupported spread: " +
+                        generate(prop.argument).code
+                    );
+                }
 
 
                 Object.assign(
                     obj,
                     spreadValue
                 );
-
 
                 continue;
             }
