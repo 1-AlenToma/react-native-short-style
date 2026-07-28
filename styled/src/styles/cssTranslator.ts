@@ -131,10 +131,10 @@ const css_translator = (
           continue;
 
         let style = CSS[c] ?? CSS[c.toLowerCase()];
-        if (!style && ValueIdentity.isClass(c)) {
+        if (style === undefined && ValueIdentity.isClass(c)) {
           c = c.trim().substring(1);
         }
-        if (!style)
+        if (style == undefined)
           style = CSS[c] ?? CSS[c.toLowerCase()];
         let _isImportend = isImportant;
         if (style === undefined && (ValueIdentity.has(c))) {
