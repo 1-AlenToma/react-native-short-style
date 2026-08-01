@@ -109,7 +109,7 @@ const userDefined =NestedStyleSheet.create({
   const themes = getSystemTheme("Tailwind");
 
   // All your components have to be contained within ThemeContainer
-  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={{...GlobalStyles, ...userDefined}}>
 
   <View css="texto-!important he-300">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
