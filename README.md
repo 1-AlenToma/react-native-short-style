@@ -29,6 +29,9 @@ module.exports = function (api) {
 
 
 ```
+## strictMode
+
+Note: `react-native-short-style` dose not work well with strictMode so remove React.StrictMode if you have it.
 
 App using react-native-short-style
 [Novelo](https://github.com/1-AlenToma/Novelo)
@@ -109,7 +112,7 @@ const userDefined =NestedStyleSheet.create({
   const themes = getSystemTheme("Tailwind");
 
   // All your components have to be contained within ThemeContainer
-  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={GlobalStyles}>
+  <ThemeContainer icons={icons} selectedIndex={state.selectedTheme} themes={themes} defaultTheme={{...GlobalStyles, ...userDefined}}>
 
   <View css="texto-!important he-300">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
