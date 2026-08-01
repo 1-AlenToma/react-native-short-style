@@ -335,6 +335,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     globalData.hook("window");
     const [ready, setReady] = React.useState(false);
     const devtoolOpend = React.useRef(devToolsHandlerContext.data.isOpened);
+    const [injectedStyles, setInjectedStyles] = React.useState<any>(); // this is only internal for demo
 
     if (__DEV__ && props.localIp && devToolsHandlerContext.host != props.localIp)
         devToolsHandlerContext.host = props.localIp;
@@ -376,7 +377,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
     if (!globalData.icons)
         globalData.icons = props.icons ?? {} as any;
 
-    const theme = useCurrentTheme(props);
+    const theme = useCurrentTheme(props, injectedStyles);
     const rules = useParseStyles(theme, props.selectedIndex);
     if ((!ready || devToolsHandlerContext.data.rerender) && devToolsHandlerContext.data.isOpened && __DEV__) {
         devToolsHandlerContext.sendTree({
@@ -397,7 +398,7 @@ export const ThemeContainer = (props: IThemeContext & { children: any }) => {
 
     return (
         <StyleContext.Provider value={{ rules: rules ?? [], path: [], parent: undefined }}>
-            <ThemeContext.Provider value={{ ...props, systemThemes: theme }}>
+            <ThemeContext.Provider value={{ ...props, systemThemes: theme, injectStyle: (item: object)=> setInjectedStyles(item)}}>
                 <ThemeInternalContainer>
                     {props.children}
                 </ThemeInternalContainer>

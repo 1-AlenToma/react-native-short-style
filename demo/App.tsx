@@ -23,13 +23,13 @@ import {
   FormItem,
   TextInput,
   CSSStorage,
-  useLoader, 
+  useLoader,
   CssStyleSheet,
   getSystemTheme
 } from 'react-native-short-style';
 import buildState from "react-smart-state";
 import GlobalStyles from './components/GlobalStyles';
-import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, MovingBall, ProgressView, ScrollMenuView } from './components';
+import { Block, BlockContainer, ButtonGroupView, InputForm, ModalView, MovingBall, ProgressView, ScrollMenuView, PlayGround } from './components';
 import { newId } from 'react-native-short-style';
 import React, { useEffect, useRef } from 'react';
 import * as icons from "@expo/vector-icons";
@@ -59,7 +59,7 @@ export default function App() {
 
 
   return (
-    <ThemeContainer icons={icons} localIp='192.168.103.112' selectedIndex={state.selectedTheme} themes={themes} defaultTheme={{...GlobalStyles, ...userDefined}}>
+    <ThemeContainer icons={icons} localIp='192.168.103.112' selectedIndex={state.selectedTheme} themes={themes} defaultTheme={{ ...GlobalStyles, ...userDefined }}>
       {debug ? (<View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (
@@ -84,6 +84,9 @@ export default function App() {
 
               <ProgressView />
               <InputForm />
+            </BlockContainer>
+            <BlockContainer>
+              <PlayGround />
             </BlockContainer>
             <BlockContainer>
               <ButtonGroupView />

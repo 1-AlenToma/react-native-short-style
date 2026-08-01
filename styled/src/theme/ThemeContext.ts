@@ -7,6 +7,7 @@ import { Portals } from "../cls";
 export const ThemeContext = React.createContext({
     selectedIndex: 0,
     themes: [],
+    injectStyle: (style: object) => { }
 } as IThemeContext & IExtraThemeContext);
 
 // --- Context ---

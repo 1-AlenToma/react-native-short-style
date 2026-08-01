@@ -67,13 +67,16 @@ export const renderCss = (css: string, style: any) => {
 
 
 
-export const useCurrentTheme = (context: IThemeContext) => {
+export const useCurrentTheme = (context: IThemeContext, injectedStyle?: any) => {
     const key = `${StyledKey}${context.selectedIndex}`;
     const themes = React.useRef({}).current;
-    if (__DEV__ || !globalData.storage.has(key)) {
-        if ((!themes[context.selectedIndex] || __DEV__) && context.themes.length > 0) {
+    const injectedStyles = React.useRef();
+    const changed = injectedStyle !== injectedStyles.current || __DEV__ || !themes[context.selectedIndex];
+    if (changed) {
+        injectedStyles.current = injectedStyle;
+        if (changed && context.themes.length > 0) {
             let thisTheme = themeStyle();
-            let selectedTheme = serilizeCssStyle(context.defaultTheme, context.themes[context.selectedIndex], ComponentsStyles);
+            let selectedTheme = serilizeCssStyle(context.defaultTheme, context.themes[context.selectedIndex], ComponentsStyles, injectedStyle ?? {});
             themes[context.selectedIndex] = { ...thisTheme, ...selectedTheme }
         }
 

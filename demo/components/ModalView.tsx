@@ -84,10 +84,8 @@ export const ModalView = () => {
                 </Modal>
                 <ActionSheet position={state.actionSheet.position} size={Platform.OS == "web" ? "30%" : "50%"} isVisible={state.actionSheet.visible} onHide={mem(() => state.actionSheet.visible = false)}>
                     <View css="fl-1">
-
                         <ScrollView style={mem({ maxHeight: "95%" })}>
                             {
-
                                 mem(["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
                                     <TouchableOpacity onPress={async () => {
                                         if (await AlertDialog.confirm("Close ActionSheet"))

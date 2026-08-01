@@ -164,7 +164,7 @@ export type ButtonProps = {
 } & StyledProps & Omit<TouchableOpacityProps, "children"> & MouseProps;
 
 export type IExtraThemeContext = {
-
+    injectStyle: (style: object) => void
 }
 
 export type IThemeContext = {
