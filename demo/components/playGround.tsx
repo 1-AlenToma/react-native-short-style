@@ -21,9 +21,8 @@ export const PlayGround = () => {
         try {
             const parsedJSON = JSON.parse(state.value);
             // Overwrite styling map references dynamically
-            const compiledStyle = NestedStyleSheet.create(parsedJSON);
-            themeContext.injectStyle(compiledStyle)
-            console.log(compiledStyle)
+            themeContext.injectStyle(parsedJSON)
+            console.log(parsedJSON)
             state.error = "";
         } catch (e) {
             state.error = e.toString();
