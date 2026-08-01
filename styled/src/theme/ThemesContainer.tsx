@@ -34,7 +34,9 @@ const StaticView = () => {
 // To Do later, preparse rules on render by babel script. this will simplify and make per faster
 function useParseStyles(obj: Record<string, any>, selectedIndex: number): Rule[] {
     const parsedTheme = React.useRef({}).current;
-    if ((!parsedTheme[selectedIndex] || __DEV__) && obj)
+    const parsedThemeObject = React.useRef<any>();
+    if ((!parsedTheme[selectedIndex] || __DEV__ || obj !== parsedThemeObject.current)  && obj)
+        parsedThemeObject.current= obj;
         parsedTheme[selectedIndex] = Object.entries(obj).map(([selector, style]) => ({
             selectors: selector.split(",").map((s) => s.trim()),
             parsedSelector: selector.split(",").map(x => parseSelector(x.trim())),
