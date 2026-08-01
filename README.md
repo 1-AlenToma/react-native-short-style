@@ -29,6 +29,9 @@ module.exports = function (api) {
 
 
 ```
+## strictMode
+
+Note: `react-native-short-style` dose not work well with strictMode so remove React.StrictMode if you have it.
 
 App using react-native-short-style
 [Novelo](https://github.com/1-AlenToma/Novelo)
