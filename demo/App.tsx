@@ -63,7 +63,7 @@ export default function App() {
       {debug ? (<View css="texto-!important">
         <Text>hej jkhkjhasd <Text>test</Text></Text>
       </View>) : (
-        <TabBar ifTrue={false} lazyLoading={true} position='Bottom' header={{
+        <TabBar lazyLoading={true} position='Bottom' header={{
           selectedIconStyle: "color:red",
           style: x => x.baC("#ffffff"),
           textStyle: x => x.co("#000"),

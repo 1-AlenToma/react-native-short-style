@@ -18,7 +18,7 @@ export const tryFunc = (value: any, toStr?: boolean) => {
       return value.toString().trim();
     return value;
   } catch {
-    console.warn("failed to parse", value.toString());
+    console.warn("its ok, failed to parse", value.toString());
     return value
   }
 }

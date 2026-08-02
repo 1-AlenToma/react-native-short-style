@@ -1,6 +1,6 @@
 {
   "name": "react-native-short-style",
-  "version": "1.4.0",
+  "version": "1.4.1-beta",
   "description": "#react-native-short-style",
   "author": "1-AlenToma",
   "license": "MIT",
@@ -47,6 +47,7 @@
     "@babel/core": "*",
     "@babel/generator": "*",
     "@babel/parser": "*",
+    "@babel/preset-react": "^7.29.7",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-native": "*",

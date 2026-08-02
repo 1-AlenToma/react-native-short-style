@@ -32,6 +32,9 @@ function processDir(dir: string) {
                 plugins: [
                     styleTransformer
                 ],
+                presets: [
+                    "@babel/preset-react"
+                ],
 
                 filename: full,
 

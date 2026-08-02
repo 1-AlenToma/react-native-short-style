@@ -30,7 +30,7 @@ export const PlayGround = () => {
     }, [state.value]);
 
     return (
-        <View css="fl-1 miw-500 ma-20">
+        <View css="fl-1 miw-369 ma-20">
             <Text css="title">Live Test Example</Text>
 
             <View css="fl-1">
@@ -40,7 +40,8 @@ export const PlayGround = () => {
                 <Text css="co-blue">NestedStyleSheet.Create(</Text>
                 <TextInput
                     defaultValue={state.value}
-                    css="he-200 bow-1 bor-5"
+                    css="he-200 bow-1 bor-5 pa-5"
+                    
                     multiline={true}
                     onChangeText={txt => { state.value = txt; }}
                 />

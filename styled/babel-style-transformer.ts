@@ -15,8 +15,91 @@ function isCssPath(cssFilePathOrCssString: string): boolean {
     }
 
     return false;
+}
 
 
+const IF_SELECTOR_NAME = "__rnss_ifSelector";
+
+export function injectIfSelector(
+    program: NodePath<t.Program>
+) {
+    const helper = t.variableDeclaration("const", [
+        t.variableDeclarator(
+            t.identifier(IF_SELECTOR_NAME),
+            t.arrowFunctionExpression(
+                [
+                    t.identifier("item"),
+                ],
+                t.blockStatement([
+                    t.ifStatement(
+                        t.logicalExpression(
+                            "||",
+                            t.binaryExpression(
+                                "===",
+                                t.identifier("item"),
+                                t.nullLiteral()
+                            ),
+                            t.binaryExpression(
+                                "===",
+                                t.identifier("item"),
+                                t.identifier("undefined")
+                            )
+                        ),
+                        t.blockStatement([
+                            t.returnStatement(
+                                t.identifier("undefined")
+                            )
+                        ])
+                    ),
+
+                    t.ifStatement(
+                        t.binaryExpression(
+                            "===",
+                            t.unaryExpression(
+                                "typeof",
+                                t.identifier("item")
+                            ),
+                            t.stringLiteral("function")
+                        ),
+                        t.blockStatement([
+                            t.expressionStatement(
+                                t.assignmentExpression(
+                                    "=",
+                                    t.identifier("item"),
+                                    t.callExpression(
+                                        t.identifier("item"),
+                                        []
+                                    )
+                                )
+                            )
+                        ])
+                    ),
+
+                    t.returnStatement(
+                        t.identifier("item")
+                    )
+                ])
+            )
+        ),
+    ]);
+
+    // Put it after imports
+    let insertIndex = 0;
+
+    while (
+        insertIndex < program.node.body.length &&
+        t.isImportDeclaration(
+            program.node.body[insertIndex]
+        )
+    ) {
+        insertIndex++;
+    }
+
+    program.node.body.splice(
+        insertIndex,
+        0,
+        helper
+    );
 }
 
 function resolveMemberExpression(
@@ -451,110 +534,281 @@ function isCssStyleSheetCreate(
 }
 
 
+const nestedSheetExpression = (path) => {
+
+
+    const callee = path.node.callee;
+
+
+    if (!t.isMemberExpression(callee))
+        return;
+
+    if (isNestedStyleSheetCreate(callee)) {
+        const arg =
+            path.node.arguments[0];
+
+
+
+        if (!t.isObjectExpression(arg))
+            return;
+
+        try {
+
+            const value =
+                astToValue(
+                    arg,
+                    path
+                );
+
+
+            // console.warn("Converting Value",value);
+
+
+            const newValue =
+                NestedStyleSheet.create(
+                    value
+                );
+
+
+            // console.warn("New Value",newValue);
+
+
+
+            path.replaceWith(
+                valueToAST(newValue)
+            );
+        } catch (e) {
+            console.warn("babel-style-transformer:Warning", e);
+        }
+    } else if (isCssStyleSheetCreate(callee)) {
+        try {
+            const arg = path.node.arguments[0];
+            const value: string =
+                astToValue(
+                    arg,
+                    path
+                );
+
+            let cssString;
+            if (isCssPath(value)) {
+                const _path = filePath.resolve(value);
+                if (!fs.existsSync(_path)) {
+                    console.error(_path, "css file not found");
+                    return;
+                }
+                console.info("babel-style-transformer parsing the css file", _path);
+
+                cssString = parseCssToTuples(fs.readFileSync(_path, { encoding: "utf8" }));
+            } else {
+                cssString = parseCssToTuples(value);
+            }
+
+            let newValue = {};
+            for (let k in cssString) {
+                let itemKey = k.startsWith(".") ? k.substring(1) : k;
+                let data = cssString[k];
+                newValue[itemKey] = {};
+                for (let d of data) {
+                    let item = transform([d as any]);
+                    if (d[2]) {
+                        for (let tm in item)
+                            item[tm] += "-!important";
+                    }
+                    Object.assign(newValue[itemKey], item);
+                }
+            }
+
+            newValue = NestedStyleSheet.create(
+                newValue
+            );
+            console.info("css Parsed");
+            //console.log("parsed", newValue)
+            path.replaceWith(
+                valueToAST(newValue)
+            );
+        } catch (e) {
+            throw e;
+        }
+    }
+
+}
+
+const ifTrueExpression = (path, state) => {
+    const callee = path.node.callee;
+
+    let isJSXRuntime = false;
+
+    if (
+        t.isIdentifier(callee) &&
+        (callee.name === "jsx" || callee.name === "jsxs")
+    ) {
+        isJSXRuntime = true;
+    }
+
+    // Handles: (0, jsx_runtime_1.jsx)
+    if (
+        t.isSequenceExpression(callee)
+    ) {
+        const last =
+            callee.expressions[callee.expressions.length - 1];
+
+        if (
+            t.isMemberExpression(last) &&
+            t.isIdentifier(last.property) &&
+            (last.property.name === "jsx" ||
+                last.property.name === "jsxs")
+        ) {
+            isJSXRuntime = true;
+        }
+    }
+
+    if (!isJSXRuntime)
+        return;
+
+
+    const props = path.node.arguments[1];
+
+    if (!t.isObjectExpression(props))
+        return;
+
+
+    const ifTrueIndex =
+        props.properties.findIndex(
+            prop =>
+                t.isObjectProperty(prop) &&
+                t.isIdentifier(prop.key) &&
+                prop.key.name === "ifTrue"
+        );
+
+
+    if (ifTrueIndex === -1)
+        return;
+
+
+    const prop =
+        props.properties[ifTrueIndex] as t.ObjectProperty;
+
+
+    const condition = prop.value;
+
+
+    // remove ifTrue
+    props.properties.splice(
+        ifTrueIndex,
+        1
+    );
+
+
+    state.hasIfSelector = true;
+
+
+    const check =
+        t.binaryExpression(
+            "!==",
+            t.callExpression(
+                t.identifier(IF_SELECTOR_NAME),
+                [
+                    condition
+                ]
+            ),
+            t.booleanLiteral(false)
+        );
+
+
+    path.replaceWith(
+        t.conditionalExpression(
+            check,
+            path.node,
+            t.nullLiteral()
+        )
+    );
+};
 
 export default function styleTransformer(): PluginObj {
 
     return {
 
         visitor: {
+            Program: {
+                enter(path, state) {
+                    state.hasIfSelector = false;
+                },
 
-            CallExpression(path) {
+                exit(path, state) {
+                    if (state.hasIfSelector) {
+                        injectIfSelector(path);
+                    }
+                },
+            },
+            JSXElement(path: NodePath<t.JSXElement>, state) {
+                try {
+                    const attrs = path.node.openingElement.attributes;
 
+                    const index = attrs.findIndex(
+                        attr =>
+                            t.isJSXAttribute(attr) &&
+                            t.isJSXIdentifier(attr.name) &&
+                            attr.name.name === "ifTrue"
+                    );
 
-                const callee = path.node.callee;
-
-
-                if (!t.isMemberExpression(callee))
-                    return;
-
-                if (isNestedStyleSheetCreate(callee)) {
-                    const arg =
-                        path.node.arguments[0];
-
-
-
-                    if (!t.isObjectExpression(arg))
+                    if (index === -1)
                         return;
 
-                    try {
+                    const attr = attrs[index] as t.JSXAttribute;
 
-                        const value =
-                            astToValue(
-                                arg,
-                                path
-                            );
-
-
-                        // console.warn("Converting Value",value);
-
-
-                        const newValue =
-                            NestedStyleSheet.create(
-                                value
-                            );
-
-
-                        // console.warn("New Value",newValue);
-
-
-
-                        path.replaceWith(
-                            valueToAST(newValue)
+                    if (
+                        !attr.value ||
+                        !t.isJSXExpressionContainer(attr.value)
+                    ) {
+                        return;
+                        throw path.buildCodeFrameError(
+                            "ifTrue must be a JSX expression."
                         );
-                    } catch (e) {
-                        console.warn("babel-style-transformer:Warning", e);
                     }
-                } else if (isCssStyleSheetCreate(callee)) {
-                    try {
-                        const arg = path.node.arguments[0];
-                        const value: string =
-                            astToValue(
-                                arg,
-                                path
-                            );
 
-                        let cssString;
-                        if (isCssPath(value)) {
-                            const _path = filePath.resolve(value);
-                            if (!fs.existsSync(_path)) {
-                                console.error(_path, "css file not found");
-                                return;
-                            }
-                            console.info("babel-style-transformer parsing the css file", _path);
+                    const expr = attr.value.expression;
 
-                            cssString = parseCssToTuples(fs.readFileSync(_path, { encoding: "utf8" }));
-                        } else {
-                            cssString = parseCssToTuples(value);
-                        }
+                    // Remove ifTrue from JSX
+                    attrs.splice(index, 1);
 
-                        let newValue = {};
-                        for (let k in cssString) {
-                            let itemKey = k.startsWith(".") ? k.substring(1) : k;
-                            let data = cssString[k];
-                            newValue[itemKey] = {};
-                            for (let d of data) {
-                                let item = transform([d as any]);
-                                if (d[2]) {
-                                    for (let tm in item)
-                                        item[tm] += "-!important";
-                                }
-                                Object.assign(newValue[itemKey], item);
-                            }
-                        }
+                    // Clone JSX without ifTrue
+                    const jsx = t.cloneNode(path.node, true);
 
-                        newValue = NestedStyleSheet.create(
-                            newValue
-                        );
-                        console.info("css Parsed");
-                        //console.log("parsed", newValue)
+                    // Mark that helper is needed
+                    state.hasIfSelector = true;
+
+                    // ifSelector(expr) !== false
+                    const condition = t.binaryExpression(
+                        "!==",
+                        t.callExpression(
+                            t.identifier(IF_SELECTOR_NAME),
+                            [
+                                expr
+                            ]
+                        ),
+                        t.booleanLiteral(false)
+                    );
+
+
+                    const replacement = t.conditionalExpression(
+                        condition,
+                        jsx,
+                        t.nullLiteral()
+                    )
+                    if (path.parentPath.isJSXElement()) {
                         path.replaceWith(
-                            valueToAST(newValue)
+                            t.jsxExpressionContainer(replacement)
                         );
-                    } catch (e) {
-                        throw e;
+                    } else {
+                        path.replaceWith(replacement);
                     }
+                } catch (e) {
+                    console.warn("its ok, ifTrue expression could not be handle")
                 }
-
+            },
+            CallExpression(path, state) {
+                nestedSheetExpression(path);
+                ifTrueExpression(path, state);
             }
         }
     };

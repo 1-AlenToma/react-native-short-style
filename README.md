@@ -6,10 +6,13 @@ With this css you wont need to devide your style across components, and style ea
 So like CSS you could have selectors like container > Button Text[children*='submit']:"width-100 he-20 di-flex" etc.
 
 ## Babel.config
-`react-native-short-style` parse all `NestedStyleSheet` and `CSSStyleSheet` at build time. 
+`react-native-short-style` parse all `NestedStyleSheet`, `CSSStyleSheet` at build time. 
 that is why you will need to add `react-native-short-style/babel-style-transformer` plugins to your `build.config.js`
 here is an example with expo.
 note: this is only applicable for version >`1.3.3`
+
+from ver:1.4.1 `ifTrue prop` will be transformed to. so the component do no render until `ifTrue` is not `false` `if present`.
+
 ```js
 
 const path = require("path");

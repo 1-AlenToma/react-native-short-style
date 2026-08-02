@@ -83,7 +83,7 @@ export const ModalView = () => {
                     <Text>this is a test</Text>
                 </Modal>
                 <ActionSheet position={state.actionSheet.position} size={Platform.OS == "web" ? "30%" : "50%"} isVisible={state.actionSheet.visible} onHide={mem(() => state.actionSheet.visible = false)}>
-                    <View css="fl-1">
+                    <View css="fl-1" ifTrue={()=> state.actionSheet.visible}>
                         <ScrollView style={mem({ maxHeight: "95%" })}>
                             {
                                 mem(["Play", "Share", "Delete", "Favorit", "Cancel"].map(x => (
