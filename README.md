@@ -11,7 +11,7 @@ that is why you will need to add `react-native-short-style/babel-style-transform
 here is an example with expo.
 note: this is only applicable for version >`1.3.3`
 
-from ver:1.4.1 `ifTrue prop` will be transformed to. so the component do no render until `ifTrue` is not `false` `if present`.
+from ver:1.4.1 `ifTrue prop` will be transformed to. so the component will not render until `ifTrue` is not `false` `if present`.
 
 ```js
 

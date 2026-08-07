@@ -14,13 +14,13 @@ export const AlertView = () => {
     const state = StateBuilder({
         size: undefined
     }).build();
-    const { mem, memo } = useLocalMemo();
+    const { locMem, locMemo } = useLocalMemo();
     globalData.useEffect(() => {
         if (state.size)
             state.size = undefined;
     }, "window", "alertViewData.data")
 
-    const answer = mem((a) => {
+    const answer = locMem((a) => {
         globalData.alertViewData.data.callBack?.(a);
         globalData.alertViewData.data = undefined;
     })
@@ -28,14 +28,14 @@ export const AlertView = () => {
     const data: AlertViewFullProps = globalData.alertViewData.data ?? {} as any;
 
     return (
-        <Modal css={memo(() => x => x.joinLeft(data.css).joinRight("pa-0 ma-0"), data.css)}
-            style={mem({ minHeight: state.size?.height, minWidth: state.size?.width }, state.size)}
+        <Modal css={locMemo(() => x => x.joinLeft(data.css).joinRight("pa-0 ma-0"), data.css)}
+            style={locMem({ minHeight: state.size?.height, minWidth: state.size?.width }, state.size)}
             disableBlurClick={data.callBack != undefined}
             isVisible={globalData.alertViewData.data != undefined}
-            onHide={mem(() => globalData.alertViewData.data = undefined)}>
+            onHide={locMem(() => globalData.alertViewData.data = undefined)}>
             <View css="fl:1 pa-0">
-                <View css="fl:1 pa-10" style={mem({ height: data.callBack ? "90%" : "100%" }, data.callBack)}
-                    onLayout={mem(({ nativeEvent }) => {
+                <View css="fl:1 pa-10" style={locMem({ height: data.callBack ? "90%" : "100%" }, data.callBack)}
+                    onLayout={locMem(({ nativeEvent }) => {
                         if (!state.size) {
                             state.size = nativeEvent.layout;
                             state.size.height += data.callBack ? 30 : 0;
@@ -46,11 +46,11 @@ export const AlertView = () => {
                     <Text css={`fos-${data.size ?? "sm"} co:gray pal:2`}>{data.message ?? ""}</Text>
                 </View>
                 <View ifTrue={data.callBack != undefined} css="alertViewButtonContainer">
-                    <Button text={data.yesText ?? "Yes"} onPress={mem(() => answer(true))} />
-                    <Button text={data.cancelText ?? "No"} onPress={mem(() => answer(false))} />
+                    <Button text={data.yesText ?? "Yes"} onPress={locMem(() => answer(true))} />
+                    <Button text={data.cancelText ?? "No"} onPress={locMem(() => answer(false))} />
                 </View>
                 <View ifTrue={data.callBack == undefined} css="alertViewButtonContainer">
-                    <Button text={data.okText ?? "Ok"} onPress={mem(() => answer(false))} />
+                    <Button text={data.okText ?? "Ok"} onPress={locMem(() => answer(false))} />
                 </View>
             </View>
         </Modal>)

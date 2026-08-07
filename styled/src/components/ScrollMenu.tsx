@@ -16,10 +16,10 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
             scrollEnabled: true
         },
     }).ignore("size", "scrollView", "private").build();
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
     const timer = useTimer(300);
     const scrollToTimer = useTimer(100);
-    const onScroll = mem((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const onScroll = locMem((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (!state.scrollView || !state.private.scrollEnabled) return;
 
         const { contentOffset } = event.nativeEvent;
@@ -40,7 +40,7 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
         });
     }, props.scrollViewProps?.onScroll, props.horizontal);
 
-    const scrollto = mem((animate: boolean = true) => {
+    const scrollto = locMem((animate: boolean = true) => {
         //   state.private.scrollEnabled = false;
         scrollToTimer(() => {
             if (!state.scrollView)
@@ -70,7 +70,7 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
             scrollto(false);
         });
     }, "screen")
-    const itemStyle = mem({
+    const itemStyle = locMem({
         minWidth: state.size?.width,
         minHeight: state.size?.height,
         maxHeight: state.size?.height,
@@ -78,24 +78,24 @@ export const ScrollMenu = React.memo<ScrollMenuProps>((props) => {
     }, state.size, state.size);
     return (
         <ReadyView ifTrue={props.ifTrue}
-            onLayout={mem(({ nativeEvent }) => {
+            onLayout={locMem(({ nativeEvent }) => {
                 //  if (!state.size)
                 state.size = nativeEvent.layout;
             })}
-            css={mem(x => x.joinLeft("wi-100% he-100% fl-1").joinRight(props.css), props.css)}
+            css={locMem(x => x.joinLeft("wi-100% he-100% fl-1").joinRight(props.css), props.css)}
             style={props.style}>
             <AnimatedScrollView
                 {...(props.scrollViewProps as any)}
-                onScrollBeginDrag={mem(() => state.private.scrollEnabled = false)}
-                onScrollEndDrag={mem(() => state.private.scrollEnabled = true)}
+                onScrollBeginDrag={locMem(() => state.private.scrollEnabled = false)}
+                onScrollEndDrag={locMem(() => state.private.scrollEnabled = true)}
                 horizontal={props.horizontal}
                 decelerationRate={.5}
                 disableIntervalMomentum={false}
-                contentContainerStyle={mem([{
+                contentContainerStyle={locMem([{
                     height: props.horizontal ? undefined : `${(props.children.length * 100)}%`,
                     width: !props.horizontal ? undefined : `${(props.children.length * 100)}%`,
                 }], props.horizontal, props.children.length)}
-                onScroll={onScroll} ref={mem(c => {
+                onScroll={onScroll} ref={locMem(c => {
                     state.scrollView = c as any;
                     if (state.selectedIndex > 0)
                         scrollto();

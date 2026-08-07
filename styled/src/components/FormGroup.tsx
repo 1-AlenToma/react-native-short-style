@@ -10,7 +10,7 @@ const ForGroupContext = React.createContext<{ labelPosition: string }>({} as any
 
 export const FormItem = (props: FormItemProps) => {
     const context = React.useContext(ForGroupContext);
-    const { mem, memo } = useLocalMemo();
+    const { locMem, locMemo } = useLocalMemo();
     const labelPosition = props.labelPosition ?? context.labelPosition ?? "Top";
     if (ifSelector(props.ifTrue) == false)
         return null;
@@ -19,10 +19,10 @@ export const FormItem = (props: FormItemProps) => {
     const css = "mar:5";
 
     return (
-        <View style={props.style} css={memo(() => x => x.cls("_formItem", "FormItem").joinRight(props.css), props.css)}>
-            <View css={memo(() => x => x.flD(labelPosition == "Top" ? "column" : "row").if(labelPosition == "Top", "ali-flex-start", "ali-center juc-space-between"), props.css)}>
+        <View style={props.style} css={locMemo(() => x => x.cls("_formItem", "FormItem").joinRight(props.css), props.css)}>
+            <View css={locMemo(() => x => x.flD(labelPosition == "Top" ? "column" : "row").if(labelPosition == "Top", "ali-flex-start", "ali-center juc-space-between"), props.css)}>
                 <View css="fld-row">
-                    <View ifTrue={icon != undefined} css={memo(() => x => x.maW(20).joinRight(css), props.css)}>
+                    <View ifTrue={icon != undefined} css={locMemo(() => x => x.maW(20).joinRight(css), props.css)}>
                         {icon && icon.type ? <Icon size={15} color={"white"} {...icon} /> : icon}
                     </View>
                     <View ifTrue={props.title != undefined} css={css}>
@@ -34,7 +34,7 @@ export const FormItem = (props: FormItemProps) => {
                         }
                     </ToolTip>
                 </View>
-                <View css={memo(() => x => x.cls("_formItemCenter", "_formItemCenter" + labelPosition).if(labelPosition == "Top", x => x.wi("100%")), labelPosition)}>
+                <View css={locMemo(() => x => x.cls("_formItemCenter", "_formItemCenter" + labelPosition).if(labelPosition == "Top", x => x.wi("100%")), labelPosition)}>
                     {props.children}
                 </View>
                 <ToolTip postion="Top" containerStyle={"po:relative le:1"} ifTrue={props.info != undefined && labelPosition != "Top"} text={props.info}>
@@ -53,10 +53,10 @@ export const FormItem = (props: FormItemProps) => {
 
 
 export const FormGroup = (props: FormGroupProps & { children: (React.ReactElement<FormItemProps> | React.ReactElement<FormItemProps>[]) }) => {
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
     return (
-        <ForGroupContext.Provider value={mem({ labelPosition: props.labelPosition }, props.labelPosition)}>
-            <View style={props.style} css={mem(x => x.cls("_formGroup FormGroup").maT(30).joinRight(props.css), props.css)}>
+        <ForGroupContext.Provider value={locMem({ labelPosition: props.labelPosition }, props.labelPosition)}>
+            <View style={props.style} css={locMem(x => x.cls("_formGroup FormGroup").maT(30).joinRight(props.css), props.css)}>
                 <View ifTrue={props.title != undefined && props.formStyle == "Headless"} css="headerLine">
                     <View css="bac-transparent">
                         <Text numberOfLines={1}>{props.title}</Text>
@@ -68,7 +68,7 @@ export const FormGroup = (props: FormGroupProps & { children: (React.ReactElemen
                             css="wi-100% fl-0 flg-1 pa-5 header bac-transparent">
                             <Text css="bac-transparent" numberOfLines={1}>{props.title}</Text>
                         </View>
-                        <View css={mem(x => x.maT(8).fillView().flG(1).paL(5).paR(5).baC(".co-transparent"))}>
+                        <View css={locMem(x => x.maT(8).fillView().flG(1).paL(5).paR(5).baC(".co-transparent"))}>
                             {
                                 props.children
                             }

@@ -114,7 +114,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             prev: props.checked,
         }
     })).ignore("refItem").build();
-    const { mem, memo } = useLocalMemo();
+    const { locMem, locMemo } = useLocalMemo();
 
     const context = React.useContext<CheckBoxListContext>(CheckBoxContext);
     const checkBoxType = context.checkBoxListProps.checkBoxType ?? props.checkBoxType ?? "CheckBox";
@@ -125,7 +125,7 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
     const swtichColor: any = context.checkBoxListProps.swtichColor ?? props.swtichColor ?? { true: "black", false: "white" }
     if (!context.ids || !context.ids.has(state.id))
         context.add?.(state.id, props.checked);
-    const tAnimate = mem((value: number) => {
+    const tAnimate = locMem((value: number) => {
 
         let ch = value == 1 ? true : false;
         if ((state.refItem.working && state.refItem.prev == ch) || disabled)
@@ -180,28 +180,28 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
     return (
         <>
             <TouchableOpacity activeOpacity={activeOpacity} style={props.style}
-                css={memo(() => `_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css)}
+                css={locMemo(() => `_checkBox _overflow juc:end mab:5 CheckBox ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css)}
                 ifTrue={checkBoxType == "CheckBox"}
-                onPress={mem(() => {
+                onPress={locMem(() => {
                     if (!disabled && !props.onPress)
                         state.checked = !state.checked;
                     props.onPress?.();
                 }, disabled, props.onPress)}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={memo(() => ({ backgroundColor: color(state.checked) }), state.checked)} css={`_checkBox_${labelPostion}`} >
-                    <Icon ifTrue={state.checked} type="AntDesign" css={memo(() => x => x.co(".co-light"))} name="check" size={24} />
+                <View style={locMemo(() => ({ backgroundColor: color(state.checked) }), state.checked)} css={`_checkBox_${labelPostion}`} >
+                    <Icon ifTrue={state.checked} type="AntDesign" css={locMemo(() => x => x.co(".co-light"))} name="check" size={24} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={props.style}
-                css={memo(() => x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), disabledCss, props.css)}
+                css={locMemo(() => x => x.cls("_checkBox").juC("flex-end").maB(5).joinRight(props.css).cls(disabledCss), disabledCss, props.css)}
                 ifTrue={checkBoxType == "RadioButton"}
-                onPress={mem(() => {
+                onPress={locMem(() => {
                     if ((!state.checked || selectionType == "CheckBox" || !context.ids) && !disabled)
                         state.checked = !state.checked
                 }, state.checked, disabled, selectionType)}>
                 <Text ifTrue={props.label != undefined && labelPostion == "Left"} css="fos-sm">{props.label}</Text>
-                <View style={mem({ borderRadius: 24, backgroundColor: "transparent" })} css={`_checkBox_${labelPostion}`}>
+                <View style={locMem({ borderRadius: 24, backgroundColor: "transparent" })} css={`_checkBox_${labelPostion}`}>
                     <Icon ifTrue={state.checked} size={21} type="MaterialCommunityIcons" name="checkbox-blank-circle" color={color(true)} />
                 </View>
                 <Text ifTrue={props.label != undefined && labelPostion == "Right"} css="fos-sm">{props.label}</Text>
@@ -209,26 +209,26 @@ export const CheckBox = (props: Omit<CheckBoxProps, "selectionType">) => {
             <TouchableOpacity
                 ifTrue={checkBoxType == "Switch"}
                 activeOpacity={activeOpacity}
-                onPress={mem(() => {
+                onPress={locMem(() => {
                     if (!disabled)
                         state.checked = (!state.checked);
                 }, disabled)}
-                style={props.style} css={memo(() => `fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css)}>
+                style={props.style} css={locMemo(() => `fld:row ali:center juc:end ${optionalStyle(props.css).c} ${disabledCss}`, disabledCss, props.css)}>
                 <Text
                     ifTrue={props.label != undefined}
                     css="fos-sm"
-                    style={mem({
+                    style={locMem({
                         flexGrow: 1,
                         maxWidth: "80%",
                         overflow: "hidden"
                     })}>
                     {props.label}
                 </Text>
-                <View style={mem({
+                <View style={locMem({
                     backgroundColor: color(state.checked)
                 }, state.checked)} css="bor:10 mab:5 sh-xs juc:center miw:60 he:25 overflow:visible">
                     <AnimatedView
-                        style={mem({
+                        style={locMem({
                             backgroundColor: color(!state.checked),
                             transform: [
                                 {

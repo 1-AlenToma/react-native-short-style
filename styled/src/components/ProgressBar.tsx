@@ -23,8 +23,8 @@ export const ProgressBar = ({
     const { animate, animateX } = useAnimate({
         speed: speed ?? 50
     });
-    const { mem } = useLocalMemo();
-    const applyProc = mem(() => {
+    const { locMem } = useLocalMemo();
+    const applyProc = locMem(() => {
         if (size)
             animateX(
                 Math.round(
@@ -56,11 +56,11 @@ export const ProgressBar = ({
         <View
             ifTrue={ifTrue}
             inspectDisplayName="ProgressBar"
-            onLayout={mem(e => {
+            onLayout={locMem(e => {
                 setSize(e.nativeEvent.layout);
             }, size)}
             style={style}
-            css={mem(x => x.cls("_progressBar", "ProgressBar").joinRight(css), css)}>
+            css={locMem(x => x.cls("_progressBar", "ProgressBar").joinRight(css), css)}>
             <Blur css="zi:1" />
             <View
                 css="zi:3 bac:transparent wi-100% juc-center ali-center fld-row">
@@ -68,7 +68,7 @@ export const ProgressBar = ({
             </View>
             <AnimatedView
                 css="_progressBarAnimatedView"
-                style={mem({
+                style={locMem({
                     backgroundColor: color ?? "green",
                     transform: [
                         {

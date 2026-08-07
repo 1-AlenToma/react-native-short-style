@@ -5,6 +5,7 @@ import fs from "fs";
 import * as filePath from "path";
 import generate from "@babel/generator";
 import transform from 'css-to-react-native';
+import { newId } from "./src/config/CSSMethods";
 
 function isCssPath(cssFilePathOrCssString: string): boolean {
     const trimmed = cssFilePathOrCssString.trim();
@@ -724,6 +725,40 @@ const ifTrueExpression = (path, state) => {
     );
 };
 
+const lockMemoExpression = (path, state) => {
+    const callee = path.node.callee;
+
+    const calleeNames = ["locMem", "locMemo"];
+    if (
+        !t.isIdentifier(callee) ||
+        !calleeNames.includes(callee.name)
+    ) {
+        return;
+    }
+
+
+    // already transformed
+    if (
+        path.node.arguments.length > 0 &&
+        t.isStringLiteral(
+            path.node.arguments[0]
+        )
+    ) {
+        return;
+    }
+
+
+    path.node.arguments.unshift(
+        t.stringLiteral(
+            newId()
+            //createKey(path)
+        )
+    );
+
+
+}
+
+
 export default function styleTransformer(): PluginObj {
 
     return {
@@ -807,6 +842,7 @@ export default function styleTransformer(): PluginObj {
                 }
             },
             CallExpression(path, state) {
+                lockMemoExpression(path, state);
                 nestedSheetExpression(path);
                 ifTrueExpression(path, state);
             }

@@ -14,10 +14,10 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
         visible: props.defaultActive ?? false,
         prefix: props.defaultActive ? "minus" : "plus"
     }).build();
-    const { mem, memo } = useLocalMemo();
+    const { locMem, locMemo } = useLocalMemo();
 
     const { animate, animateY, animateX } = useAnimate({ speed: 300, useNativeDriver: false });
-    const show = mem(() => {
+    const show = locMem(() => {
         animateX(state.visible ? 1 : 0, () => {
 
         }, 1000)
@@ -41,11 +41,11 @@ export const Collabse = React.forwardRef<DropdownRefItem, CollabseProps>((props,
         return null;
 
     return (
-        <View style={props.style} css={memo(()=> x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), props.css)}>
-            <TouchableOpacity onPress={mem(() => {
+        <View style={props.style} css={locMemo(()=> x => x.joinRight(`bor:5 wi:100% mih:30 bow:.5 boc:#CCC _overflow pa:5`).joinRight(props.css), props.css)}>
+            <TouchableOpacity onPress={locMem(() => {
                 props.onActiveStateChange?.(!state.visible);
                 state.visible = !state.visible;
-            }, props.onActiveStateChange)} css={memo(()=> x => x.joinLeft("wi:100% he:30 ali:center fld:row").joinRight(props.headerStyle), props.headerStyle)}>
+            }, props.onActiveStateChange)} css={locMemo(()=> x => x.joinLeft("wi:100% he:30 ali:center fld:row").joinRight(props.headerStyle), props.headerStyle)}>
                 {props.icon}
                 <Text css="fos-lg fow:bold">{props.text}</Text>
                 <Icon type="AntDesign" css="_abc ri:2" size={20} name={state.prefix} />

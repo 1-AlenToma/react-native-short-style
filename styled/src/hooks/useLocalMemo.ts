@@ -3,8 +3,10 @@ import * as React from "react";
 type ILocalMemo = {
   memKey<T>(key: string, fn: T, ...deps: any[]): T;
   memoKey<T>(key: string, fn: () => T, ...deps: any[]): T;
-  memo<T>(fn: () => T,...deps: any[]): T;
-  mem<T>(fn: T,...deps: any[]): T;
+  memo<T>(fn: () => T, ...deps: any[]): T;
+  mem<T>(fn: T, ...deps: any[]): T;
+  locMem<T>(fn: T, ...deps: any[]): T;
+  locMemo<T>(fn: () => T, ...deps: any[]): T;
 
 }
 
@@ -41,7 +43,7 @@ class LocalMemory {
     return this.cashKeys[key].value;
   }
 
-  memo<T>(fn: () => T,...deps: any[]): T {
+  memo<T>(fn: () => T, ...deps: any[]): T {
     const i = this.index++;
     const prev = this.cacheNumber[i];
     const changed = !prev ||
@@ -56,7 +58,7 @@ class LocalMemory {
     return this.cacheNumber[i].value;
   };
 
-  mem<T>(fn: T,...deps: any[]): T {
+  mem<T>(fn: T, ...deps: any[]): T {
     const i = this.index++;
     const prev = this.cacheNumber[i];
     const changed = !prev ||
@@ -71,8 +73,15 @@ class LocalMemory {
     return this.cacheNumber[i].value;
   };
 
-  get funcs() : ILocalMemo {
-    return { mem: this.mem.bind(this), memo: this.memo.bind(this), memKey: this.memKey.bind(this), memoKey: this.memoKey.bind(this) };
+  get funcs(): ILocalMemo {
+    return {
+      mem: this.mem.bind(this),
+      memo: this.memo.bind(this),
+      memKey: this.memKey.bind(this),
+      memoKey: this.memoKey.bind(this),
+      locMem: this.memKey.bind(this) as typeof this.mem,
+      locMemo: this.memoKey.bind(this) as any as typeof this.memo
+      };
   }
 }
 

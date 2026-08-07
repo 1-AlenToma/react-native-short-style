@@ -33,7 +33,7 @@ export const ActionSheet = (props: ActionSheetProps) => {
         }
     })).ignore("refItem").build();
 
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
     let getHeight = () => {
         let h: any = props.size ?? "50%";
         if (props.size == "content") {
@@ -174,18 +174,18 @@ export const ActionSheet = (props: ActionSheetProps) => {
     let Handle = Platform.OS == "web" ? TouchableOpacity : View;
     const handle = (<Handle
         activeOpacity={1}
-        onPressIn={mem(() => state.refItem.isTouched = true)}
-        onPressOut={mem(() => state.refItem.isTouched = false)}
-        style={mem({
+        onPressIn={locMem(() => state.refItem.isTouched = true)}
+        onPressOut={locMem(() => state.refItem.isTouched = false)}
+        style={locMem({
             backgroundColor: "transparent",
             ...handleStyle
         }, position, isVertical)}
         css={!isVertical ? "_actionSheet_horizontal_handle" : "_actionSheet_vertical_handle"}
-        onTouchStart={mem((e) => {
+        onTouchStart={locMem((e) => {
             state.refItem.isTouched = true;
         })}>
         <TouchableOpacity
-            onPress={mem(() => {
+            onPress={locMem(() => {
                 toggle(false);
                 // state.isVisible = false;
             })}
@@ -272,19 +272,19 @@ export const ActionSheet = (props: ActionSheetProps) => {
     return (
         <Portal visible={state.isVisible}>
             <View inspectDisplayName="ActionSheetContainer" css={`co-transparent _topPostion ActionSheetContainer zi-${zIndex + 300}`}>
-                <Blur style={mem({
+                <Blur style={locMem({
                     opacity: blurAnimation.animate.x.interpolate({
                         inputRange: [0, 1],
                         outputRange: [0, .5]
                     })
-                }, blurAnimation.animate.x)} onPress={mem(() => {
+                }, blurAnimation.animate.x)} onPress={locMem(() => {
                     if (!props.disableBlurClick)
                         toggle(false);
                     // state.isVisible= false;
                 }, props.disableBlurClick)} css="zi:1" />
                 <AnimatedView
                     inspectDisplayName="ActionSheet"
-                    onTouchEnd={mem((event) => {
+                    onTouchEnd={locMem((event) => {
                         state.refItem.isTouched = false;
                     })}
                     css={`_actionSheet _actionSheet_${position} zi-2 ActionSheet`}
@@ -297,17 +297,17 @@ export const ActionSheet = (props: ActionSheetProps) => {
                     ]}  {...state.refItem.panResponse.panHandlers}>
                     <View
                         inspectDisplayName="ActionSheetContent"
-                        style={mem({
+                        style={locMem({
                             flexDirection: !isVertical ? "row" : undefined
                         }, isVertical)}
                         css="wi:100% he:100% pa:10 flex:1 ActionSheetContent">
                         {position == "Bottom" || position == "Right" ? handle : null}
                         <View ifTrue={state.refItem.show || !props.lazyLoading}
                             css={_css}
-                            style={mem([(props.size != "content" ? {
+                            style={locMem([(props.size != "content" ? {
                                 flex: 1,
                                 flexGrow: 1
-                            } : undefined)], props.size)} onLayout={mem(({ nativeEvent }) => {
+                            } : undefined)], props.size)} onLayout={locMem(({ nativeEvent }) => {
                                 if (props.size == "content") {
                                     state.batch(() => {
                                         state.size = nativeEvent.layout;

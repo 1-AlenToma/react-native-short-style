@@ -47,7 +47,7 @@ export class TabView extends React.PureComponent<TabItemProps, {}> {
 const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     const context = React.useContext(TabBarContext);
     const position = context.props.position ?? "Bottom";
-    const { mem, memo } = useLocalMemo();
+    const { locMem, locMemo, mem, memo } = useLocalMemo();
 
     let menuItems = children.filter(
         x => ifSelector(x.props.ifTrue) !== false
@@ -65,7 +65,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         return res;
     }, [state.manuItemSize?.width, children.length, menuItems.length]);
 
-    context.onChange = mem((index) => {
+    context.onChange = locMem((index) => {
         state.selectedIndex = index;
     })
 
@@ -75,7 +75,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         ), state.manuItemSize.width);
     }, "manuItemSize");
 
-    let header = memo(() => ({
+    let header = locMemo(() => ({
         style: optionalStyle(context.props.header?.style),
         textStyle: optionalStyle(context.props.header?.textStyle),
         selectedStyle: optionalStyle(context.props.header?.selectedStyle),
@@ -87,7 +87,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         }
     }), context.props.header)
 
-    const getIcon = mem((icon: IConProps & MenuIcon | undefined, style: any, index: number) => {
+    const getIcon = locMem((icon: IConProps & MenuIcon | undefined, style: any, index: number) => {
         if (!icon)
             return null;
         let IconView = icon.component ?? Icon;
@@ -116,7 +116,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
     let border = (
         <AnimatedView
             css={header.overlayStyle.container.c}
-            style={memo(() => [
+            style={locMemo(() => [
                 {
                     backgroundColor: "#e5313a",
                 },
@@ -138,11 +138,11 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                     ]
                 }], context.animated.x, header, interpolate, width)}>
             <View
-                onStartShouldSetResponder={mem(event => false)}
-                onTouchStart={mem(e => {
+                onStartShouldSetResponder={locMem(event => false)}
+                onTouchStart={locMem(e => {
                     context.onMenuChange(state.selectedIndex);
                 })}
-                style={memo(() => [
+                style={locMemo(() => [
                     header.overlayStyle.content.o,
                     {
                         width: "100%",
@@ -157,7 +157,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
         </AnimatedView>
     );
 
-    let selectedStyle: any = mem(
+    let selectedStyle: any = locMem(
         position != "Top"
             ? {
                 borderTopWidth: 2,
@@ -167,18 +167,18 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                 borderBottomWidth: 2,
                 borderBottomColor: "#ffff2d"
             }, position);
-    const menuText: any = mem({
+    const menuText: any = locMem({
         alignSelf: "center",
         textTransform: "uppercase",
     });
 
     return (
-        <View css={mem(x => x.cls("_tabBarMenu").if(position == "Bottom", x => x.boTC(".co-gray300").boTW(.5), x => x.boBC(".co-gray300").boBW(.5)).joinRight(header.style.c), position, header)} style={header.style.o}>
+        <View css={locMem(x => x.cls("_tabBarMenu").if(position == "Bottom", x => x.boTC(".co-gray300").boTW(.5), x => x.boBC(".co-gray300").boBW(.5)).joinRight(header.style.c), position, header)} style={header.style.o}>
             {position != "Top" ? border : null}
             <View css="_tabBarContainerView bac-transparent">
                 {menuItems.map((x, i) => (
                     <TouchableOpacity
-                        onLayout={mem(event => {
+                        onLayout={locMem(event => {
                             let item = event.nativeEvent.layout
 
                             if (!item.width || isNaN(item.width))
@@ -198,7 +198,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
                             // state.selectedIndex = i;
                             context.onMenuChange(i);
                         }, context.onMenuChange)}>
-                        {mem(x.props.icon ? getIcon(
+                        {locMem(x.props.icon ? getIcon(
                             x.props.icon,
                             {
                                 ...menuText,
@@ -224,7 +224,7 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
 export const TabBar = (props: TabBarProps) => {
     const children = React.useMemo(() => Array.isArray(props.children) ? props.children : [props.children], [props.children]);
     const position = props.position ?? "Bottom";
-    const { mem, memo } = useLocalMemo();
+    const { locMem, locMemo } = useLocalMemo();
     const visibleChildren = children.filter(
         x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon)
     );
@@ -249,12 +249,12 @@ export const TabBar = (props: TabBarProps) => {
 
     })).ignore("refItem", "size").build();
     //globalData.hook("window");
-    const getWidth = mem((index: number) => {
+    const getWidth = locMem((index: number) => {
         let v = index * (state.size.width ?? 0);
         if (isNaN(v)) return 0;
         return v;
     }, state.size);
-    const getInputRange = mem(() => {
+    const getInputRange = locMem(() => {
         let item = children
             .map((x, i) => {
                 return {
@@ -268,7 +268,7 @@ export const TabBar = (props: TabBarProps) => {
     }, children);
 
     state.refItem.interpolate = getInputRange();
-    const tAnimate = mem((
+    const tAnimate = locMem((
         index: number,
         speed?: number,
         fn?: any
@@ -294,7 +294,7 @@ export const TabBar = (props: TabBarProps) => {
 
     })
 
-    const animateLeft = mem(async (index: number) => {
+    const animateLeft = locMem(async (index: number) => {
         //while (isAnimating.current) await sleep(100);
         //setIndex(index);
         tAnimate(index, undefined, () => {
@@ -302,7 +302,7 @@ export const TabBar = (props: TabBarProps) => {
         });
     }, tAnimate)
 
-    let loadChildren = mem(async (i: number, notAnimated?: boolean) => {
+    let loadChildren = locMem(async (i: number, notAnimated?: boolean) => {
         if (i >= 0 && i < children.length && notAnimated != true) {
             animateLeft(i);
         }
@@ -313,7 +313,7 @@ export const TabBar = (props: TabBarProps) => {
         }
     }, children, tAnimate)
 
-    const getView = mem((index, view) => {
+    const getView = locMem((index, view) => {
         if (props.lazyLoading && !state.refItem.loadedViews[index])
             return (<Loader loading={true} text={props.loadingText} />)
         return view;
@@ -331,7 +331,7 @@ export const TabBar = (props: TabBarProps) => {
     }, "index");
 
 
-    const windowChanged = mem(() => {
+    const windowChanged = locMem(() => {
         requestAnimationFrame(() => { tAnimate(state.index, 0) })
 
     }, tAnimate);
@@ -342,7 +342,7 @@ export const TabBar = (props: TabBarProps) => {
         windowChanged();
     }, [children]);
 
-    const assign = mem(() => {
+    const assign = locMem(() => {
         const onRelease = (
             evt: any,
             gestureState: any
@@ -483,16 +483,16 @@ export const TabBar = (props: TabBarProps) => {
 
     return (
         <AnimatedView
-            onLayout={mem(async ({ nativeEvent }) => {
+            onLayout={locMem(async ({ nativeEvent }) => {
                 state.size = nativeEvent.layout;
                 windowChanged();
-            }, windowChanged)} css={mem(x => x.cls("_tabBar").joinRight(props.css), props.css)} style={props.style}>
+            }, windowChanged)} css={locMem(x => x.cls("_tabBar").joinRight(props.css), props.css)} style={props.style}>
             {position === "Top" ? (
                 tabMenu
             ) : null}
             <AnimatedView
                 css={`_tabBarContainer`}
-                style={memo(()=> [
+                style={locMemo(()=> [
                     (visibleChildren.length <= 1 ? {
                         minHeight: null,
                         height: null
@@ -513,7 +513,7 @@ export const TabBar = (props: TabBarProps) => {
                 {...state.refItem.panResponse.panHandlers}>
                 {children.map((x, i) => (
                     <NativeView
-                        style={mem({
+                        style={locMem({
                             width: state.size.width,
                             height: '100%',
                             backgroundColor: "transparent"
@@ -522,10 +522,10 @@ export const TabBar = (props: TabBarProps) => {
                         {x.props.head}
                         {!props.disableScrolling && !x.props.disableScrolling ? (
                             <NativeAcrollView
-                                style={mem({
+                                style={locMem({
                                     width: "100%",
                                 })}
-                                contentContainerStyle={mem(
+                                contentContainerStyle={locMem(
                                     {
                                         flexGrow: 1,
                                         width: "100%",

@@ -13,18 +13,18 @@ import { Platform } from "react-native";
 
 const DropDownItemController = ({ item, index, state, props }: { props: DropdownListProps, item: DropdownItem, index: number, state: any }) => {
     const localState = StateBuilder({ selected: undefined as number | undefined }).build();
-    const { mem, memo } = useLocalMemo()
+    const { locMem } = useLocalMemo()
     return (
         <View
-            onMouseEnter={mem(() => {
+            onMouseEnter={locMem(() => {
                 if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
                     localState.selected = index;
             })}
-            onMouseLeave={mem(() => {
+            onMouseLeave={locMem(() => {
                 if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
                     localState.selected = undefined;
             })}
-            css={mem(`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == localState.selected ? props.selectedItemCss ?? "selectedValue" : ""}`, localState.selected, props.selectedItemCss)}>
+            css={locMem(`mih:30 pa:5 wi:100% juc:center bobw:.5 boc:#CCC DropDownListItem ${item.value === state.selectedValue || index == localState.selected ? props.selectedItemCss ?? "selectedValue" : ""}`, localState.selected, props.selectedItemCss)}>
             {
                 props.render ? props.render(item) : (
                     <Text css={`fos-sm ${item.value === state.selectedValue || index == localState.selected ? props.selectedItemCss ?? "selectedValue" : ""}`}>{item.label}</Text>
@@ -43,7 +43,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
         selectedValue: props.selectedValue,
         propsSize: undefined as Size | undefined,
     }).ignore("propsSize").build();
-    const { mem , memo} = useLocalMemo();
+    const { locMem , locMemo} = useLocalMemo();
 
     const mode = props.mode ?? "Modal";
 
@@ -67,7 +67,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
     } as DropdownRefItem);
 
 
-    const Component = mem(mode == "Modal" ? Modal : mode == "ActionSheet" ? ActionSheet : TabView, mode);
+    const Component = locMem(mode == "Modal" ? Modal : mode == "ActionSheet" ? ActionSheet : TabView, mode);
     const selectedText = props.items.find(x => x.value == state.selectedValue)?.label;
     let componentsProps: any = { css: `he:${props.size ?? "50%"} DropDownListItems`, addCloser: true, size: props.size ?? "50%", isVisible: state.visible, onHide: () => state.visible = false }
     if (mode == "Fold") {
@@ -77,7 +77,7 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
 
     const Container: any = mode == "Fold" ? TabBar : React.Fragment;
     const Selector = mode == "Fold" ? TabView : React.Fragment;
-    const containerProps = mem(mode == "Fold" ? {
+    const containerProps = locMem(mode == "Fold" ? {
         disableScrolling: true,
         onTabChange: (index) => state.index = index,
         style: { flex: null, flexBasis: state.index == 1 ? undefined : 38 },
@@ -91,19 +91,19 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
     return (
         <Container {...containerProps}>
             <Selector>
-                <TouchableOpacity onLayout={mem(({ nativeEvent }) => {
+                <TouchableOpacity onLayout={locMem(({ nativeEvent }) => {
                     state.propsSize = nativeEvent.layout;
-                })} onMouseEnter={mem(() => state.shadow = "sh-sm")}
-                    onMouseLeave={mem(() => state.shadow = "")}
-                    onPress={mem(() => state.visible = !state.visible)}
-                    css={memo(()=> `wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css)}>
+                })} onMouseEnter={locMem(() => state.shadow = "sh-sm")}
+                    onMouseLeave={locMem(() => state.shadow = "")}
+                    onPress={locMem(() => state.visible = !state.visible)}
+                    css={locMemo(()=> `wi:95% he:30 fld:row ali:center bow:.5 bor:5 _overflow boc:#CCC DropdownList ${state.shadow} ${optionalStyle(props.css).c}`, state.shadow, props.css)}>
                     <View css="fl:1 wi:85% he:100% borw:.5 juc:center pal:5 boc:#CCC bac-transparent">
-                        <Text style={mem(selectedText ? undefined : { color: "#CCC" }, selectedText)} css="fos-sm">
+                        <Text style={locMem(selectedText ? undefined : { color: "#CCC" }, selectedText)} css="fos-sm">
                             {selectedText ?? props.placeHolder}
                         </Text>
                     </View>
                     <View css="fl:1 _center wi:30 maw:30 he:100% bac-transparent">
-                        <Icon style={mem({
+                        <Icon style={locMem({
                             transform: [{
                                 rotateX: (mode == "Fold" ? "0deg" : (state.visible ? "180deg" : "0deg"))
                             }]
@@ -120,14 +120,14 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                         placeholderTextColor={"#CCC"}
                         placeholder={props.textInputPlaceHolder ?? "Search here..."}
                         defaultValue={state.text}
-                        onChangeText={mem(txt => state.text = txt)} />
+                        onChangeText={locMem(txt => state.text = txt)} />
                 </View>
                 <VirtualScroller
                     updateOn={props.updateOn}
                     initializeIndex={selectedIndex}
                     contentSizeTimer={200}
                     horizontal={false}
-                    onItemPress={mem(({ item }) => {
+                    onItemPress={locMem(({ item }) => {
                         state.selectedValue = item.value;
                         props.onSelect?.(item);
                         state.visible = false;
@@ -135,9 +135,9 @@ export const DropdownList = React.forwardRef<DropdownRefItem, DropdownListProps>
                     numColumns={props.numColumns}
                     itemSize={props.itemSize}
                     scrollEventThrottle={16}
-                    keyExtractor={mem((item) => item.value)}
-                    style={mem({ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }, props.enableSearch, props.items.length, state.propsSize?.height)}
-                    renderItem={mem(({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />))}
+                    keyExtractor={locMem((item) => item.value)}
+                    style={locMem({ marginTop: !props.enableSearch ? 15 : 5, maxHeight: mode == "Fold" ? Math.min(props.items.length * (35), 200) - (props.items.length > 10 ? state.propsSize?.height ?? 0 : 0) - 10 : undefined }, props.enableSearch, props.items.length, state.propsSize?.height)}
+                    renderItem={locMem(({ item, index }) => (<DropDownItemController item={item} index={index} props={props} state={state} />))}
                     items={items}
                 />
             </Component>

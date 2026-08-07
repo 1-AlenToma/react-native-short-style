@@ -15,7 +15,7 @@ import { Portal } from "./Portal";
 
 export const Fab = (props: FabProps) => {
     const { animateY, animate, currentValue } = useAnimate();
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
     const state = StateBuilder(() => ({
         visible: false,
         id: newId(),
@@ -102,9 +102,9 @@ export const Fab = (props: FabProps) => {
     }, [props.position, props.follow, state.size, StatusBar.currentHeight])
 
     const animatedIItem = !state.visible ? null : (
-        <AnimatedView onLayout={mem(({ nativeEvent }) => {
+        <AnimatedView onLayout={locMem(({ nativeEvent }) => {
             state.size = nativeEvent.layout;
-        })} style={mem({
+        })} style={locMem({
             transform: [
                 {
                     scaleY: animate.y.interpolate({
@@ -113,7 +113,7 @@ export const Fab = (props: FabProps) => {
                         extrapolate: "clamp"
                     })
                 }]
-        }, animate.y)} css={mem(x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(itemStyle.animatedItemPosition), itemStyle.animatedItemPosition)} key={state.id + "View"} >
+        }, animate.y)} css={locMem(x => x.joinRight("mat:10 bac:transparent overflow:hidden miw:100 zi:1 _abc").joinRight(itemStyle.animatedItemPosition), itemStyle.animatedItemPosition)} key={state.id + "View"} >
                 {
                     props.children
                 }
@@ -124,15 +124,15 @@ export const Fab = (props: FabProps) => {
 
     const view = (
         <React.Fragment key={state.id}>
-            <View css={mem(x => x.cls("_fab").joinRight(itemStyle.style).joinRight(props.css), props.css, itemStyle.style)} style={props.style}>
+            <View css={locMem(x => x.cls("_fab").joinRight(itemStyle.style).joinRight(props.css), props.css, itemStyle.style)} style={props.style}>
                 {!["LeftTop", "RightTop"].includes(props.position) ? animatedIItem : null}
-                <TouchableOpacity style={typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined} onPress={mem(() => state.visible = !state.visible)}
-                    css={mem(x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle)), props.prefixContainerStyle)}>
+                <TouchableOpacity style={typeof props.prefixContainerStyle == "object" ? props.prefixContainerStyle : undefined} onPress={locMem(() => state.visible = !state.visible)}
+                    css={locMem(x => x.cls("_fabCenter").if(props.prefixContainerStyle && ["string", "function"].includes(typeof props.prefixContainerStyle), c => c.joinRight(props.prefixContainerStyle)), props.prefixContainerStyle)}>
                     {typeof props.prefix == "string" ? <Text css="fos-xs">{props.prefix}</Text> : props.prefix}
                 </TouchableOpacity>
                 {!["LeftBottom", "RightBottom"].includes(props.position) ? animatedIItem : null}
             </View>
-            <Blur onPress={mem(() => state.visible = false)} ifTrue={state.visible && props.blureScreen !== false} />
+            <Blur onPress={locMem(() => state.visible = false)} ifTrue={state.visible && props.blureScreen !== false} />
         </React.Fragment>
     )
 

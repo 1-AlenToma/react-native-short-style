@@ -31,8 +31,8 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
     const itemSize = context.itemSize;
     const itemSizes = context.parentState.itemSizes;
     const scrollSettings = context.parentState.scrollSettings;
-    const { mem } = useLocalMemo();
-    const isVisible = mem(() => {
+    const { locMem } = useLocalMemo();
+    const isVisible = locMem(() => {
         const {
             estimatedItemSize,
             itemSizes,
@@ -95,7 +95,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
         top: !isHorizontal && itemSize != undefined ? itemSize * rowIndex : undefined
     }] as ViewStyle), [itemSize, context.parentState.containerSize.width]);
 
-    const validateTrigger = mem(() => {
+    const validateTrigger = locMem(() => {
         if (!itemSizes[startIndex] && itemSize != undefined)
             itemSizes[startIndex] = { width: itemSize, height: itemSize };
         if (itemSizes[startIndex] && rowIndex === scrollSettings.scrollToIndex) {
@@ -117,7 +117,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
     };
     return (<View
         ifTrue={visibility}
-        onLayout={mem(({ nativeEvent }: LayoutChangeEvent) => {
+        onLayout={locMem(({ nativeEvent }: LayoutChangeEvent) => {
             const size = nativeEvent.layout;
             if (context.parentState.estimatedItemSize <= 2) {
                 context.parentState.estimatedItemSize = isHorizontal ? size.width : size.height;
@@ -125,7 +125,7 @@ const ScrollIsVisibleView = ({ startIndex, children }: { startIndex: number, chi
             itemSizes[startIndex] = size;
             //  validateTrigger();
         }, itemSizes)}
-        css={mem(x => x.joinLeft(context.props.itemStyle).cls("virtualItemSelector"), context.props.itemStyle)}
+        css={locMem(x => x.joinLeft(context.props.itemStyle).cls("virtualItemSelector"), context.props.itemStyle)}
         style={style}>
         {children}
     </View>)
@@ -164,7 +164,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
     const endReachedTimer = useTimer(200);
     const scrollToIndexTimer = useTimer(10);
     const numColumns = props.numColumns ?? 1;
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
     const state = StateBuilder(() => ({
         containerSize: undefined as Size | undefined,
         estimatedItemSize: props.itemSize?.size != undefined && typeof props.itemSize?.size == "number" ? props.itemSize.size : 0,
@@ -208,8 +208,8 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
 
 
     const renderTimer = useTimer(100);
-    const effectiveItems = mem(state.estimatedItemSize === 0 ? props.items.slice(0, numColumns) : props.items, state.estimatedItemSize, props.items);
-    const prepaireItems = mem(async () => {
+    const effectiveItems = locMem(state.estimatedItemSize === 0 ? props.items.slice(0, numColumns) : props.items, state.estimatedItemSize, props.items);
+    const prepaireItems = locMem(async () => {
         renderTimer(async () => {
             SmartScheduler.run(() => {
                 const rows = { children: [], rows: new Map<number, any[]>() }
@@ -257,7 +257,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
     const rowCount = Math.ceil(props.items.length / numColumns);
 
     return (
-        <ScrollContext.Provider value={mem({
+        <ScrollContext.Provider value={locMem({
             parentState: state,
             itemRows: state.items?.rows ?? new Map(),
             props,
@@ -270,17 +270,17 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 showsVerticalScrollIndicator={props.showsVerticalScrollIndicator}
                 showsHorizontalScrollIndicator={props.showsHorizontalScrollIndicator}
                 horizontal={props.horizontal}
-                ref={mem(c => {
+                ref={locMem(c => {
                     state.refItems.scrollView = c as any;
                 })}
                 scrollEventThrottle={props.scrollEventThrottle ?? 16}
-                contentContainerStyle={mem({
+                contentContainerStyle={locMem({
                     minHeight: !props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
                     minWidth: props.horizontal && state.estimatedItemSize > 0 ? state.estimatedItemSize * rowCount : undefined,
                     flexDirection: props.horizontal ? "row" : "column",
                 }, props.horizontal, state.estimatedItemSize, rowCount)}
                 pagingEnabled={props.pagingEnabled}
-                onScroll={mem(event => {
+                onScroll={locMem(event => {
                     const { nativeEvent } = event;
                     if (state.containerSize) {
                         const scrollValue = props.horizontal ? nativeEvent.contentOffset.x : nativeEvent.contentOffset.y;
@@ -310,7 +310,7 @@ export const VirtualScroller = React.forwardRef<VirtualScrollerViewRefProps, Vir
                 }, props.onScroll, props.onEndReachedThreshold, props.onEndReached)}
                 style={props.style}
                 id={props.id}
-                onLayout={mem(({ nativeEvent }) => {
+                onLayout={locMem(({ nativeEvent }) => {
                     timer(() => {
                         const { layout } = nativeEvent;
                         if (

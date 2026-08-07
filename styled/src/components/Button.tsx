@@ -10,15 +10,15 @@ export const Button = (props: ButtonProps) => {
     const disabled = ifSelector(props.disabled);
     const timer = useTimer(props.whilePressedDelay ?? 300);
     const pressableProps = { ...props };
-    const { mem, memo } = useLocalMemo();
-    const onPress = mem((event: any) => {
+    const { locMem, locMemo } = useLocalMemo();
+    const onPress = locMem((event: any) => {
         timer.clear();
         event.preventDefault();
         event.stopPropagation();
         props.onPress(event);
     }, props.onPress)
 
-    const onLongPress = mem((event: any) => {
+    const onLongPress = locMem((event: any) => {
         props.onLongPress?.(event);
         const fn = () => {
             props.whilePressed();
@@ -27,7 +27,7 @@ export const Button = (props: ButtonProps) => {
         fn();
     }, props.onLongPress, props.whilePressed);
 
-    const onPressOut = mem((event) => {
+    const onPressOut = locMem((event) => {
         props.onPressOut?.(event);
         timer.clear();
     }, props.onPressOut);
@@ -42,13 +42,13 @@ export const Button = (props: ButtonProps) => {
         pressableProps.onLongPress = onLongPress;
         pressableProps.onPressOut = onPressOut;
     }
-    const onMouseEnter = mem((event: any) => {
+    const onMouseEnter = locMem((event: any) => {
         if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
             setShadow("sh-md")
         props.onMouseEnter?.(event)
     }, props.onMouseEnter, shadow);
 
-    const onMouseLeave = mem((event: any) => {
+    const onMouseLeave = locMem((event: any) => {
         if (Platform.OS == "web" || Platform.OS == "windows" || Platform.OS == "macos")
             setShadow("sh-sm");
         props.onMouseLeave?.(event);
@@ -58,9 +58,9 @@ export const Button = (props: ButtonProps) => {
 
     return (
         <TouchableOpacity inspectDisplayName={"Button"} {...pressableProps}
-            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={memo(()=> x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled)}>
+            onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} css={locMemo(()=> x => x.cls(shadow, "_button button").joinRight(props.css).if(disabled, x => x.cls("disabled")), props.css, shadow, disabled)}>
             {props.icon}
-            <Text ifTrue={props.text != undefined} css={memo(()=> x => x.cls("fos-xs").joinRight(props.textCss), props.textCss)}>{props.text}</Text>
+            <Text ifTrue={props.text != undefined} css={locMemo(()=> x => x.cls("fos-xs").joinRight(props.textCss), props.textCss)}>{props.text}</Text>
         </TouchableOpacity>
     )
 

@@ -27,12 +27,12 @@ export const SliderView = (props: NativeSlider.SliderProps & {
         sliding: false
     }).build();
     const timer = useTimer(props.msTimeout ?? 800);
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
 
     let btnValue = typeof state.value == "number" ? state.value : ((state.value as []).length <= 1 ? state.value[0] : undefined);
     let step = props.step != undefined ? props.step : 1;
 
-    const onChange = mem((value: any, index?: number) => {
+    const onChange = locMem((value: any, index?: number) => {
         state.value = btnValue = value;
 
         (props.onSlidingComplete || props.onValueChange)?.(typeof value == "number" ? [value] : value, index ?? 0)
@@ -47,14 +47,14 @@ export const SliderView = (props: NativeSlider.SliderProps & {
         state.sliding = true;
     }, [props.value])
 
-    const minus = mem(() => {
+    const minus = locMem(() => {
         if (btnValue - step >= props.minimumValue)
             onChange(btnValue - step)
         else if (btnValue > props.minimumValue)
             onChange(props.minimumValue)
     }, onChange, props.minimumValue, state.value);
 
-    const plus = mem(() => {
+    const plus = locMem(() => {
         if (btnValue + step <= props.maximumValue)
             onChange(btnValue + step)
         else if (btnValue < props.maximumValue)
@@ -64,38 +64,38 @@ export const SliderView = (props: NativeSlider.SliderProps & {
 
 
     return (
-        <View ifTrue={props.ifTrue} css={mem(x => x.cls("_slider juc:space-between").joinRight(props.css), props.css)} style={props.style}>
-            <Button css={mem(x => x.cls("_sliderButton").joinRight(props.buttonCss), props.buttonCss)}
-                icon={mem(<Icon type="AntDesign" size={15} color="white" name="minus" />)}
+        <View ifTrue={props.ifTrue} css={locMem(x => x.cls("_slider juc:space-between").joinRight(props.css), props.css)} style={props.style}>
+            <Button css={locMem(x => x.cls("_sliderButton").joinRight(props.buttonCss), props.buttonCss)}
+                icon={locMem(<Icon type="AntDesign" size={15} color="white" name="minus" />)}
                 ifTrue={props.enableButtons && btnValue != undefined}
-                onPressIn={mem(() => state.sliding = true)}
+                onPressIn={locMem(() => state.sliding = true)}
                 disabled={btnValue != undefined && props.minimumValue >= btnValue}
                 whilePressed={minus} onPress={minus}></Button>
 
             <Slider
-                onStartShouldSetResponder={mem(event =>
+                onStartShouldSetResponder={locMem(event =>
                     false
                 )}
-                renderAboveThumbComponent={mem(() => <Text style={mem({ display: !state.sliding ? "none" : "flex" })} css="_sliderThump pointerEvents-none">{`${readAble(btnValue as number, 1)}/${props.maximumValue}`}</Text>, props.maximumValue, btnValue, state.sliding)}
+                renderAboveThumbComponent={locMem(() => <Text style={({ display: !state.sliding ? "none" : "flex" })} css="_sliderThump pointerEvents-none">{`${readAble(btnValue as number, 1)}/${props.maximumValue}`}</Text>, props.maximumValue, btnValue, state.sliding)}
                 {...props}
-                onSlidingStart={mem((event, index: number) => {
+                onSlidingStart={locMem((event, index: number) => {
                     props.onSlidingStart?.(event, index);
                     state.sliding = true;
                 }, props.onSlidingStart)}
-                onTouchStart={mem((e => {
+                onTouchStart={locMem((e => {
                     globalData.panEnabled = false;
                 }) as any)}
-                onTouchEnd={mem(e => {
+                onTouchEnd={locMem(e => {
                     globalData.panEnabled = true;
                 })}
                 value={state.value}
-                containerStyle={mem({ ...props.containerStyle, flex: 1, width: "100%", overflow: props.enableButtons ? "hidden" : undefined, maxWidth: props.enableButtons ? (Platform.OS == "web" ? "50%" : "75%") : undefined }, props.containerStyle, props.enableButtons)}
+                containerStyle={locMem({ ...props.containerStyle, flex: 1, width: "100%", overflow: props.enableButtons ? "hidden" : undefined, maxWidth: props.enableButtons ? (Platform.OS == "web" ? "50%" : "75%") : undefined }, props.containerStyle, props.enableButtons)}
                 onSlidingComplete={onChange} />
-            <Button css={mem(x => x.cls("_sliderButton").joinRight(props.buttonCss), props.buttonCss)}
-                icon={mem(<Icon type="AntDesign" size={15} color="white" name="plus" />)}
+            <Button css={locMem(x => x.cls("_sliderButton").joinRight(props.buttonCss), props.buttonCss)}
+                icon={locMem(<Icon type="AntDesign" size={15} color="white" name="plus" />)}
                 ifTrue={props.enableButtons && btnValue != undefined}
                 disabled={btnValue != undefined && props.maximumValue <= btnValue}
-                onPressIn={mem(() => state.sliding = true)}
+                onPressIn={locMem(() => state.sliding = true)}
                 whilePressed={plus} onPress={plus}></Button>
         </View>)
 }

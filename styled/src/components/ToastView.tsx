@@ -23,11 +23,11 @@ export const ToastView = () => {
         counter: 0,
         visible: false
     })).ignore("id").build();
-    const { mem } = useLocalMemo();
+    const { locMem } = useLocalMemo();
 
     let interpolate = [0, 1];
 
-    const startCounter = mem(() => {
+    const startCounter = locMem(() => {
         if (data.loader == false)
             return;
         state.counter += data.loaderCounter ?? .01;
@@ -45,7 +45,7 @@ export const ToastView = () => {
         }
     }
 
-    const animateTop = mem(() => {
+    const animateTop = locMem(() => {
         const v = state.visible ? 1 : 0;
         if (currentValue.y == v || !state.size)
             return;
@@ -111,10 +111,10 @@ export const ToastView = () => {
 
 
     return (<Portal visible={data.message != undefined}> <AnimatedView key={state.id}
-        onLayout={mem(({ nativeEvent }) => {
+        onLayout={locMem(({ nativeEvent }) => {
             if (!state.size)
                 state.size = nativeEvent.layout;
-        })} style={mem({
+        })} style={locMem({
             left: state.size ? (globalData.window.width - state.size.width) / 2 : 0,
             top: !state.size ? (data.position == "Bottom" ? "100%" : "-100%") : 0,
             transform: [{
@@ -124,10 +124,10 @@ export const ToastView = () => {
                     extrapolate: "clamp"
                 })
             }]
-        }, state.size, animate.y, globalData.window.width, data.position)} css={mem(x => x.cls("_toast").joinRight(typeInfo.css).zI(999).joinRight(data.css), data.css, typeInfo.css)}>
+        }, state.size, animate.y, globalData.window.width, data.position)} css={locMem(x => x.cls("_toast").joinRight(typeInfo.css).zI(999).joinRight(data.css), data.css, typeInfo.css)}>
         <View>
-            <View css={mem(x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC(".co-transparent"))}>
-                <TouchableOpacity onPress={mem(() => state.visible = false)} css="wi-15">
+            <View css={locMem(x => x.cls("_abc").fl(1).fillView().pos(0, 0).zI(3).juC("flex-start").alI("flex-end").baC(".co-transparent"))}>
+                <TouchableOpacity onPress={locMem(() => state.visible = false)} css="wi-15">
                     <Icon type="AntDesign" css="co:white" name="close" size={15} />
                 </TouchableOpacity>
             </View>
@@ -135,8 +135,8 @@ export const ToastView = () => {
                 {data.icon ?? typeInfo.icon}
             </View>
             <View css="fl:1 zi:1 bac:transparent">
-                <Text ifTrue={data.title != undefined} css={mem(x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css), typeInfo.css)}>{data.title}</Text>
-                <Text css={mem(x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css), typeInfo.css)}>{data.message}</Text>
+                <Text ifTrue={data.title != undefined} css={locMem(x => x.joinLeft("fos-lg maw:90% fow:bold").joinRight(typeInfo.css), typeInfo.css)}>{data.title}</Text>
+                <Text css={locMem(x => x.joinLeft(`fos-sm maw:90% pab:5`).joinRight(typeInfo.css), typeInfo.css)}>{data.message}</Text>
             </View>
         </View>
         <ProgressBar ifTrue={data.loader !== false} color={data.loaderBg} children={null} value={state.counter} css="_toastProgressView" />
