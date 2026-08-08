@@ -66,7 +66,7 @@ export default function App() {
         <TabBar lazyLoading={true} position='Bottom' header={{
           selectedIconStyle: "color:red",
           style: x => x.baC("#ffffff"),
-          textStyle: x => x.co("#000"),
+          textStyle: x => x.co("#000"), 
           overlayStyle: {
             content: x => x.baC("#8a88ee").op(.4)
           }

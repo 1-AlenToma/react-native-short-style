@@ -1,11 +1,13 @@
 import * as React from "react";
 
+type MemoItem<T> = Object | Function;
+
 type ILocalMemo = {
-  memKey<T>(key: string, fn: T, ...deps: any[]): T;
+  memKey<T extends Object | Function>(key: string, fn: T, ...deps: any[]): T;
   memoKey<T>(key: string, fn: () => T, ...deps: any[]): T;
   memo<T>(fn: () => T, ...deps: any[]): T;
-  mem<T>(fn: T, ...deps: any[]): T;
-  locMem<T>(fn: T, ...deps: any[]): T;
+  mem<T extends Object | Function>(fn: T, ...deps: any[]): T;
+  locMem<T extends Object | Function>(fn: T, ...deps: any[]): T;
   locMemo<T>(fn: () => T, ...deps: any[]): T;
 
 }
@@ -81,7 +83,7 @@ class LocalMemory {
       memoKey: this.memoKey.bind(this),
       locMem: this.memKey.bind(this) as typeof this.mem,
       locMemo: this.memoKey.bind(this) as any as typeof this.memo
-      };
+    };
   }
 }
 

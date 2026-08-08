@@ -42,23 +42,38 @@ export const eqString = (a: string, b: string) => {
     return a.toLowerCase() == b.toLowerCase();
 }
 
-let ids = new Map();
-let lastDate = new Date();
-export const newId = (inc?: string): string => {
-    if (lastDate.getMinutes() - new Date().getMinutes() > 1) {
-        ids = new Map();
-        lastDate = new Date();
-    }
-    let id: string = (inc ?? "") + Date.now().toString(36) + Math.floor(Math.pow(10, 12) + Math.random() * 9 * Math.pow(10, 12)).toString(36)
-    if (ids.has(id)) {
-        return (newId(id) as string);
+const ids = new Set<string>();
+
+let lastReset = Date.now();
+
+export const newId = (): string => {
+    const now = Date.now();
+
+    // Clear every minute
+    if (now - lastReset > 60_000) {
+        ids.clear();
+        lastReset = now;
     }
 
-    if (ids.size >= 2000)
-        ids = new Map();
-    ids.set(id, id);
+    let id: string;
+
+    do {
+        id =
+            now.toString(36) +
+            Math.floor(
+                Math.pow(10, 12) +
+                Math.random() * 9 * Math.pow(10, 12)
+            ).toString(36);
+    } while (ids.has(id));
+
+    if (ids.size >= 2000) {
+        ids.clear();
+    }
+
+    ids.add(id);
+
     return id;
-}
+};
 
 
 export const ValueIdentity = {

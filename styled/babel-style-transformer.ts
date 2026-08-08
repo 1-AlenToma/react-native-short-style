@@ -727,33 +727,23 @@ const ifTrueExpression = (path, state) => {
 
 const lockMemoExpression = (path, state) => {
     const callee = path.node.callee;
+    const memoId = "MemoId";
+
 
     const calleeNames = ["locMem", "locMemo"];
-    if (
-        !t.isIdentifier(callee) ||
-        !calleeNames.includes(callee.name)
-    ) {
+    if (!t.isIdentifier(callee) || !calleeNames.includes(callee.name)) {
         return;
     }
 
 
     // already transformed
-    if (
-        path.node.arguments.length > 0 &&
-        t.isStringLiteral(
-            path.node.arguments[0]
-        )
-    ) {
+    if (path.node.arguments.length > 0 && t.isStringLiteral(path.node.arguments[0]) && path.node.arguments[0].value.startsWith(memoId)) {
         return;
     }
 
 
-    path.node.arguments.unshift(
-        t.stringLiteral(
-            newId()
-            //createKey(path)
-        )
-    );
+    const Identifier = `${memoId}_${newId()}`;
+    path.node.arguments.unshift(t.stringLiteral(Identifier));
 
 
 }

@@ -13,6 +13,23 @@ note: this is only applicable for version >`1.3.3`
 
 from ver:1.4.1 `ifTrue prop` will be transformed to. so the component will not render until `ifTrue` is not `false` `if present`.
 
+## Mem
+`react-native-short-style` has its way to memorize value, and unlike `react` the components do not need to be mounted.
+
+```ts
+import {} from "react-native-short-style";
+
+   const { locMem, locMemo } = useLocalMemo();
+
+   return (<Button onPress={locMem(()=> {}, ...deps)} />)
+
+```
+`locMem` will be transformed later on to 
+`locMem("randomId",()=> ..)`
+This could be used insetad of `useCallback and useMemo`. for react `useCallback and useMemo` require the function to always be called, `locMem` generate random key by (`build.config.js`), so it will be bound by key instead.
+Note: only `locMem` and `locMemo` is used that way.
+be sure to not use those name on any other objects or functions.
+
 ```js
 
 const path = require("path");
