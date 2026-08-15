@@ -222,9 +222,10 @@ const TabBarMenu = ({ children }: { children: MenuChildren[] }) => {
 };
 
 export const TabBar = (props: TabBarProps) => {
-    const children = React.useMemo(() => Array.isArray(props.children) ? props.children : [props.children], [props.children]);
+
     const position = props.position ?? "Bottom";
     const { locMem, locMemo } = useLocalMemo();
+    const children = locMemo(() => (Array.isArray(props.children) ? props.children : [props.children]).filter(x => x && x.props), props.children);
     const visibleChildren = children.filter(
         x => ifSelector(x.props.ifTrue) !== false && (x.props.title || x.props.icon)
     );
@@ -474,6 +475,17 @@ export const TabBar = (props: TabBarProps) => {
     };
 
     const interpolate = state.refItem.interpolate.map(x => x.value);
+    const transform = interpolate.length > 1 ? {
+        transform: [
+            {
+                translateX: animate.x.interpolate({
+                    inputRange: interpolate,
+                    outputRange: interpolate,
+                    extrapolate: "clamp"
+                })
+            }
+        ]
+    } : {};
 
     const tabMenu = visibleChildren.length > 1 ? (
         <TabBarContext.Provider value={contextValue}>
@@ -492,21 +504,13 @@ export const TabBar = (props: TabBarProps) => {
             ) : null}
             <AnimatedView
                 css={`_tabBarContainer`}
-                style={locMemo(()=> [
+                style={locMemo(() => [
                     (visibleChildren.length <= 1 ? {
                         minHeight: null,
                         height: null
                     } : null),
                     {
-                        transform: [
-                            {
-                                translateX: animate.x.interpolate({
-                                    inputRange: interpolate,
-                                    outputRange: interpolate,
-                                    extrapolate: "clamp"
-                                })
-                            }
-                        ],
+                        ...transform,
                         width: state.size.width
                     }
                 ], visibleChildren.length, animate.x, state.refItem.interpolate, state.size)}
